@@ -2,6 +2,16 @@
 This project integrates Jfrog logs into various log analytic providers through the use of fluentd as a common logging agent.
 The goal of this project is to provide Jfrog customers with robust log analytic solutions that they could use to monitor the Jfrog unified platform microservices.
 
+## Table of Contents
+
+   * [Fluentd Setup](#fluentd-setup)
+   * [Splunk](#splunk)
+     * [Demo](#demo)
+   * [Tools](#tools)
+   * [Contributing](#contributing)
+   * [Versioning](#versioning)
+   * [Contact](#contact)
+
 ## Fluentd Setup
 
 Fluentd is required component to use the Jfrog log analytics integration.
@@ -30,6 +40,8 @@ where fluentd.conf is the name of the configuration file you wish to supply via 
 
 ## Splunk
 
+Fluentd setup must be completed prior to Splunk.
+
 Jfrog has created an integration for Splunk to consume our logs which will enable our customers who also use Splunk to utilize their existing Splunk infrastructure.
 
 To use the integration an administrator of Splunk will need to install the Jfrog Logs Application into Splunk.
@@ -38,9 +50,7 @@ This can be done through Splunkbase or manually by uploading the splunk/jfrog-lo
 
 Once the application has been installed either through Splunkbase or via manual file the next step will be to configure the HEC.
 
-Our integration uses the Splunk HEC:
-
-[Splunk HEC](https://dev.splunk.com/enterprise/docs/dataapps/httpeventcollector/)
+Our integration uses the [Splunk HEC](https://dev.splunk.com/enterprise/docs/dataapps/httpeventcollector/) to send data to Splunk.
 
 Users will need to configure the HEC to accept data (enabled) and also create a new token.
 
@@ -98,7 +108,7 @@ Install fluentd's td-agent into your Artifactory & Xray, update the fluentd conf
 
 Open the Jfrog Logs App Dashboard and confirm the dashboard is now rendering your log data.
 
-### Tools
+## Tools
 * [Fluentd](https://www.fluentd.org) - Fluentd
 * [Splunk HEC](https://dev.splunk.com/enterprise/docs/dataapps/httpeventcollector/) - Splunk HEC used to upload data into Splunk
 
