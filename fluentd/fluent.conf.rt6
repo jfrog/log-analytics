@@ -1,0 +1,73 @@
+<source>
+  @type tail
+  @id artifactory_service_tail
+  path /var/opt/jfrog/artifactory/logs/artifactory.log
+  pos_file /var/opt/jfrog/artifactory/logs/artifactory.log.pos
+  tag jfrog.rt.artifactory.service
+  <parse>
+      @type multiline
+      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
+      time_key timestamp
+      time_format %Y-%m-%dT%H:%M:%S.%LZ
+  </parse>
+</source>
+
+<source>
+  @type tail
+  @id artifactory_request_tail
+  path /var/opt/jfrog/artifactory/logs/request.log
+  pos_file /var/opt/jfrog/artifactory/logs/request.log.pos
+  tag jfrog.rt.artifactory.request
+  <parse>
+    @type regexp
+    expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
+    time_key timestamp
+    time_format %Y-%m-%dT%H:%M:%S.%LZ
+  </parse>
+</source>
+<filter jfrog.rt.artifactory.request>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    repo ${record["request_url"].split('/')[3]}
+    image ${record["request_url"].split('/')[5]}
+  </record>
+</filter>
+
+<source>
+  @type tail
+  @id artifactory_access_tail
+  path /var/opt/jfrog/artifactory/logs/access.log
+  pos_file /var/opt/jfrog/artifactory/logs/access.log.pos
+  tag jfrog.rt.artifactory.access
+  <parse>
+    @type regexp
+    expression /^(?<timestamp>[^ ]*) \[(?<trace_id>[^\]]*)\] \[(?<action_response>[^\]]*)\] (?<repo_path>.*) for client : (?<username>.+)/(?<ip>.+)$/
+    time_key timestamp
+    time_format %Y-%m-%dT%H:%M:%S.%LZ
+  </parse>
+</source>
+
+<filter jfrog.**>
+  @type record_transformer
+  <record>
+    log_source ${tag}
+  </record>
+</filter>
+
+<match jfrog.**>
+  @type splunk_hec
+  host HEC_HOST
+  port HEC_PORT
+  token HEC_TOKEN
+  format json
+  # buffered output parameter
+  flush_interval 10s
+  # time format
+  time_key timestamp
+  time_format %Y-%m-%dT%H:%M:%S.%LZ
+  # ssl parameter
+  use_ssl true
+  ca_file /path/to/ca.pem
+</match>
