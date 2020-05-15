@@ -187,6 +187,41 @@
     log_source ${tag}
   </record>
 </filter>
+
+#JFROG CALL HOME
+<source>
+  @type exec
+  tag jfrog.callhome
+  command /opt/td-agent/embedded/bin/gem list --local | grep fluent | sed 's/ (/:/g' | sed 's/)//g'  | sed ':a;N;$!ba;s/\n/\t/g'
+  run_interval 1d
+  <parse>
+    @type ltsv
+  </parse>
+</source>
+<filter jfrog.callhome>
+  @type record_transformer
+  renew_record true
+  keep_keys 'productId,features'
+  enable_ruby true
+  <record>
+    productId 'jfrogLogAnalytics/v0.1.0'
+    features ${return([{ "featureId" => "fluentd/v3.7.1" , "attributes" => record }])}
+  </record>
+</filter>
+<match jfrog.callhome>
+  @type http
+  endpoint http://localhost:8081/artifactory/api/system/usage
+  open_timeout 5
+  content_type application/json
+  <format>
+    @type json
+  </format>
+  <buffer>
+    flush_interval 5s
+  </buffer>
+</match>
+#END CALL HOME
+#SPLUNK OUTPUT
 <match jfrog.rt.router.request>
   @type splunk_hec
   host HEC_HOST
@@ -217,3 +252,4 @@
   use_ssl true
   ca_file /path/to/ca.pem
 </match>
+#END SPLUNK OUTPUT

@@ -38,6 +38,20 @@ td-agent -c fluentd.conf
 
 where fluentd.conf is the name of the configuration file you wish to supply via the -c flag to td-agent.
 
+Once td-agent has been installed on an Artifactory or Xray node you will also need to install the relevant plugin if you are using Splunk or Datadog:
+
+Splunk:
+```
+td-agent-gem install fluent-plugin-splunk-enterprise
+```
+
+Datadog:
+``` 
+td-agent-gem install fluent-plugin-datadog
+```
+
+For Prometheus or Elastic the required plugins are already installed along with td-agent so no additional plugins are necessary.
+
 ## Splunk
 
 Fluentd setup must be completed prior to Splunk.
