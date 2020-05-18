@@ -205,7 +205,7 @@
   enable_ruby true
   <record>
     productId 'jfrogLogAnalytics/v0.1.0'
-    features ${return([{ "featureId" => "fluentd/v3.7.1" , "attributes" => record }])}
+    features ${return(record.map { |k,v| { "featureId" => (k + ':' + v).to_sym} })}
   </record>
 </filter>
 <match jfrog.callhome>
@@ -219,6 +219,11 @@
   <buffer>
     flush_interval 5s
   </buffer>
+  <auth>
+    method basic
+    username <user>
+    password <password>
+  </auth>
 </match>
 #END CALL HOME
 #SPLUNK OUTPUT

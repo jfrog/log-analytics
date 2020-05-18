@@ -8,6 +8,7 @@ The goal of this project is to provide Jfrog customers with robust log analytic 
    * [Fluentd Config](#fluentd-setup)
    * [Splunk](#splunk)
      * [Demo](#demo)
+   * [Running Fluentd](#running-fluentd)
    * [Tools](#tools)
    * [Contributing](#contributing)
    * [Versioning](#versioning)
@@ -36,7 +37,7 @@ Root access will be required as this will use yum to install td-agent
 There are options on how to install td-agent as non-root user such as:
 
 ``` 
-Fluentd ruby + gem install guide
+Ruby + gem install guide
 Dpkg -X / Rpm2cpio variants to explode package contents into user space
 ```
 
