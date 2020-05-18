@@ -5,6 +5,7 @@ The goal of this project is to provide Jfrog customers with robust log analytic 
 ## Table of Contents
 
    * [Fluentd Setup](#fluentd-setup)
+   * [Fluentd Config](#fluentd-setup)
    * [Splunk](#splunk)
      * [Demo](#demo)
    * [Tools](#tools)
@@ -21,6 +22,34 @@ For more details on how to install fluentd into your environment please visit:
 [Fluentd installation guide](https://docs.fluentd.org/installation)
 
 Fluentd has an agent called td-agent which will be required to be installed into each node you wish to monitor logs on.
+
+In our example we will be using Redhat UBI.
+
+We find for Redhat to install the fluentd agent called “td-agent” we need to run the below command:
+
+```
+$ curl -L https://toolbelt.treasuredata.com/sh/install-redhat-td-agent3.sh | sh
+```
+
+Root access will be required as this will use yum to install td-agent
+
+There are options on how to install td-agent as non-root user such as:
+
+``` 
+Fluentd ruby + gem install guide
+Dpkg -X / Rpm2cpio variants to explode package contents into user space
+```
+
+In general it will be easier to use the relevant package manager such as yum or apt if possible.
+
+Once we have installed td-agent through yum we can now see the td-agent binary at /usr/sbin/td-agent:
+
+``` 
+$ which td-agent
+/usr/sbin/td-agent
+```
+
+/opt/td-agent is where the embedded ruby + gems for td-agent is located at.
 
 The default configuration file for td-agent is located at:
 
@@ -52,11 +81,23 @@ td-agent-gem install fluent-plugin-datadog
 
 For Prometheus or Elastic the required plugins are already installed along with td-agent so no additional plugins are necessary.
 
+
+## Fluentd Config
+At this point td-agent is installed however we need to download the configuration template file from the Jfrog log analytics github repo.
+
+Inside this repo we will find a fluentd folder which has the configuration files we will need for Artifactory & Xray depending upon version.
+
+See below links for a direct download by version:
+
+[Artifactory 7.x+](https://github.com/jfrog/log-analytics/blob/master/fluentd/fluent.conf.rt)
+[Xray 3.x+](https://github.com/jfrog/log-analytics/blob/master/fluentd/fluent.conf.xray)
+[Artifactory 6.x](https://github.com/jfrog/log-analytics/blob/master/fluentd/fluent.conf.rt6)
+
+Once we have the template downloaded we will need to update the fluent config file with the Splunk HTTP Event Collector (HEC) parameters from our Splunk instance.
+
 ## Splunk
 
 Fluentd setup must be completed prior to Splunk.
-
-Jfrog has created an integration for Splunk to consume our logs which will enable our customers who also use Splunk to utilize their existing Splunk infrastructure.
 
 To use the integration an administrator of Splunk will need to install the Jfrog Logs Application into Splunk.
 
@@ -116,11 +157,25 @@ kubectl apply -f splunk/splunk.yaml
 
 This will create a new Splunk instance you can use for a demo to send your Jfrog logs over to.
 
-Deploy the Jfrog Logs application into this Splunk instance either through Splunkbase or manually by uploading the spl file to install the app.
+Once they have a Splunk up for demo purposes they will need to configure the HEC and then update fluent config files with the relevant parameters for HEC_HOST, HEC_PORT, & HEC_TOKEN.
 
-Install fluentd's td-agent into your Artifactory & Xray, update the fluentd conf file, and enable it to run as a service.
+At that point you will be ready to run fluentd see below section on steps how.
 
-Open the Jfrog Logs App Dashboard and confirm the dashboard is now rendering your log data.
+# Running Fluentd
+
+Now that we have the new configuration file in place we can start the td-agent as a service on our system:
+
+```
+$ systemctl start td-agent
+```
+
+Alternatively we can run td-agent against the configuration file directly:
+
+```
+$ td-agent -c td-agent.conf
+```
+
+This will start the fluentd logging agent which will tail the JPD logs and send them all over to Splunk.
 
 ## Tools
 * [Fluentd](https://www.fluentd.org) - Fluentd
