@@ -162,7 +162,7 @@ Once they have a Splunk up for demo purposes they will need to configure the HEC
 
 At that point you will be ready to run fluentd see below section on steps how.
 
-# Running Fluentd
+## Running Fluentd
 
 Now that we have the new configuration file in place we can start the td-agent as a service on our system:
 
