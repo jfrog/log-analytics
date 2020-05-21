@@ -87,11 +87,6 @@
   <buffer>
     flush_interval 5s
   </buffer>
-  <auth>
-    method basic
-    username <user>
-    password <password>
-  </auth>
 </match>
 #END CALL HOME
 
