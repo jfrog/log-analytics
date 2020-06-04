@@ -1,5 +1,5 @@
 # Artifactory and Xray Logging Analytics with FluentD, Prometheus and Grafana
-The following describes how to configure Prometheus and Grafana to gather metrics from Artifactory and Xray through the use of FluentD.
+The following describes how to configure Prometheus and Grafana to gather metrics from Artifactory and Xray through the use of FluentD. The setup and configuration of Prometheus and Grafana uses Kubernetes and makes use of the Prometheus Operator.
 
 ## Requirements
 * Kubernetes Cluster
@@ -48,3 +48,8 @@ kubectl apply -f servicemonitor-artifactory-ha.yaml
 
 5. Finally, go to Grafana to add your Prometheus instance as a datasource.
 ![datasource](images/datasource.png)
+
+## References
+* [FluentD Plugin for Prometheus Metrics](https://github.com/fluent/fluent-plugin-prometheus#supported-metric-types)
+* [Grafana Dashboards](https://grafana.com/docs/grafana/latest/features/dashboard/dashboards/)
+* [Grafana Queries](https://prometheus.io/docs/prometheus/latest/querying/basics/)
