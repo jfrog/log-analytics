@@ -1,0 +1,6 @@
+*.log
+*.swp
+.tox
+./idea
+.idea/
+.DS_Store

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: artifactory-ha
+  name: artifactory-ha-metrics
+spec:
+  ports:
+  - name: metrics
+    port: 24231
+    protocol: TCP
+  selector:
+    role : unified-artifactory-ha-primary
+    # app: artifactory-ha
