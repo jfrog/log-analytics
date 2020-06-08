@@ -177,15 +177,32 @@
     log_source ${tag}
   </record>
 </filter>
-<match jfrog.**>
-  @type splunk_hec
-  host HEC_HOST
-  port HEC_PORT
-  token HEC_TOKEN
-  format json
-  # buffered output parameter
-  flush_interval 10s
-  # ssl parameter
-  use_ssl true
-  ca_file /path/to/ca.pem
-</match>
+
+<filter jfrog.xray.xray.request>
+@type prometheus
+
+<metric>
+  name jfrog_xray_req
+  type counter
+  desc xray requests
+  <labels>
+    host ${hostname}
+    remote_address ${remote_address}
+    request_url ${request_url}
+    return_status ${return_status}
+  </labels>
+</metric>
+</filter>
+
+<filter jfrog.xray.**.service>
+@type prometheus
+<metric>
+  name jfrog_xray_log_level
+  type counter
+  desc xray log_levels
+  <labels>
+    host ${hostname}
+    log_level ${log_level}
+  </labels>
+</metric>
+</filter>
