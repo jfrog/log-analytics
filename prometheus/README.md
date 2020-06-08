@@ -10,7 +10,7 @@ The following describes how to configure Prometheus and Grafana to gather metric
 The [Prometheus Operator](https://coreos.com/operators/prometheus/docs/latest/) allows the creation of Prometheus instances and includes Grafana. Install the Prometheus Operator via Helm:
 
 ```
-helm install stable/prometheus-operator
+helm install jfrog-prometheus stable/prometheus-operator
 ```
 
 ## FluentD Configuration
@@ -19,8 +19,9 @@ The following steps describe how to configure FluentD to gather metrics for Prom
 2. Use the appropriate FluentD configuration file (*.prometheus) from the [fluentd directory](../fluentd) and copy it to /etc/td-agent/td-agent.conf.
 3. Restart td-agent.
 4. In order to expose the /metrics interface for Prometheus to scrape, apply the appropriate *-metrics-service.yaml.
-eg.
+
 ```
+eg.
 kubectl apply -f artifactory-ha-metrics-service.yaml
 ```
 5. The /metrics interface is now available at http://<service>:24231/metrics
@@ -48,6 +49,18 @@ kubectl apply -f servicemonitor-artifactory-ha.yaml
 
 5. Finally, go to Grafana to add your Prometheus instance as a datasource.
 ![datasource](images/datasource.png)
+
+## Exposing Prometheus, Grafana and FluentD Metrics Interface for Testing
+For testing purposes, you may want to expose Prometheus, Grafana and the FluentD Metrics interface. A test-only-expose.yaml provides an example of how to do this:
+```
+kubectl apply -f test-only-expose.yaml
+```
+## Grafana Dashboard
+An example dashboard is included in the [grafana directory](./grafana).
+![datasource](images/dashboard.png)
+
+## Generating Data for Testing
+[Partner Integration Test Framework](https://github.com/jfrog/partner-integration-tests) can be used to generate data for metrics.
 
 ## References
 * [FluentD Plugin for Prometheus Metrics](https://github.com/fluent/fluent-plugin-prometheus#supported-metric-types)
