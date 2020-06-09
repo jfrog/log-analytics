@@ -50,23 +50,24 @@ Non-root users to make life easier for we have provided a tar.gz containing ever
 
 Follow these steps:
 
-* Download the tar: fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz
-* Explode the tar anywhere and simply run:
+* Download the tar from this Github: fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz
+
+* Explode the tar into /opt/jfrog/artifactory and run:
 
 ``` 
-fluentd-1.11.0-linux-x86_64/fluentd <conf_file>
+/opt/jfrog/artifactory/fluentd-1.11.0-linux-x86_64/fluentd <conf_file>
 ```
 
 Updating fluentd to future releases is simple as well:
 
 ``` 
-fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem install fluentd
+/opt/jfrog/artifactory/fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem install fluentd
 ```
 
 Adding any fluentd plugins like Datadog as works in the same fashion:
 
 ``` 
-fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem install fluent-plugin-datadog
+/opt/jfrog/artifactory/fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem install fluent-plugin-datadog
 ```
 
 #### Logger Agent
@@ -110,16 +111,20 @@ Fluentd requires configuration file to know which logs to tail and how to ship t
 
 Our configurations are saved into each log provider's folder.
 
-* Splunk:
+###### Splunk:
 
 [Artifactory 7.x+](https://github.com/jfrog/log-analytics/blob/master/splunk/fluent.conf.rt)
+
 [Xray 3.x+](https://github.com/jfrog/log-analytics/blob/master/splunk/fluent.conf.xray)
+
 [Artifactory 6.x](https://github.com/jfrog/log-analytics/blob/master/splunk/fluent.conf.rt6)
 
-* EFK:
+###### EFK:
 
 [Artifactory 7.x+](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/fluent.conf.rt)
+
 [Xray 3.x+](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/fluent.conf.xray)
+
 [Artifactory 6.x](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/fluent.conf.rt6)
 
 We will need to store these configurations into the correct location per our installer type.
@@ -156,17 +161,18 @@ Using systemd:
 * Create a service unit configuration file
 
 ```
-~/.config/systemd/user/jfrogfluentd.service
+mkdir -p ~/.config/systemd/user/
+touch ~/.config/systemd/user/jfrogfluentd.service
 ```
 
-* Copy paste below and update path & configuration file location and save into the service unit configuration file:
+* Copy paste below snippet, update the configuration file location, and save into the file:
 
 ```
 [Unit]
 Description=JFrog_Fluentd
 
 [Service]
-ExecStart=<path_to>/fluentd-1.11.0-linux-x86_64/fluentd <conf_file>
+ExecStart=/opt/jfrog/artifactory/fluentd-1.11.0-linux-x86_64/fluentd <conf_file>
 Restart=always
 
 [Install]
@@ -309,8 +315,11 @@ To access already existing visualizations and filters, import [export.ndjson](ht
 
 
 ## Tools
-* [Fluentd](https://www.fluentd.org) - Fluentd
+* [Fluentd](https://www.fluentd.org) - Fluentd Logging Aggregator/Agent
+* [Splunk](https://www.splunk.com/) - Splunk Logging Platform
 * [Splunk HEC](https://dev.splunk.com/enterprise/docs/dataapps/httpeventcollector/) - Splunk HEC used to upload data into Splunk
+* [Elasticsearch](https://www.elastic.co/) - Elastic search log data platform
+* [Kibana](https://www.elastic.co/kibana) - Elastic search visualization layer
 
 ## Contributing
 Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull requests to us.

@@ -59,6 +59,15 @@
     @type ltsv
   </parse>
 </source>
+<source>
+  @type exec
+  tag jfrog.callhome
+  command /opt/td-agent/embedded/bin/gem list --local | grep fluent | sed 's/ (/:/g' | sed 's/)//g'  | sed ':a;N;$!ba;s/\n/\t/g'
+  run_interval 1d
+  <parse>
+    @type ltsv
+  </parse>
+</source>
 <filter jfrog.callhome>
   @type record_transformer
   renew_record true
