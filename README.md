@@ -14,7 +14,8 @@ The goal of this project is to provide Jfrog customers with robust log analytic 
      * [Running As A Service](#running-as-a-service)
      * [Running As A Service As A Regular User](#running-as-a-service-as-a-regular-user)
    * [Splunk](#splunk)
-     * [Demo](#splunk-demo)
+     * [Splunk Config](#splunk-config)
+     * [Splunk Demo](#splunk-demo)
    * [Elasticsearch - Kibana](#elasticsearch-and-kibana)
      * [Kubernetes Installation](#kubernetes-installation)
      * [Elastic Fluentd Configuration](#elastic-fluentd-configuration)
@@ -197,6 +198,8 @@ systemctl --user status jfrogfluentd
 
 
 ## Splunk
+
+### Splunk Config
 
 Fluentd setup must be completed prior to Splunk.
 
