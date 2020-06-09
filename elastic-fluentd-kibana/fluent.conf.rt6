@@ -60,6 +60,15 @@
 <source>
   @type exec
   tag jfrog.callhome
+  command /opt/jfrog/artifactory/fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem list --local | grep fluent | sed 's/ (/:/g' | sed 's/)//g'  | sed ':a;N;$!ba;s/\n/\t/g'
+  run_interval 1d
+  <parse>
+    @type ltsv
+  </parse>
+</source>
+<source>
+  @type exec
+  tag jfrog.callhome
   command /opt/td-agent/embedded/bin/gem list --local | grep fluent | sed 's/ (/:/g' | sed 's/)//g'  | sed ':a;N;$!ba;s/\n/\t/g'
   run_interval 1d
   <parse>
