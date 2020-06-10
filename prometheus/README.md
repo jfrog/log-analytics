@@ -22,7 +22,7 @@ The following steps describe how to configure FluentD to gather metrics for Prom
 
 ```
 eg.
-kubectl apply -f artifactory-ha-metrics-service.yaml
+kubectl apply -f artifactory-ha-member-metrics-service.yaml
 ```
 5. The /metrics interface is now available at http://<service>:24231/metrics
 ![metrics](images/metrics.png)
@@ -42,7 +42,7 @@ kubectl apply -f prometheus-rbac.yaml
 kubectl apply -f servicemonitor-*.yaml
 
 eg.
-kubectl apply -f servicemonitor-artifactory-ha.yaml
+kubectl apply -f servicemonitor-artifactory-ha-member.yaml
 ```
 4. Go to the web ui of the Prometheus instance create in Step 1 and verify the Targets list shows the new ServiceMonitor.
 ![targets](images/targets.png)

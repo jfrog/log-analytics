@@ -157,8 +157,8 @@
     artifact ${!record["request_url"].strip().start_with?("/api") ? (val = record["request_url"].strip().split('/'); val[val.length()-1]) : ("")}
     dockerRepo ${record["request_url"].strip().include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2") ? (record["request_url"].strip().split('/')[3]) : ("")}
     dockerImage ${record["request_url"].strip().include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].strip().split('/')[5]) : ("")}
-    data_download ${record["request_content_length"].abs()}
-    data_upload ${record["response_content_length"].abs()}
+    data_download ${record["response_content_length"] == -1 ? 0 : record["response_content_length"]}
+    data_upload ${record["request_content_length"] == -1 ? 0 : record["request_content_length"]}
   </record>
 </filter>
 <source>
@@ -279,7 +279,8 @@
     <labels>
       host ${hostname}
       remote_address ${remote_address}
-      request_content_length ${request_content_length}
+      repo ${repo}
+      response_content_length ${response_content_length}
       data_download ${data_download}
     </labels>
   </metric>
@@ -292,7 +293,8 @@
     <labels>
       host ${hostname}
       remote_address ${remote_address}
-      response_content_length ${response_content_length}
+      repo ${repo}
+      request_content_length ${request_content_length}
       data_upload ${data_upload}
     </labels>
   </metric>
@@ -331,12 +333,31 @@
 @type prometheus
 
 <metric>
-  name jfrog_rt_access_by_user
+  name jfrog_rt_access
   type counter
-  desc access by user
+  desc artifactory access
   <labels>
     host ${hostname}
     username ${username}
+    action_response ${action_response}
+    ip ${ip}
+  </labels>
+</metric>
+
+</filter>
+
+<filter jfrog.rt.access.audit>
+@type prometheus
+
+<metric>
+  name jfrog_rt_access_audit
+  type counter
+  desc artifactory access audit
+  <labels>
+    host ${hostname}
+    user ${user}
+    event_type ${event_type}
+    event ${event}
   </labels>
 </metric>
 

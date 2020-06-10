@@ -1,13 +1,13 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: servicemonitor-artifactory-ha
+  name: servicemonitor-artifactory-ha-primary
   labels:
     metrics: jfrog
 spec:
   selector:
     matchLabels:
-      app: artifactory-ha
+      app: artifactory-ha-primary
   endpoints:
   - port: metrics
-    interval: 10s
+    interval: 15s
