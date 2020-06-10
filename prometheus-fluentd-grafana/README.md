@@ -16,7 +16,7 @@ helm install jfrog-prometheus stable/prometheus-operator
 ## FluentD Configuration
 The following steps describe how to configure FluentD to gather metrics for Prometheus. Refer to the main [README](../README.md) for more details.
 1. Install the [FluentD Prometheus Plugin](https://github.com/fluent/fluent-plugin-prometheus).
-2. Use the appropriate FluentD configuration file (*.prometheus) from the [fluentd directory](../fluentd) and copy it to /etc/td-agent/td-agent.conf.
+2. Use the appropriate FluentD configuration file (*.prometheus) and copy it to /etc/td-agent/td-agent.conf.
 3. Restart td-agent.
 4. In order to expose the /metrics interface for Prometheus to scrape, apply the appropriate *-metrics-service.yaml.
 
