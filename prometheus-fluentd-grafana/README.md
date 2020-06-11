@@ -28,7 +28,7 @@ kubectl apply -f artifactory-ha-member-metrics-service.yaml
 ![metrics](images/metrics.png)
 
 ## Configuring Prometheus to Gather Metrics from Artifactory and Xray on K8s
-The following steps using the Prometheus Operator to create a Prometheus instance and the ServiceMonitor to gather metrics.
+The following steps using the Prometheus Operator to create a Prometheus instance and the ServiceMonitor to gather metrics. The [ServiceMonitor](https://coreos.com/operators/prometheus/docs/latest/user-guides/running-exporters.html) resource tells Prometheus where the metrics service. This metrics service provides the metrics data for the Prometheus "scrapes".
 1. Create a new Prometheus instance.
 ```
 kubectl apply -f prometheus-jfrog.yaml

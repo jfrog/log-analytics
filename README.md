@@ -20,6 +20,7 @@ The goal of this project is to provide Jfrog customers with robust log analytic 
      * [Kubernetes Installation](#kubernetes-installation)
      * [Elastic Fluentd Configuration](#elastic-fluentd-configuration)
      * [EFK Demo](#efk-demo)
+   * [Prometheus-Grafana](prometheus-fluentd-grafana/README.md)
    * [Tools](#tools)
    * [Contributing](#contributing)
    * [Versioning](#versioning)
