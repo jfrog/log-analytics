@@ -16,10 +16,7 @@ The goal of this project is to provide Jfrog customers with robust log analytic 
    * [Splunk](#splunk)
      * [Splunk Config](#splunk-config)
      * [Splunk Demo](#splunk-demo)
-   * [Elasticsearch - Kibana](#elasticsearch-and-kibana)
-     * [Kubernetes Installation](#kubernetes-installation)
-     * [Elastic Fluentd Configuration](#elastic-fluentd-configuration)
-     * [EFK Demo](#efk-demo)
+   * [Elasticsearch - Kibana](elastic-fluentd-kibana/README.md)
    * [Prometheus-Grafana](prometheus-fluentd-grafana/README.md)
    * [Tools](#tools)
    * [Contributing](#contributing)
@@ -242,81 +239,6 @@ This will create a new Splunk instance you can use for a demo to send your Jfrog
 Once they have a Splunk up for demo purposes they will need to configure the HEC and then update fluent config files with the relevant parameters for HEC_HOST, HEC_PORT, & HEC_TOKEN.
 
 They can now access Splunk to view the Jfrog dashboard as new data comes in.
-
-## Elasticsearch And Kibana
-
-#### Kubernetes Installation
-
-Elasticsearch kibana setup can be done using the following files or using manual configuration
-
-* [Elastic_statefulset](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/elasticsearch_statefulset.yaml) - Elasticsearch Statefulset
-* [Elastic_service](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/elasticsearch_svc.yaml) - Elasticsearch Service
-* [Kibana_deployment](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/kibana_deployment.yaml) - Kibana Deplpoyment
-* [Kibana_service](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/kibana_svc.yaml) - Kibana Service
-
-Once we have deployed elasticsearch and kibana, we can access it via kibana web console. We can check for the running logging agents in Index Management section
-
-#### Elastic Fluentd Configuration
-
-Integration is done by specifying the host (elasticsearch - using the above files or ip address if using other coniguration), port (9200 by default)
-
-index_name is the unique identifier based on which the index patterns can be created and filters can be applied on the log data
-
-When logstash_format option is set to true, fluentd uses conventional index name format
-
-type_name is fluentd by default and it specifies the type name to write to in the record and falls back to the default if a value is not given
-
-include_tag_key defaults to false and it will add fluentd tag in the json record if set to true
-
-```
-<match jfrog.**>
-  @type elasticsearch
-  @id elasticsearch
-  host elasticsearch
-  port 9200
-  index_name unified-artifactory
-  include_tag_key true
-  type_name fluentd
-  logstash_format false
-</match>
-```
-
-### EFK Demo
-
-To run this integration start by creating elasticsearch service, statefulset
-
-``` 
-kubectl create -f elasticsearch_svc.yaml
-kubectl create -f elasticsearch_statefulset.yaml
-```
-
-Check for the status of the statefulset using
-
-```
-kubectl rollout status sts/es-cluster
-```
-
-Create Kibana service and deployment
-
-```
-kubectl create -f kibana_svc.yaml
-kubectl create -f kibana_deployment.yaml
-```
-
-Wait for the deployment status using
-
-```
-kubectl rollout status deployment/kibana
-```
-
-This will create a Kibana web console where the logs can be accessed
-
-Once the kibana is up, the host and port should be configured in td-agent.conf and td-agent can be started. This creates an index with the name specified in the conf file
-
-Creat an index pattern in the Management section and access the logs on the discover tab
-
-To access already existing visualizations and filters, import [export.ndjson](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/export.ndjson) to Saved objects in Management section
-
 
 ## Tools
 * [Fluentd](https://www.fluentd.org) - Fluentd Logging Aggregator/Agent
