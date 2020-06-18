@@ -44,7 +44,7 @@ kubectl apply -f servicemonitor-*.yaml
 eg.
 kubectl apply -f servicemonitor-artifactory-ha-member.yaml
 ```
-4. Go to the web ui of the Prometheus instance create in Step 1 and verify the Targets list shows the new ServiceMonitor.
+4. Go to the web UI of the Prometheus instance create in Step 1 and verify the Targets list shows the new ServiceMonitor.
 ![targets](images/targets.png)
 
 5. Finally, go to Grafana to add your Prometheus instance as a datasource.
@@ -58,6 +58,19 @@ kubectl apply -f test-only-expose.yaml
 ## Grafana Dashboard
 An example dashboard is included in the [grafana directory](./grafana).
 ![datasource](images/dashboard.png)
+
+## Metrics Collected
+The following metrics are collected and can be queries PromQL.
+| Metric                 | Product     | Type    | Labels                                                                                    | Description                                       |
+|------------------------|-------------|---------|-------------------------------------------------------------------------------------------|---------------------------------------------------|
+| jfrog_rt_data_download | Artifactory | gauge   | host, remote_address, repo, response_content_length, data_download                        | Data download in bytes.                           |
+| jfrog_rt_data_upload   | Artifactory | gauge   | host, remote_address, repo, request_content_length, data_download                         | Data upload in bytes.                             |
+| jfrog_rt_req           | Artifactory | counter | host, remote_address, repo, artifact, request_url, return_status, dockerRepo, dockerImage | Requests to Artifactory.                          |
+| jfrog_rt_log_level     | Artifactory | counter | host, log_level                                                                           | Logging level counter (ERROR, WARN, INFO, DEBUG). |
+| jfrog_rt_access        | Artifactory | counter | host, username, action_response                                                           | Artifactory user access and response counter.     |
+| jfrog_rt_access_audit  | Artifactory | counter | host, user, event_type, event                                                             | Artifactory user event counter.                   |
+| jfrog_xray_req         | Xray        | counter | host, remote_address, request_url, return_status                                          | Requests to Xray.                                 |
+| jfrog_xray_log_level   | Xray        | counter | host, log_level                                                                           | Logging level counter (ERROR, WARN, INFO, DEBUG). |
 
 ## Generating Data for Testing
 [Partner Integration Test Framework](https://github.com/jfrog/partner-integration-tests) can be used to generate data for metrics.
