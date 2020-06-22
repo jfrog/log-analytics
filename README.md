@@ -18,6 +18,7 @@ The goal of this project is to provide Jfrog customers with robust log analytic 
      * [Splunk Demo](#splunk-demo)
    * [Elasticsearch - Kibana](elastic-fluentd-kibana/README.md)
    * [Prometheus-Grafana](prometheus-fluentd-grafana/README.md)
+   * [Datadog](datadog/README.md)
    * [Tools](#tools)
    * [Contributing](#contributing)
    * [Versioning](#versioning)
