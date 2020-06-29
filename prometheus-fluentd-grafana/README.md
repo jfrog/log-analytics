@@ -46,9 +46,43 @@ kubectl apply -f servicemonitor-artifactory-ha-member.yaml
 ```
 4. Go to the web UI of the Prometheus instance create in Step 1 and verify the Targets list shows the new ServiceMonitor.
 ![targets](images/targets.png)
-
+__
 5. Finally, go to Grafana to add your Prometheus instance as a datasource.
 ![datasource](images/datasource.png)
+
+## Securing the Metrics Interface
+The metrics interfaces provided by the [FluentD Prometheus Plugin](https://github.com/fluent/fluent-plugin-prometheus) can be secured using TLS. This is done by adding _transport tls_ section to the input plugin _@type prometheus_ [within the provided configuration files](https://github.com/jfrog/log-analytics/blob/master/prometheus-fluentd-grafana/fluent.conf.rt.prometheus#L4).
+
+```
+<source>
+  @type prometheus
+  <transport tls>
+    # TLS parameters...
+  </transport
+</source>
+```
+
+The following example sets up the Metrics Interface on HTTPS.
+
+```
+<transport tls>
+  cert_path /path/to/jfrog.crt
+  private_key_path /path/to/jfrog.key
+  private_key_passphrase pass
+</transport>
+```
+
+For client verification (Prometheus or ServiceMonitor as the client), you can also configure the Metrics Interface to validate using the _client_cert_auth_ parameter.
+
+```
+<transport tls>
+  cert_path /path/to/jfrog.crt
+  private_key_path /path/to/jfrog.key
+  private_key_passphrase pass
+  client_cert_auth true
+</transport>
+```
+For documentation on how to set up Prometheus for TLS using NGINX see [here](https://prometheus.io/docs/guides/tls-encryption/).
 
 ## Exposing Prometheus, Grafana and FluentD Metrics Interface for Testing
 For testing purposes, you may want to expose Prometheus, Grafana and the FluentD Metrics interface. A test-only-expose.yaml provides an example of how to do this:
@@ -60,7 +94,7 @@ An example dashboard is included in the [grafana directory](./grafana).
 ![datasource](images/dashboard.png)
 
 ## Metrics Collected
-The following metrics are collected and can be queries PromQL.
+The following metrics are collected and can be queried using PromQL.
 | Metric                 | Product     | Type    | Labels                                                                                    | Description                                       |
 |------------------------|-------------|---------|-------------------------------------------------------------------------------------------|---------------------------------------------------|
 | jfrog_rt_data_download | Artifactory | gauge   | host, remote_address, repo, response_content_length, data_download                        | Data download in bytes.                           |
