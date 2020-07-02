@@ -13,9 +13,7 @@ The goal of this project is to provide Jfrog customers with robust log analytic 
      * [Config Files](#config-files)
      * [Running As A Service](#running-as-a-service)
      * [Running As A Service As A Regular User](#running-as-a-service-as-a-regular-user)
-   * [Splunk](#splunk)
-     * [Splunk Config](#splunk-config)
-     * [Splunk Demo](#splunk-demo)
+   * [Splunk](splunk/README.md)
    * [Elasticsearch - Kibana](elastic-fluentd-kibana/README.md)
    * [Prometheus-Grafana](prometheus-fluentd-grafana/README.md)
    * [Datadog](datadog/README.md)
@@ -194,52 +192,6 @@ systemctl --user status jfrogfluentd
 ```
 
 * Enjoy!
-
-
-## Splunk
-
-### Splunk Config
-
-Fluentd setup must be completed prior to Splunk.
-
-To use the integration an administrator of Splunk will need to install the Jfrog Logs Application into Splunk from Splunkbase.
-
-The next step will be to configure the Splunk HEC.
-
-Our integration uses the [Splunk HEC](https://dev.splunk.com/enterprise/docs/dataapps/httpeventcollector/) to send data to Splunk.
-
-Users will need to configure the HEC to accept data (enabled) and also create a new token. Save this token.
-
-Users will also need to specify the HEC_HOST, HEC_PORT and if ssl is enabled the ca_file to be used.
-
-``` 
-<match jfrog.**>
-  @type splunk_hec
-  host HEC_HOST
-  port HEC_PORT
-  token HEC_TOKEN
-  format json
-  # buffered output parameter
-  flush_interval 10s
-  # ssl parameter
-  use_ssl true
-  ca_file /path/to/ca.pem
-</match>
-```
-
-### Splunk Demo
-
-To run this integration for Splunk users can create a Splunk instance with the correct ports open in Kubernetes by applying the yaml file:
-
-``` 
-kubectl apply -f splunk/splunk.yaml
-```
-
-This will create a new Splunk instance you can use for a demo to send your Jfrog logs over to.
-
-Once they have a Splunk up for demo purposes they will need to configure the HEC and then update fluent config files with the relevant parameters for HEC_HOST, HEC_PORT, & HEC_TOKEN.
-
-They can now access Splunk to view the Jfrog dashboard as new data comes in.
 
 ## Tools
 * [Fluentd](https://www.fluentd.org) - Fluentd Logging Aggregator/Agent
