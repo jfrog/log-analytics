@@ -2,8 +2,6 @@
 # Using Docker multi stage build.
 # Taking the Artifactory file system
 ARG ARTIFACTORY_BASE_VERSION
-ARG FLUENT_CONF
-
 # The Artifactory official Docker image
 FROM docker.bintray.io/jfrog/artifactory-pro:${ARTIFACTORY_BASE_VERSION} AS base
 
