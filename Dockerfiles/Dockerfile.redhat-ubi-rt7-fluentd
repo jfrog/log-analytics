@@ -25,7 +25,8 @@ ENV JF_ARTIFACTORY_USER=artifactory \
     RECOMMENDED_MAX_OPEN_FILES=32000 \
     MIN_MAX_OPEN_FILES=10000 \
     RECOMMENDED_MAX_OPEN_PROCESSES=1024 \
-    POSTGRESQL_VERSION=9.4.1212
+    POSTGRESQL_VERSION=9.4.1212 \
+    FLUENT_PATH=${FLUENT_CONF}
 
 # Copy needed file system from base (Artifactory image)
 COPY --from=base /opt/jfrog /opt/jfrog
@@ -68,7 +69,7 @@ RUN mkdir -p /usr/lib/rpm/redhat/ && \
 # REMOVE THE DEV TOOLS NEEDED FOR GEM INSTALL NOW..
 RUN yum remove -y --disableplugin=subscription-manager gcc gcc-c++ make
 
-COPY ../${FLUENT_CONF}/fluent.conf.rt /etc/td-agent/td-agent.conf
+COPY ${FLUENT_PATH} /etc/td-agent/td-agent.conf
 
 RUN chown ${JF_ARTIFACTORY_USER}:${JF_ARTIFACTORY_USER} /etc/td-agent/td-agent.conf
 
