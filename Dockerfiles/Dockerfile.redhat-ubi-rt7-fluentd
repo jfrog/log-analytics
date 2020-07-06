@@ -18,6 +18,8 @@ LABEL name="JFrog Artifactory Pro" \
 
 RUN echo "====================================================================="
 RUN echo ${FLUENT_CONF}
+RUN echo "====================================================================="
+RUN echo ${ARTIFACTORY_BASE_VERSION}
 
 # Environment needed for Artifactory
 ENV JF_ARTIFACTORY_USER=artifactory \
@@ -74,6 +76,11 @@ RUN yum remove -y --disableplugin=subscription-manager gcc gcc-c++ make
 
 RUN echo "*******************************************************"
 RUN echo ${FLUENT_CONF}
+RUN echo "*******************************************************"
+RUN echo ${ARTIFACTORY_BASE_VERSION}
+RUN echo "*******************************************************"
+RUN echo ${ARTIFACTORY_VERSION}
+
 
 COPY ../${FLUENT_CONF}/fluent.conf.rt /etc/td-agent/td-agent.conf
 
