@@ -14,7 +14,7 @@ helm install jfrog-prometheus stable/prometheus-operator
 ```
 
 ## FluentD Configuration
-The following steps describe how to configure FluentD to gather metrics for Prometheus. Refer to the main [README](../../README.md) for more details.
+The following steps describe how to configure FluentD to gather metrics for Prometheus. Refer to the main [README](../README.md) for more details.
 1. Install the [FluentD Prometheus Plugin](https://github.com/fluent/fluent-plugin-prometheus).
 2. Use the appropriate FluentD configuration file and copy it to /etc/td-agent/td-agent.conf.
     * fluent.conf.rt - Artifactory version 7 server
@@ -93,7 +93,7 @@ For testing purposes, you may want to expose Prometheus, Grafana and the FluentD
 kubectl apply -f test-only-expose.yaml
 ```
 ## Grafana Dashboard
-An example dashboard is included in the [grafana directory](grafana).
+An example dashboard is included in the [grafana directory](./grafana).
 ![datasource](images/dashboard.png)
 
 ## Metrics Collected
