@@ -16,6 +16,9 @@ LABEL name="JFrog Artifactory Pro" \
       summary="JFrog Artifactory Pro (Red Hat UBI)" \
       com.jfrog.license_terms="https://jfrog.com/artifactory/eula/"
 
+RUN echo "====================================================================="
+RUN echo ${FLUENT_CONF}
+
 # Environment needed for Artifactory
 ENV JF_ARTIFACTORY_USER=artifactory \
     ARTIFACTORY_USER_ID=1030 \
@@ -68,6 +71,9 @@ RUN mkdir -p /usr/lib/rpm/redhat/ && \
 
 # REMOVE THE DEV TOOLS NEEDED FOR GEM INSTALL NOW..
 RUN yum remove -y --disableplugin=subscription-manager gcc gcc-c++ make
+
+RUN echo "*******************************************************"
+RUN echo ${FLUENT_CONF}
 
 COPY ../${FLUENT_CONF}/fluent.conf.rt /etc/td-agent/td-agent.conf
 
