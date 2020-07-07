@@ -6,6 +6,8 @@ FROM docker.bintray.io/jfrog/xray-persist:${XRAY_BASE_VERSION} AS base
 # The new image based on registry.access.redhat.com/ubi
 FROM registry.access.redhat.com/ubi8
 
+ARG FLUENT_CONF
+
 LABEL name="JFrog Xray Persist" \
       description="JFrog Xray Persist image based on the Red Hat Universal Base Image." \
       vendor="JFrog" \

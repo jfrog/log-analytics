@@ -6,6 +6,8 @@ FROM docker.bintray.io/jfrog/xray-indexer:${XRAY_BASE_VERSION} AS base
 # The new image based on registry.access.redhat.com/ubi
 FROM registry.access.redhat.com/ubi8
 
+ARG FLUENT_CONF
+
 LABEL name="JFrog Xray Indexer" \
       description="JFrog Xray Indexer image based on the Red Hat Universal Base Image." \
       vendor="JFrog" \

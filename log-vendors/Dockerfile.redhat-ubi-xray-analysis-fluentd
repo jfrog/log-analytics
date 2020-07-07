@@ -1,10 +1,11 @@
 ARG XRAY_BASE_VERSION
-ARG FLUENT_CONF
 
 FROM docker.bintray.io/jfrog/xray-analysis:${XRAY_BASE_VERSION} AS base
 
 # The new image based on registry.access.redhat.com/ubi
 FROM registry.access.redhat.com/ubi8
+
+ARG FLUENT_CONF
 
 LABEL name="JFrog Xray Analysis" \
       description="JFrog Xray Analysis image based on the Red Hat Universal Base Image." \
