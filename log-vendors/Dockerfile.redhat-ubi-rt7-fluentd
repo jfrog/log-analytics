@@ -5,7 +5,7 @@ ARG ARTIFACTORY_BASE_VERSION
 # The Artifactory official Docker image
 FROM docker.bintray.io/jfrog/artifactory-pro:${ARTIFACTORY_BASE_VERSION} AS base
 
-# The new image based on registry.access.redhat.com/ubi
+## The new image based on registry.access.redhat.com/ubi
 FROM registry.access.redhat.com/ubi8
 
 ARG FLUENT_CONF
