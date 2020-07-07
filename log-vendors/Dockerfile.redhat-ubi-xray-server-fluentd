@@ -52,7 +52,7 @@ RUN mkdir -p /usr/lib/rpm/redhat/ && \
 # REMOVE THE DEV TOOLS NEEDED FOR GEM INSTALL NOW..
 RUN yum remove -y --disableplugin=subscription-manager gcc gcc-c++ make
 
-COPY ../${FLUENT_CONF}/fluent.conf.xray /etc/td-agent/td-agent.conf
+COPY ${FLUENT_CONF} /etc/td-agent/td-agent.conf
 
 RUN chown -R ${JF_XRAY_USER}:${JF_XRAY_USER} /etc/td-agent/td-agent.conf
 

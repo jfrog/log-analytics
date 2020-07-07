@@ -56,6 +56,6 @@ USER $JF_ROUTER_USER
 
 VOLUME /var/opt/jfrog/router
 
-COPY ../${FLUENT_CONF}/fluent.conf.xray /etc/td-agent/td-agent.conf
+COPY ${FLUENT_CONF} /etc/td-agent/td-agent.conf
 
 ENTRYPOINT ["/opt/jfrog/router/app/bin/entrypoint-router.sh"]

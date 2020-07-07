@@ -56,7 +56,7 @@ RUN yum remove -y --disableplugin=subscription-manager gcc gcc-c++ make
 
 USER $JF_XRAY_USER
 
-COPY ../${FLUENT_CONF}/fluent.conf.xray /etc/td-agent/td-agent.conf
+COPY ${FLUENT_CONF} /etc/td-agent/td-agent.conf
 
 VOLUME /var/opt/jfrog/xray
 
