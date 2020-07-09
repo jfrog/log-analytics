@@ -135,14 +135,16 @@ By default td-agent will run as the td-agent user however the JFrog logs folder 
 
 ``` 
 usermod -a -G artifactory td-agent
-chmod 0770 /opt/jfrog/artifactory/var/log/*
+chmod 0770 /opt/jfrog/artifactory/var/log
+chmod 0640 /opt/jfrog/artifactory/var/log/*.log
 ```
 
 * Fix the group and file permissions issue in Xray as root:
 
 ``` 
 usermod -a -G xray td-agent
-chmod 0770 /opt/jfrog/xray/var/log/*
+chmod 0770 /opt/jfrog/xray/var/log
+chmod 0640 /opt/jfrog/xray/var/log/*.log
 ```
 
 * Run td-agent and check it's status
