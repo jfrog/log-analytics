@@ -1,13 +1,8 @@
 # Artifactory and Xray Logging Analytics with FluentD, Prometheus and Grafana
 The following describes how to configure Prometheus and Grafana to gather metrics from Artifactory and Xray through the use of FluentD. The setup and configuration of Prometheus and Grafana uses Kubernetes and makes use of the Prometheus Operator.
 
-## Requirements
-* Kubernetes Cluster
-* Artifactory and/or Xray installed via [JFrog Helm Charts](https://github.com/jfrog/charts)
-* Helm 3
-
 ## Installing Prometheus and Grafana (via Operator) on K8s
-The [Prometheus Operator](https://coreos.com/operators/prometheus/docs/latest/) allows the creation of Prometheus instances and includes Grafana. Install the Prometheus Operator via Helm:
+The [Prometheus Operator](https://coreos.com/operators/prometheus/docs/latest/) allows the creation of Prometheus instances and includes Grafana. Install the Prometheus Operator via Helm 3:
 
 ```
 helm install jfrog-prometheus stable/prometheus-operator
@@ -19,7 +14,7 @@ The following steps describe how to configure FluentD to gather metrics for Prom
 2. Use the appropriate FluentD configuration file and copy it to /etc/td-agent/td-agent.conf.
     * fluent.conf.rt - Artifactory version 7 server
     * fluent.conf.rt6 - Artifactory version 6 server
-    * fluent.conf.xray - Xray server
+    * fluent.conf.xray - Xray server (3.x+)
 3. Restart td-agent.
 4. In order to expose the /metrics interface for Prometheus to scrape, apply the appropriate *-metrics-service.yaml.
 
@@ -53,8 +48,8 @@ __
 5. Finally, go to Grafana to add your Prometheus instance as a datasource.
 ![datasource](images/datasource.png)
 
-## Securing the Metrics Interface
-The metrics interfaces provided by the [FluentD Prometheus Plugin](https://github.com/fluent/fluent-plugin-prometheus) can be secured using TLS. This is done by adding _transport tls_ section to the input plugin _@type prometheus_ [within the provided configuration files](https://github.com/jfrog/log-analytics/blob/master/prometheus-fluentd-grafana/fluent.conf.rt.prometheus#L4).
+## Important: Securing the Metrics Interface
+For production use, the metrics interfaces provided by the [FluentD Prometheus Plugin](https://github.com/fluent/fluent-plugin-prometheus) should be secured using TLS. This is done by adding _transport tls_ section to the input plugin _@type prometheus_ [within the provided configuration files](https://github.com/jfrog/log-analytics/blob/master/prometheus-fluentd-grafana/fluent.conf.rt.prometheus#L4).
 
 ```
 <source>
@@ -109,8 +104,6 @@ The following metrics are collected and can be queried using PromQL.
 | jfrog_xray_req         | Xray        | counter | host, remote_address, request_url, return_status                                          | Requests to Xray.                                 |
 | jfrog_xray_log_level   | Xray        | counter | host, log_level                                                                           | Logging level counter (ERROR, WARN, INFO, DEBUG). |
 
-## Generating Data for Testing
-[Partner Integration Test Framework](https://github.com/jfrog/partner-integration-tests) can be used to generate data for metrics.
 
 ## References
 * [FluentD Plugin for Prometheus Metrics](https://github.com/fluent/fluent-plugin-prometheus#supported-metric-types)
