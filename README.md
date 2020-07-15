@@ -1,8 +1,8 @@
 # JFrog Log Analytics
 
-This project integrates Jfrog logs into various log analytic providers through the use of fluentd as a common logging agent.
+This project integrates JFrog logs into various log analytic providers through the use of fluentd as a common logging agent.
 
-The goal of this project is to provide Jfrog customers with robust log analytic solutions that they could use to monitor the Jfrog unified platform microservices.
+The goal of this project is to provide JFrog customers with robust log analytic solutions that they could use to monitor the JFrog unified platform microservices.
 
 ## Table of Contents
 

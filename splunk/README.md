@@ -6,7 +6,7 @@ The following describes how to configure Fluentd and Splunk to gather logs from 
 
 Fluentd setup must be completed prior to Splunk. Please refer back to the main README for detailed instructions on general fluentd setup.
 
-To use the integration an administrator of Splunk will need to install the Jfrog Logs Application into Splunk from Splunkbase.
+To use the integration an administrator of Splunk will need to install the JFrog Logs Application into Splunk from Splunkbase.
 
 The next step will be to configure the Splunk HEC.
 
@@ -39,11 +39,11 @@ To run this integration for Splunk users can create a Splunk instance with the c
 kubectl apply -f splunk.yaml
 ```
 
-This will create a new Splunk instance you can use for a demo to send your Jfrog logs over to.
+This will create a new Splunk instance you can use for a demo to send your JFrog logs over to.
 
 Once they have a Splunk up for demo purposes they will need to configure the HEC and then update fluent config files with the relevant parameters for HEC_HOST, HEC_PORT, & HEC_TOKEN.
 
-They can now access Splunk to view the Jfrog dashboard as new data comes in.
+They can now access Splunk to view the JFrog dashboard as new data comes in.
 
 ## Generating Data for Testing
 
