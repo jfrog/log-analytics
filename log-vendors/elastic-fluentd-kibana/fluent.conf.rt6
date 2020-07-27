@@ -1,8 +1,8 @@
 <source>
   @type tail
   @id artifactory_service_tail
-  path /var/opt/jfrog/artifactory/logs/artifactory.log
-  pos_file /var/opt/jfrog/artifactory/logs/artifactory.log.pos
+  path "#{ENV['ARTIFACTORY_HOME']}/logs/artifactory.log"
+  pos_file "#{ENV['ARTIFACTORY_HOME']}/logs/artifactory.log.pos"
   tag jfrog.rt.artifactory.service
   <parse>
       @type multiline
@@ -16,8 +16,8 @@
 <source>
   @type tail
   @id artifactory_request_tail
-  path /var/opt/jfrog/artifactory/logs/request.log
-  pos_file /var/opt/jfrog/artifactory/logs/request.log.pos
+  path "#{ENV['ARTIFACTORY_HOME']}/logs/request.log"
+  pos_file "#{ENV['ARTIFACTORY_HOME']}/logs/request.log.pos"
   tag jfrog.rt.artifactory.request
   <parse>
     @type regexp
@@ -38,8 +38,8 @@
 <source>
   @type tail
   @id artifactory_access_tail
-  path /var/opt/jfrog/artifactory/logs/access.log
-  pos_file /var/opt/jfrog/artifactory/logs/access.log.pos
+  path "#{ENV['ARTIFACTORY_HOME']}/logs/access.log"
+  pos_file "#{ENV['ARTIFACTORY_HOME']}/logs/access.log.pos"
   tag jfrog.rt.artifactory.access
   <parse>
     @type regexp
@@ -56,11 +56,12 @@
   </record>
 </filter>
 
+
 #JFROG CALL HOME
 <source>
   @type exec
   tag jfrog.callhome
-  command /opt/jfrog/artifactory/fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem list --local | grep fluent | sed 's/ (/:/g' | sed 's/)//g'  | sed ':a;N;$!ba;s/\n/\t/g'
+  command "#{ENV['ARTIFACTORY_HOME']}/fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem list --local | grep fluent | sed 's/ (/:/g' | sed 's/)//g'  | sed ':a;N;$!ba;s/\n/\t/g'"
   run_interval 1d
   <parse>
     @type ltsv
@@ -98,7 +99,6 @@
   </buffer>
 </match>
 #END CALL HOME
-
 <match jfrog.**>
   @type elasticsearch
   @id elasticsearch
