@@ -109,23 +109,11 @@ Fluentd requires configuration file to know which logs to tail and how to ship t
 
 Our configurations are saved into each log provider's folder.
 
-###### Splunk:
-
-[Artifactory 7.x+](https://github.com/jfrog/log-analytics/blob/master/splunk/fluent.conf.rt)
-
-[Xray 3.x+](https://github.com/jfrog/log-analytics/blob/master/splunk/fluent.conf.xray)
-
-[Artifactory 6.x](https://github.com/jfrog/log-analytics/blob/master/splunk/fluent.conf.rt6)
-
-###### EFK:
-
-[Artifactory 7.x+](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/fluent.conf.rt)
-
-[Xray 3.x+](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/fluent.conf.xray)
-
-[Artifactory 6.x](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/fluent.conf.rt6)
-
 We will need to store these configurations into the correct location per our installer type.
+
+You will also need to ensure the JFROG_HOME environment variable is set. Our configuration files use this environment variable for RT 7.x and Xray 3.x.
+
+If you are running on RT 6.x you will need to ensure the ARTIFACTORY_HOME environment variable is set instead.
 
 #### Running as a service
 
@@ -201,7 +189,7 @@ systemctl --user status jfrogfluentd
 * [Splunk HEC](https://dev.splunk.com/enterprise/docs/dataapps/httpeventcollector/) - Splunk HEC used to upload data into Splunk
 * [Elasticsearch](https://www.elastic.co/) - Elastic search log data platform
 * [Kibana](https://www.elastic.co/kibana) - Elastic search visualization layer
-
+* [Prometheus](https://prometheus.io/) - Prometheus metrics and monitoring
 ## Contributing
 Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull requests to us.
 
