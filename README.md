@@ -32,6 +32,16 @@ For more details on how to install Fluentd into your environment please visit:
 
 [Fluentd installation guide](https://docs.fluentd.org/installation)
 
+#### JFrog Installation Configurations
+
+Due to the nature of customer installations varying we cannot account for all possible installations however to ensure our integration works with your installation please review:
+
+[JFrog Product Directory Structure guide](https://www.jfrog.com/confluence/display/JFROG/System+Directories#SystemDirectories-JFrogProductDirectoryStructure)
+
+Please be sure to follow the setup to define the environment variable JFROG_HOME which generally points to /opt/jfrog in more standard installations.
+
+Note if you are using Artifactory 6.x you will need to use the legacy environment variable ARTIFACTORY_HOME instead.
+
 #### Root Installation
 
 Install the td-agent agent on Redhat UBI we need to run the below command:
@@ -50,22 +60,22 @@ Follow these steps:
 
 * Download the tar from this Github: fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz
 
-* Explode the tar into /opt/jfrog/artifactory and run:
+* Explode the tar into $JFROG_HOME/artifactory/var and run:
 
 ``` 
-/opt/jfrog/artifactory/fluentd-1.11.0-linux-x86_64/fluentd <conf_file>
+$JFROG_HOME/artifactory/var/fluentd-1.11.0-linux-x86_64/fluentd <conf_file>
 ```
 
 Updating fluentd to future releases is simple as well:
 
 ``` 
-/opt/jfrog/artifactory/fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem install fluentd
+$JFROG_HOME/artifactory/var/fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem install fluentd
 ```
 
 Adding any fluentd plugins like Datadog as works in the same fashion:
 
 ``` 
-/opt/jfrog/artifactory/fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem install fluent-plugin-datadog
+$JFROG_HOME/artifactory/var/fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem install fluent-plugin-datadog
 ```
 
 #### Logger Agent
@@ -135,16 +145,16 @@ By default td-agent will run as the td-agent user however the JFrog logs folder 
 
 ``` 
 usermod -a -G artifactory td-agent
-chmod 0770 /opt/jfrog/artifactory/var/log
-chmod 0640 /opt/jfrog/artifactory/var/log/*.log
+chmod 0770 $JFROG_HOME/artifactory/var/log
+chmod 0640 $JFROG_HOME/artifactory/var/log/*.log
 ```
 
 * Fix the group and file permissions issue in Xray as root:
 
 ``` 
 usermod -a -G xray td-agent
-chmod 0770 /opt/jfrog/xray/var/log
-chmod 0640 /opt/jfrog/xray/var/log/*.log
+chmod 0770 $JFROG_HOME/xray/var/log
+chmod 0640 $JFROG_HOME/xray/var/log/*.log
 ```
 
 * Run td-agent and check it's status
@@ -165,7 +175,7 @@ mkdir -p ~/.config/systemd/user/
 touch ~/.config/systemd/user/jfrogfluentd.service
 ```
 
-* Copy paste below snippet, update the configuration file location, and save into the file:
+* Copy paste below snippet, update the path to match $JFROG_HOME and fluentd configuration file location, and save into the file:
 
 ```
 [Unit]
