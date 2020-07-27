@@ -105,6 +105,9 @@ The following metrics are collected and can be queried using PromQL.
 | jfrog_xray_log_level   | Xray        | counter | host, log_level                                                                           | Logging level counter (ERROR, WARN, INFO, DEBUG). |
 
 
+## Fluentd HA Setup
+Due to the nature of Prometheus pulling metrics a traditional fluentd ha setup with aggregator server is not supported. Artifactory & Xray HA setup is supported by installation of fluentd per node.
+
 ## References
 * [FluentD Plugin for Prometheus Metrics](https://github.com/fluent/fluent-plugin-prometheus#supported-metric-types)
 * [Grafana Dashboards](https://grafana.com/docs/grafana/latest/features/dashboard/dashboards/)
