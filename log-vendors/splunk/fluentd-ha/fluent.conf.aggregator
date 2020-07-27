@@ -1,0 +1,19 @@
+# FORWARDED INPUT
+<source>
+  @type forward
+  port 24224
+</source>
+#SPLUNK OUTPUT
+<match jfrog.**>
+  @type splunk_hec
+  host 192.168.0.1
+  port 8088
+  token my_api_token
+  format json
+  # buffered output parameter
+  flush_interval 10s
+  # ssl parameter
+  use_ssl true
+  ca_file /path/to/ca.pem
+</match>
+#END SPLUNK OUTPUT

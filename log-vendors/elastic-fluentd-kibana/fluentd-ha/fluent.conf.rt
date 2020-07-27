@@ -1,0 +1,245 @@
+<source>
+  @type tail
+  @id access_service_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/access-service.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/access-service.log.pos"
+  tag jfrog.rt.access.service
+  <parse>
+      @type multiline
+      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
+  </parse>
+</source>
+<source>
+  @type tail
+  @id artifactory_service_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/artifactory-service.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/artifactory-service.log.pos"
+  tag jfrog.rt.artifactory.service
+  <parse>
+      @type multiline
+      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
+  </parse>
+</source>
+<source>
+  @type tail
+  @id frontend_service_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/frontend-service.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/frontend-service.log.pos"
+  tag jfrog.rt.frontend.service
+  <parse>
+      @type multiline
+      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
+  </parse>
+</source>
+<source>
+  @type tail
+  @id metadata_service_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/metadata-service.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/metadata-service.log.pos"
+  tag jfrog.rt.metadata.service
+  <parse>
+      @type multiline
+      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
+  </parse>
+</source>
+<source>
+  @type tail
+  @id router_service_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/router-service.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/router-service.log.pos"
+  tag jfrog.rt.router.service
+  <parse>
+      @type multiline
+      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
+  </parse>
+</source>
+<source>
+  @type tail
+  @id router_traefik_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/router-traefik.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/router-traefik.log.pos"
+  tag jfrog.rt.router.traefik
+  <parse>
+      @type multiline
+      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
+  </parse>
+</source>
+
+<source>
+  @type tail
+  @id access_request_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/access-request.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/access-request.log.pos"
+  tag jfrog.rt.access.request
+  <parse>
+    @type regexp
+    expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
+  </parse>
+</source>
+<source>
+  @type tail
+  @id artifactory_request_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/artifactory-request.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/artifactory-request.log.pos"
+  tag jfrog.rt.artifactory.request
+  <parse>
+    @type regexp
+    expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
+  </parse>
+</source>
+<filter jfrog.rt.artifactory.request>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    repo ${record["request_url"].split('/')[3]}
+    image ${record["request_url"].split('/')[5]}
+  </record>
+</filter>
+<source>
+  @type tail
+  @id frontend_request_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/frontend-request.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/frontend-request.log.pos"
+  tag jfrog.rt.frontend.request
+  <parse>
+    @type regexp
+    expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
+  </parse>
+</source>
+<source>
+  @type tail
+  @id metadata_request_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/metadata-request.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/metadata-request.log.pos"
+  tag jfrog.rt.metadata.request
+  <parse>
+    @type regexp
+    expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
+  </parse>
+</source>
+<source>
+  @type tail
+  @id router_request_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/router-request.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/router-request.log.pos"
+  tag jfrog.rt.router.request
+  <parse>
+    @type json
+    time_key time
+  </parse>
+</source>
+<source>
+  @type tail
+  @id artifactory_access_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/artifactory-access.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/artifactory-access.log.pos"
+  tag jfrog.rt.artifactory.access
+  <parse>
+    @type regexp
+    expression /^(?<timestamp>[^ ]*) \[(?<trace_id>[^\]]*)\] \[(?<action_response>[^\]]*)\] (?<repo_path>.*) for client : (?<username>.+)/(?<ip>.+)$/
+  </parse>
+</source>
+<source>
+  @type tail
+  @id access_security_audit_tail
+  path "#{ENV['JFROG_HOME']}/artifactory/var/log/access-security-audit.log"
+  pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/access-security-audit.log.pos"
+  tag jfrog.rt.access.audit
+  <parse>
+    @type regexp
+    expression /^(?<timestamp>[^ ]*)\|(?<extra_tkn>[^\|]*)\|(?<user_ip>[^\|]*)\|(?<user>[^\|]*)\|(?<logged_principal>[^\|]*)\|(?<entity_name>[^\|]*)\|(?<event_type>[^\|]*)\|(?<event>[^\|]*)\|(?<data_changed>[^.]*)$$/
+  </parse>
+</source>
+
+# WHAT LOG IT WAS INTO THE JSON
+<filter jfrog.**>
+  @type record_transformer
+  <record>
+    log_source ${tag}
+  </record>
+</filter>
+
+#JFROG CALL HOME
+<source>
+  @type exec
+  tag jfrog.callhome
+  command "#{ENV['JFROG_HOME']}/artifactory/fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem list --local | grep fluent | sed 's/ (/:/g' | sed 's/)//g'  | sed ':a;N;$!ba;s/\n/\t/g'"
+  run_interval 1d
+  <parse>
+    @type ltsv
+  </parse>
+</source>
+<source>
+  @type exec
+  tag jfrog.callhome
+  command /opt/td-agent/embedded/bin/gem list --local | grep fluent | sed 's/ (/:/g' | sed 's/)//g'  | sed ':a;N;$!ba;s/\n/\t/g'
+  run_interval 1d
+  <parse>
+    @type ltsv
+  </parse>
+</source>
+<filter jfrog.callhome>
+  @type record_transformer
+  renew_record true
+  keep_keys 'productId,features'
+  enable_ruby true
+  <record>
+    productId 'jfrogLogAnalytics/v0.1.0'
+    features ${return(record.map { |k,v| { "featureId" => (k + ':' + v).to_sym} })}
+  </record>
+</filter>
+<match jfrog.callhome>
+  @type http
+  endpoint http://localhost:8081/artifactory/api/system/usage
+  open_timeout 5
+  content_type application/json
+  <format>
+    @type json
+  </format>
+  <buffer>
+    flush_interval 5s
+  </buffer>
+</match>
+#END CALL HOME
+<filter jfrog.rt.artifactory.request>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    repo ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2") ? (record["request_url"].split('/')[3]) : ("")}
+    image ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].split('/')[5]) : ("")}
+  </record>
+</filter>
+<filter jfrog.rt.artifactory.request>
+    @type record_transformer
+    enable_ruby true
+    <record>
+      response_content_length_2 ${record["response_content_length"].to_f}
+      request_content_length_2 ${record["request_content_length"].to_f}
+    </record>
+</filter>
+# Log Forwarding
+<match jfrog.**>
+  @type forward
+  # primary host
+  <server>
+    host 192.168.0.1
+    port 24224
+  </server>
+  # use secondary host
+  <server>
+    host 192.168.0.2
+    port 24224
+    standby
+  </server>
+  # use longer flush_interval to reduce CPU usage.
+  # note that this is a trade-off against latency.
+  <buffer>
+    flush_interval 30s
+  </buffer>
+</match>

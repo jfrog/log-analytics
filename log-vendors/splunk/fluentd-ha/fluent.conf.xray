@@ -1,0 +1,160 @@
+<source>
+  @type tail
+  @id xray_server_tail
+  path "#{ENV['JFROG_HOME']}/xray/var/log/xray-server-service.log"
+  pos_file "#{ENV['JFROG_HOME']}/xray/var/log/xray-server-service.log.pos"
+  tag jfrog.xray.server.service
+  <parse>
+    @type none
+  </parse>
+</source>
+<filter jfrog.xray.server.service>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    message ${record["message"].gsub(/\e\[([;\d]+)?m/, '')}
+  </record>
+</filter>
+<source>
+  @type tail
+  @id xray_persist_tail
+  path "#{ENV['JFROG_HOME']}/xray/var/log/xray-persist-service.log"
+  pos_file "#{ENV['JFROG_HOME']}/xray/var/log/xray-persist-service.log.pos"
+  tag jfrog.xray.persist.service
+  <parse>
+    @type none
+  </parse>
+</source>
+<filter jfrog.xray.persist.service>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    message ${record["message"].gsub(/\e\[([;\d]+)?m/, '')}
+  </record>
+</filter>
+<source>
+  @type tail
+  @id xray_indexer_tail
+  path "#{ENV['JFROG_HOME']}/xray/var/log/xray-indexer-service.log"
+  pos_file "#{ENV['JFROG_HOME']}/xray/var/log/xray-indexer-service.log.pos"
+  tag jfrog.xray.indexer.service
+  <parse>
+    @type none
+  </parse>
+</source>
+<filter jfrog.xray.indexer.service>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    message ${record["message"].gsub(/\e\[([;\d]+)?m/, '')}
+  </record>
+</filter>
+<source>
+  @type tail
+  @id xray_analysis_tail
+  path "#{ENV['JFROG_HOME']}/xray/var/log/xray-analysis-service.log"
+  pos_file "#{ENV['JFROG_HOME']}/xray/var/log/xray-analysis-service.log.pos"
+  tag jfrog.xray.analysis.service
+  <parse>
+    @type none
+  </parse>
+</source>
+<filter jfrog.xray.analysis.service>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    message ${record["message"].gsub(/\e\[([;\d]+)?m/, '')}
+  </record>
+</filter>
+<source>
+  @type tail
+  @id xray_router_tail
+  path "#{ENV['JFROG_HOME']}/xray/var/log/router-service.log"
+  pos_file "#{ENV['JFROG_HOME']}/xray/var/log/router-service.log.pos"
+  tag jfrog.xray.router.service
+  <parse>
+    @type none
+  </parse>
+</source>
+<filter jfrog.xray.router.service>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    message ${record["message"].gsub(/\e\[([;\d]+)?m/, '')}
+  </record>
+</filter>
+<source>
+  @type tail
+  @id xray_router_traefik_tail
+  path "#{ENV['JFROG_HOME']}/xray/var/log/router-traefik.log"
+  pos_file "#{ENV['JFROG_HOME']}/xray/var/log/router-traefik.log.pos"
+  tag jfrog.xray.router.traefik
+  <parse>
+      @type regexp
+      expression ^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$
+      time_key timestamp
+      time_format %Y-%m-%dT%H:%M:%S.%LZ
+  </parse>
+</source>
+<source>
+  @type tail
+  @id xray_router_request_tail
+  path  "#{ENV['JFROG_HOME']}/xray/var/log/router-request.log"
+  pos_file "#{ENV['JFROG_HOME']}/xray/var/log/router-request.log.pos"
+  tag jfrog.xray.router.request
+  <parse>
+    @type json
+    time_key time
+    time_format %Y-%m-%dT%H:%M:%SZ
+  </parse>
+</source>
+<source>
+  @type tail
+  @id xray_request_tail
+  path  "#{ENV['JFROG_HOME']}/xray/var/log/xray-request.log"
+  pos_file  "#{ENV['JFROG_HOME']}/xray/var/log/xray-request.log.pos"
+  tag jfrog.xray.xray.request
+  <parse>
+    @type regexp
+    expression ^^(?<timestamp>[^ ]*)\|(?<trace_id>[^ ]*)\|(?<remote_address>.+)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_duration>.*)$
+    time_key timestamp
+    time_format %Y-%m-%dT%H:%M:%S.%LZ
+  </parse>
+</source>
+<filter jfrog.xray.**.service>
+  @type parser
+  key_name message
+  <parse>
+      @type multiline
+      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] (?<message>.*)$/
+      time_key timestamp
+      time_format %Y-%m-%dT%H:%M:%S.%LZ
+  </parse>
+</filter>
+<filter jfrog.**>
+  @type record_transformer
+  <record>
+    log_source ${tag}
+  </record>
+</filter>
+# Log Forwarding
+<match jfrog.**>
+  @type forward
+  # primary host
+  <server>
+    host 192.168.0.1
+    port 24224
+  </server>
+  # use secondary host
+  <server>
+    host 192.168.0.2
+    port 24224
+    standby
+  </server>
+  # use longer flush_interval to reduce CPU usage.
+  # note that this is a trade-off against latency.
+  <buffer>
+    flush_interval 30s
+  </buffer>
+</match>

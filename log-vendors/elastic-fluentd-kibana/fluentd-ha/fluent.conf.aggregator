@@ -1,0 +1,17 @@
+# FORWARDED INPUT
+<source>
+  @type forward
+  port 24224
+</source>
+#ELASTIC OUTPUT
+<match jfrog.**>
+  @type elasticsearch
+  @id elasticsearch
+  host 192.168.0.1
+  port 9200
+  index_name unified-artifactory
+  include_tag_key true
+  type_name fluentd
+  logstash_format false
+</match>
+#END ELASTIC OUTPUT
