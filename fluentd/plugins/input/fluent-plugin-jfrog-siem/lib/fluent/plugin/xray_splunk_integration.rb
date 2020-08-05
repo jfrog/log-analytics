@@ -37,7 +37,7 @@ def input_arg_check
         logger.error(errorMsg)
         exit
     end
-    if ARGV[1].length == 0
+    if ARGV[0].length == 0
         errorMsg="Required args: <xray_url> <xray_user> <splunk_url> <splunk_user> <splunk_violation_index> <splunk_detail_index> <splunk_sourcetype> <thread_count> <xray_pass> <splunk_pass>"
         puts errorMsg
         logger.error(errorMsg)
