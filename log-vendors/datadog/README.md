@@ -53,7 +53,7 @@ The apiKey is configured in td-agent which will start sending logs to datadog.
 
 Add all attributes as facets from Facets > Add on the left side of the screen in Logs > search
 
-To access already existing visualizations and filters, click on Dashboards and add a new screenboard and then import [export.json](https://github.com/jfrog/log-analytics/blob/master/datadog/export.json) and overwrite the existing dashboard
+To access already existing visualizations and filters, click on Dashboards and add a new screenboard and then import [export.json](https://github.com/jfrog/log-analytics/blob/master/log-vendors/datadog/export.json) and overwrite the existing dashboard
 
 ## Generating Data for Testing
 [Partner Integration Test Framework](https://github.com/jfrog/partner-integration-tests) can be used to generate data for metrics.
