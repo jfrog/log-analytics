@@ -58,7 +58,7 @@ Non-root users to make life easier for we have provided a tar.gz containing ever
 
 Follow these steps:
 
-* Download the tar from this Github: fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz
+* Download the tar from this Github: [fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz](fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz)
 
 * Explode the tar into $JFROG_HOME/artifactory/var and run:
 

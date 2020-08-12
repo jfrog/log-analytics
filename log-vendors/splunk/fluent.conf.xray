@@ -135,6 +135,7 @@
 <filter jfrog.**>
   @type record_transformer
   <record>
+    hostname "#{Socket.gethostname}"
     log_source ${tag}
   </record>
 </filter>
@@ -144,6 +145,8 @@
   port HEC_PORT
   token HEC_TOKEN
   format json
+  sourcetype_key log_source
+  use_fluentd_time false
   # buffered output parameter
   flush_interval 10s
   # ssl parameter

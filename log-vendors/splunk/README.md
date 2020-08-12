@@ -2,6 +2,11 @@
 
 The following describes how to configure Fluentd and Splunk to gather logs from Artifactory and Xray.
 
+
+| version | artifactory_version | xray_version | splunk_version            |
+|---------|---------------------|--------------|---------------------------|
+| 0.1.1   | 7.6.3               | 3.6.2        | 8.0.5 Build: a1a6394cc5ae |
+
 ## Splunk Config
 
 Fluentd setup must be completed prior to Splunk. Please refer back to the main README for detailed instructions on general fluentd setup.
