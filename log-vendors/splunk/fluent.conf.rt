@@ -186,6 +186,7 @@
 <filter jfrog.**>
   @type record_transformer
   <record>
+    hostname "#{Socket.gethostname}"
     log_source ${tag}
   </record>
 </filter>
@@ -215,7 +216,7 @@
   keep_keys 'productId,features'
   enable_ruby true
   <record>
-    productId 'jfrogLogAnalytics/v0.1.0'
+    productId 'jfrogLogAnalytics/v0.1.1'
     features ${return(record.map { |k,v| { "featureId" => (k + ':' + v).to_sym} })}
   </record>
 </filter>
@@ -239,6 +240,8 @@
   port HEC_PORT
   token HEC_TOKEN
   format json
+  sourcetype_key log_source
+  use_fluentd_time false
   # buffered output parameter
   flush_interval 10s
   # ssl parameter
