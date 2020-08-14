@@ -15,10 +15,10 @@
       <html>
         <ul id="tabs" class="nav nav-tabs">
           <li class="active">
-            <a href="#" class="toggle-tab" data-toggle="tab" data-elements="application1,application2" data-token="application_control">Application</a>
+            <a href="#" class="toggle-tab" data-toggle="tab" data-elements="requests1,requests2,requests3,requests4" data-token="requests_control">Requests</a>
           </li>
           <li>
-            <a href="#" class="toggle-tab" data-toggle="tab" data-elements="requests1,requests2,requests3,requests4" data-token="requests_control">Requests</a>
+            <a href="#" class="toggle-tab" data-toggle="tab" data-elements="application1,application2" data-token="application_control">Application</a>
           </li>
           <li>
             <a href="#" class="toggle-tab" data-toggle="tab" data-elements="audit1,audit2,audit3" data-token="audit_control">Audit</a>
@@ -27,63 +27,33 @@
       </html>
     </panel>
   </row>
-  <row id="application1">
-    <panel>
-      <chart>
-        <title>Log Volume</title>
-        <search>
-          <query>* $application_control$ | spath log_source | search log_source!="NULL" | spath log_source |timechart count by log_source</query>
-          <earliest>$field1.earliest$</earliest>
-          <latest>$field1.latest$</latest>
-        </search>
-        <option name="charting.chart">line</option>
-        <option name="charting.chart.stackMode">default</option>
-        <option name="charting.drilldown">all</option>
-        <option name="charting.layout.splitSeries">0</option>
-        <option name="refresh.display">progressbar</option>
-      </chart>
-    </panel>
-  </row>
-  <row id="application2">
-    <panel>
-      <chart>
-        <title>Log Errors</title>
-        <search>
-          <query>* $application_control$ | spath log_source | search log_source="jfrog.rt.artifactory.service" | spath log_level | search log_level="ERROR" | timechart count by log_level</query>
-          <earliest>$field1.earliest$</earliest>
-          <latest>$field1.latest$</latest>
-        </search>
-        <option name="charting.axisTitleX.visibility">collapsed</option>
-        <option name="charting.chart">line</option>
-        <option name="charting.drilldown">all</option>
-      </chart>
-    </panel>
-  </row>
   <row id="requests1">
     <panel>
       <chart>
         <title>HTTP 500 Errors</title>
         <search>
-          <query>* $requests_control$ | spath log_source | search log_source="jfrog.rt.artifactory.request" | spath return_status | search return_status="5*" | timechart count by return_status</query>
+          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" return_status="5*" | timechart count by return_status</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
         <option name="charting.axisTitleX.visibility">collapsed</option>
-        <option name="charting.chart">line</option>
+        <option name="charting.chart">area</option>
         <option name="charting.drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
       </chart>
     </panel>
     <panel>
       <chart>
         <title>HTTP Response Codes</title>
         <search>
-          <query>* $requests_control$ | spath log_source | search log_source="jfrog.rt.artifactory.request" | spath return_status | timechart count by return_status</query>
+          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" | timechart count by return_status</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
         <option name="charting.axisTitleX.visibility">collapsed</option>
-        <option name="charting.chart">line</option>
+        <option name="charting.chart">area</option>
         <option name="charting.drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
       </chart>
     </panel>
   </row>
@@ -92,12 +62,12 @@
       <chart>
         <title>Accessed Images</title>
         <search>
-          <query>* $requests_control$ | spath log_source | search log_source="jfrog.rt.artifactory.request" | spath request_url | search request_url="/api/docker/*" | spath repo | search repo!="NULL" | spath image | search image!="NULL" | spath repo | search repo!="latest" | spath image | timechart count by image</query>
+          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" request_url="/api/docker/*" repo!="NULL" image!="NULL" repo!="latest" | timechart count by image</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
         <option name="charting.axisTitleX.visibility">collapsed</option>
-        <option name="charting.chart">column</option>
+        <option name="charting.chart">area</option>
         <option name="charting.drilldown">all</option>
         <option name="refresh.display">progressbar</option>
       </chart>
@@ -106,13 +76,12 @@
       <chart>
         <title>Accessed Repos</title>
         <search>
-          <query>* $requests_control$ | spath log_source | search log_source="jfrog.rt.artifactory.request" | spath request_url | search request_url="/api/docker/*" | spath repo | search repo!="NULL" | spath image | search image!="NULL" | spath repo | search repo!="latest" |spath repo | timechart count by repo</query>
+          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" request_url="/api/docker/*" repo!="NULL" image!="NULL" repo!="latest" | timechart count by repo</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
-        <option name="charting.axisTitleX.text">Past Day</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
-        <option name="charting.chart">column</option>
+        <option name="charting.chart">area</option>
         <option name="charting.drilldown">all</option>
         <option name="refresh.display">progressbar</option>
       </chart>
@@ -123,7 +92,7 @@
       <chart>
         <title>Data Transfers (GBs) Uploads By Repo</title>
         <search>
-          <query>* $requests_control$ | spath log_source | search log_source="jfrog.rt.artifactory.request" | spath request_url | search request_url="/api/docker/*" | spath repo | search repo!="NULL" | spath image | search image!="NULL" | spath repo | search repo!="latest" | spath response_content_length | eval gb=response_content_length/1073741824 | spath repo | stats sum(gb) as GB by repo | where GB &gt; 0</query>
+          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" request_url="/api/docker/*" repo!="NULL" image!="NULL" repo!="latest" | eval gb=response_content_length/1073741824 | stats sum(gb) as GB by repo | where GB &gt; 0</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -139,7 +108,7 @@
       <chart>
         <title>Data Transfers (GBs) Downloads By Repo</title>
         <search>
-          <query>* $requests_control$ | spath log_source | search log_source="jfrog.rt.artifactory.request" | spath request_url | search request_url="/api/docker/*" | spath repo | search repo!="NULL" | spath image | search image!="NULL" | spath repo | search repo!="latest" | spath request_content_length | eval gb=request_content_length/1073741824 | spath repo | stats sum(gb) by repo</query>
+          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" request_url="/api/docker/*" repo!="NULL" image!="NULL" repo!="latest" | eval gb=request_content_length/1073741824 | stats sum(gb) by repo</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -158,7 +127,7 @@
       <chart>
         <title>Top 10 IPs By Uploads</title>
         <search>
-          <query>* $requests_control$ | spath log_source | search log_source="jfrog.rt.artifactory.request" | spath response_content_length | search response_content_length!="-1" | eval gb=response_content_length/1073741824| spath remote_address | stats sum(gb) as upload_size by remote_address | top limit=10 remote_address,upload_size | fields - count,percent</query>
+          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" response_content_length!="-1" | eval gb=response_content_length/1073741824 | stats sum(gb) as upload_size by remote_address | top limit=10 remote_address,upload_size | fields - count,percent</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -174,7 +143,7 @@
       <chart>
         <title>Top 10 IPs Downloads</title>
         <search>
-          <query>* $requests_control$ | spath log_source | search log_source="jfrog.rt.artifactory.request" | spath request_content_length | search request_content_length!="-1" | spath request_content_length | eval gb=request_content_length/1073741824 | spath remote_address | stats sum(gb) as download_size by remote_address | top limit=10 remote_address,download_size | fields - count,percent</query>
+          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" request_content_length!="-1" | eval gb=request_content_length/1073741824 | stats sum(gb) as download_size by remote_address | top limit=10 remote_address,download_size | fields - count,percent</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -186,16 +155,49 @@
       </chart>
     </panel>
   </row>
+  <row id="application1">
+    <panel>
+      <chart>
+        <title>Log Volume</title>
+        <search>
+          <query>$application_control$ log_source!="NULL" | timechart count by log_source</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row id="application2">
+    <panel>
+      <chart>
+        <title>Log Errors</title>
+        <search>
+          <query>$application_control$ log_source="jfrog.rt.artifactory.service" log_level="ERROR" | timechart count by log_level</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
   <row id="audit1">
     <panel>
       <chart>
         <title>Audit Actions By Users</title>
         <search>
-          <query>* $audit_control$ | spath log_source | search log_source="jfrog.rt.access.audit" | spath user | spath user | search user!="UNKNOWN" | stats count by user</query>
+          <query>$audit_control$ log_source="jfrog.rt.access.audit" user!="UNKNOWN" | stats count by user</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
-        <option name="charting.chart">line</option>
+        <option name="charting.chart">column</option>
         <option name="charting.drilldown">all</option>
         <option name="refresh.display">progressbar</option>
       </chart>
@@ -204,12 +206,13 @@
       <chart>
         <title>Denied Logins By IP</title>
         <search>
-          <query>* $audit_control$ | spath log_source | search log_source="jfrog.rt.artifactory.access"| spath action_response | search action_response="DENIED LOGIN" | spath ip | stats count by ip</query>
+          <query>$audit_control$ log_source="jfrog.rt.artifactory.access" action_response="DENIED LOGIN" | stats count by ip</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
-        <option name="charting.chart">line</option>
+        <option name="charting.chart">column</option>
         <option name="charting.drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
       </chart>
     </panel>
   </row>
@@ -218,7 +221,7 @@
       <chart>
         <title>Denied Actions By Username</title>
         <search>
-          <query>* $audit_control$ | spath log_source | search log_source="jfrog.rt.artifactory.access" | spath action_response | search action_response="DENIED*" | spath username | search username!="NA " | stats  count by username</query>
+          <query>$audit_control$ log_source="jfrog.rt.artifactory.access" action_response="DENIED*" username!="NA " | stats  count by username</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -231,7 +234,7 @@
       <chart>
         <title>Denied Actions By IP</title>
         <search>
-          <query>* $audit_control$ | spath log_source | search log_source="jfrog.rt.artifactory.access"| spath action_response | search action_response="DENIED*" | spath ip | stats count by ip</query>
+          <query>$audit_control$ log_source="jfrog.rt.artifactory.access" action_response="DENIED*" | stats count by ip</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -246,7 +249,7 @@
       <table>
         <title>Denied Logins By Username and IP</title>
         <search>
-          <query>* $audit_control$ | spath log_source | search log_source="jfrog.rt.artifactory.access"| spath action_response | search action_response="DENIED LOGIN" | spath ip | spath username | search username!="NA " | spath username | stats count by ip,username</query>
+          <query>$audit_control$ log_source="jfrog.rt.artifactory.access" action_response="DENIED LOGIN" username!="NA " | stats count by ip,username</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -258,12 +261,13 @@
       <chart>
         <title>Accepted Deploys By Username</title>
         <search>
-          <query>* $audit_control$ | spath log_source | search log_source="jfrog.rt.artifactory.access"| spath action_response | search action_response="ACCEPTED DEPLOY" | spath username | stats count by username</query>
+          <query>$audit_control$ log_source="jfrog.rt.artifactory.access" action_response="ACCEPTED DEPLOY" | stats count by username</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
         <option name="charting.chart">column</option>
         <option name="charting.drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
       </chart>
     </panel>
   </row>
