@@ -236,16 +236,16 @@
 #SPLUNK OUTPUT
 <match jfrog.**>
   @type splunk_hec
-  host HEC_HOST
-  port HEC_PORT
-  token HEC_TOKEN
+  host 10.35.249.242
+  port 8088
+  token 9b92de94-2e49-4e9e-8ec2-a74b95b21131
   format json
   sourcetype_key log_source
   use_fluentd_time false
   # buffered output parameter
   flush_interval 10s
   # ssl parameter
-  use_ssl true
-  ca_file /path/to/ca.pem
+  #use_ssl true
+  #ca_file /path/to/ca.pem
 </match>
 #END SPLUNK OUTPUT
