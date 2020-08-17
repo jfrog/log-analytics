@@ -14,7 +14,7 @@
 # limitations under the License.
 
 require 'rest-client'
-require 'splunk-sdk-ruby'
+require 'splunk-sdk-ruby'  # TODO: Abstract away from Splunk - Lookup for data resilency
 require 'thread/pool'
 require 'json'
 require 'date'
@@ -26,6 +26,10 @@ xray_url, xray_user, xray_pass = "", "", ""
 splunk_url, splunk_user, splunk_pass = "", 0, "", ""
 splunk_indexname, splunk_detail_indexname, sourcetype = "", "", ""
 jumps = 25
+
+# Internal logs  - ruby exceptions, anything internal to fluentd or fluentd plugins.
+# Payload logs - the logs of the application fluent is monitoring
+# Input fluentd plugin - raise the fluentd log error w/ the message
 log_file='./logs/xray_splunk_integration.log'
 logger = Logger.new(log_file)
 logger.level = Logger::DEBUG
