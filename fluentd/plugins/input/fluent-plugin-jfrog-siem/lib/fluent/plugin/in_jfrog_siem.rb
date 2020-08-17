@@ -14,11 +14,11 @@
 # limitations under the License.
 require "fluent/engine"
 require "fluent/plugin/input"
-require 'rest-client'
-require 'thread/pool'
-require 'json'
-require 'date'
-require 'uri'
+require "rest-client"
+require "thread/pool"
+require "json"
+require "date"
+require "uri"
 
 module Fluent
   module Plugin
