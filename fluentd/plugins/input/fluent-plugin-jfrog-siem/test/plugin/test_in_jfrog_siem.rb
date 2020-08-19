@@ -10,9 +10,24 @@ class JfrogSiemInputTest < Test::Unit::TestCase
     #flunk
   end
 
+  # Default configuration for tests
+  CONFIG = %[
+    tag "test_tag"
+    artifactory_url "https://partnership.jfrog.io/xray"
+    artifactory_api_key "api_key"
+    pos_file "test_pos.txt"
+  ]
+
   private
 
-  def create_driver(conf)
+  def create_driver(conf = CONFIG)
     Fluent::Test::Driver::Input.new(Fluent::Plugin::JfrogSiemInput).configure(conf)
+  end
+
+  sub_test_case 'Testing' do
+    test 'Testing in_jfrog_siem' do
+      d = create_driver(CONFIG)
+      d.run
+    end
   end
 end

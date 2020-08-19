@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require "fluent/engine"
 require "fluent/plugin/input"
 require "rest-client"
 require "thread/pool"
@@ -25,6 +24,7 @@ module Fluent
     class JfrogSiemInput < Fluent::Plugin::Input
       Fluent::Plugin.register_input("jfrog_siem", self)
 
+
       # `config_param` defines a parameter.
       # You can refer to a parameter like an instance variable e.g. @port.
       # `:default` means that the parameter is optional.
@@ -35,6 +35,7 @@ module Fluent
       config_param :batch_size, :integer, default: 25
       config_param :thread_count, :integer, default: 5
       config_param :wait_interval, :integer, default: 60
+
 
       # `configure` is called before `start`.
       # 'conf' is a `Hash` that includes the configuration parameters.
@@ -71,26 +72,34 @@ module Fluent
 
       end
 
+
       # `start` is called when starting and after `configure` is successfully completed.
       def start
         super
         @running = true
-        thread_create(:in_jfrog_siem, &method(:run))
+        @thread = Thread.new(&method(:run))
       end
+
 
       def shutdown
         @running = false
+        @thread.join
         super
       end
 
 
       def run
         # runs the violation pull
-        last_created_date_string = get_last_splunk_item_create_date()
-        last_created_date=DateTime.parse(last_created_date_string).strftime("%Y-%m-%dT%H:%M:%SZ")
+        last_created_date_string = get_last_item_create_date()
+        begin
+          last_created_date = DateTime.parse(last_created_date_string).strftime("%Y-%m-%dT%H:%M:%SZ")
+        rescue
+          last_created_date = DateTime.parse("1970-01-01T00:00:00Z").strftime("%Y-%m-%dT%H:%M:%SZ")
+        end
         offset_count=1
         left_violations=0
         xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": offset_count } }
+
         while true
           # Grab the batch of records
           resp=get_xray_violations(xray_json, @artifactory_url, @artifactory_api_key)
@@ -117,11 +126,14 @@ module Fluent
             # Publish the record to fluentd
             if persistItem
 
-              splunk_item = item.map {|p| '%s=%s' % p }.join(', ')
-              time = Fluent::Engine.now
-              router.emit(@tag, time, URI.decode(splunk_item))
+              formatted_item = item.map {|p| '%s=%s' % p }.join(', ')
+              time = Time.now
+              router.emit(@tag, time, URI.decode(formatted_item))
 
               # write to the pos_file created_date_string
+              open(@pos_file, 'a') do |f|
+                f << "#{created_date_string}\n"
+              end
 
               # Mark this as the last record successfully processed
               last_created_date_string = created_date_string
@@ -158,8 +170,8 @@ module Fluent
 
 
       # pull the last item create date from the pos_file return created_date_string
-      def get_last_splunk_item_create_date
-        return ""
+      def get_last_item_create_date()
+        return IO.readlines(@pos_file).last
       end
 
 
@@ -179,6 +191,7 @@ module Fluent
         end
       end
 
+
       # queries the xray API for violations based upon the input json
       def get_xray_violations(xray_json, artifactory_url, artifactory_api_key)
         response = RestClient::Request.new(
@@ -196,19 +209,16 @@ module Fluent
         end
       end
 
+
       def pull_violation_details(xray_violation_detail_url, artifactory_api_key)
         begin
           detailResp=get_xray_violations_detail(xray_violation_detail_url, artifactory_api_key)
-
-          time = Fluent::Engine.now
+          time = Time.now
           router.emit(@tag, time, detailResp)
-
         rescue
           raise Fluent::BufferError, "Error pulling violation details url #{xray_violation_detail_url}"
         end
       end
-
-
 
     end
   end
