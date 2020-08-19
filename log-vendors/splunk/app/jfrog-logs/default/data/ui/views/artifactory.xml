@@ -32,7 +32,7 @@
       <chart>
         <title>HTTP 500 Errors</title>
         <search>
-          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" return_status="5*" | timechart count by return_status</query>
+          <query>$requests_control$ sourcetype="jfrog.rt.artifactory.request" return_status="5*" | timechart count by return_status</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -46,7 +46,7 @@
       <chart>
         <title>HTTP Response Codes</title>
         <search>
-          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" | timechart count by return_status</query>
+          <query>$requests_control$ sourcetype="jfrog.rt.artifactory.request" | timechart count by return_status</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -62,7 +62,7 @@
       <chart>
         <title>Accessed Images</title>
         <search>
-          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" request_url="/api/docker/*" repo!="NULL" image!="NULL" repo!="latest" | timechart count by image</query>
+          <query>$requests_control$ sourcetype="jfrog.rt.artifactory.request" request_url="/api/docker/*" repo!="NULL" image!="NULL" repo!="" image!="" repo!="latest" | timechart count by image</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -76,7 +76,7 @@
       <chart>
         <title>Accessed Repos</title>
         <search>
-          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" request_url="/api/docker/*" repo!="NULL" image!="NULL" repo!="latest" | timechart count by repo</query>
+          <query>$requests_control$ sourcetype="jfrog.rt.artifactory.request" request_url="/api/docker/*" repo!="NULL" image!="NULL" repo!="" image!="" repo!="latest" | timechart count by repo</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -92,7 +92,7 @@
       <chart>
         <title>Data Transfers (GBs) Uploads By Repo</title>
         <search>
-          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" request_url="/api/docker/*" repo!="NULL" image!="NULL" repo!="latest" | eval gb=response_content_length/1073741824 | stats sum(gb) as GB by repo | where GB &gt; 0</query>
+          <query>$requests_control$ sourcetype="jfrog.rt.artifactory.request" request_url="/api/docker/*" repo!="NULL" image!="NULL" repo!="" image!="" repo!="latest" | eval gb=response_content_length/1073741824 | stats sum(gb) as GB by repo | where GB &gt; 0</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -108,7 +108,7 @@
       <chart>
         <title>Data Transfers (GBs) Downloads By Repo</title>
         <search>
-          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" request_url="/api/docker/*" repo!="NULL" image!="NULL" repo!="latest" | eval gb=request_content_length/1073741824 | stats sum(gb) by repo</query>
+          <query>$requests_control$ sourcetype="jfrog.rt.artifactory.request" request_url="/api/docker/*" repo!="NULL" image!="NULL" repo!="" image!="" repo!="latest" | eval gb=request_content_length/1073741824 | stats sum(gb) by repo</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -127,7 +127,7 @@
       <chart>
         <title>Top 10 IPs By Uploads</title>
         <search>
-          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" response_content_length!="-1" | eval gb=response_content_length/1073741824 | stats sum(gb) as upload_size by remote_address | top limit=10 remote_address,upload_size | fields - count,percent</query>
+          <query>$requests_control$ sourcetype="jfrog.rt.artifactory.request" response_content_length!="-1" | eval gb=response_content_length/1073741824 | stats sum(gb) as upload_size by remote_address | top limit=10 remote_address,upload_size | fields - count,percent</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -143,7 +143,7 @@
       <chart>
         <title>Top 10 IPs Downloads</title>
         <search>
-          <query>$requests_control$ log_source="jfrog.rt.artifactory.request" request_content_length!="-1" | eval gb=request_content_length/1073741824 | stats sum(gb) as download_size by remote_address | top limit=10 remote_address,download_size | fields - count,percent</query>
+          <query>$requests_control$ sourcetype="jfrog.rt.artifactory.request" request_content_length!="-1" | eval gb=request_content_length/1073741824 | stats sum(gb) as download_size by remote_address | top limit=10 remote_address,download_size | fields - count,percent</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -160,7 +160,7 @@
       <chart>
         <title>Log Volume</title>
         <search>
-          <query>$application_control$ log_source!="NULL" | timechart count by log_source</query>
+          <query>sourcetype!="NULL" | timechart count by sourcetype</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -177,7 +177,7 @@
       <chart>
         <title>Log Errors</title>
         <search>
-          <query>$application_control$ log_source="jfrog.rt.artifactory.service" log_level="ERROR" | timechart count by log_level</query>
+          <query>sourcetype="jfrog.rt.artifactory.service" log_level="ERROR" | timechart count by log_level</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -193,7 +193,7 @@
       <chart>
         <title>Audit Actions By Users</title>
         <search>
-          <query>$audit_control$ log_source="jfrog.rt.access.audit" user!="UNKNOWN" | stats count by user</query>
+          <query>$audit_control$ sourcetype="jfrog.rt.access.audit" user!="UNKNOWN" | stats count by user</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -206,7 +206,7 @@
       <chart>
         <title>Denied Logins By IP</title>
         <search>
-          <query>$audit_control$ log_source="jfrog.rt.artifactory.access" action_response="DENIED LOGIN" | stats count by ip</query>
+          <query>$audit_control$ sourcetype="jfrog.rt.artifactory.access" action_response="DENIED LOGIN" | stats count by ip</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -221,7 +221,7 @@
       <chart>
         <title>Denied Actions By Username</title>
         <search>
-          <query>$audit_control$ log_source="jfrog.rt.artifactory.access" action_response="DENIED*" username!="NA " | stats  count by username</query>
+          <query>$audit_control$ sourcetype="jfrog.rt.artifactory.access" action_response="DENIED*" username!="NA " | stats  count by username</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -234,7 +234,7 @@
       <chart>
         <title>Denied Actions By IP</title>
         <search>
-          <query>$audit_control$ log_source="jfrog.rt.artifactory.access" action_response="DENIED*" | stats count by ip</query>
+          <query>$audit_control$ sourcetype="jfrog.rt.artifactory.access" action_response="DENIED*" | stats count by ip</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -249,7 +249,7 @@
       <table>
         <title>Denied Logins By Username and IP</title>
         <search>
-          <query>$audit_control$ log_source="jfrog.rt.artifactory.access" action_response="DENIED LOGIN" username!="NA " | stats count by ip,username</query>
+          <query>$audit_control$ sourcetype="jfrog.rt.artifactory.access" action_response="DENIED LOGIN" username!="NA " | stats count by ip,username</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -261,7 +261,7 @@
       <chart>
         <title>Accepted Deploys By Username</title>
         <search>
-          <query>$audit_control$ log_source="jfrog.rt.artifactory.access" action_response="ACCEPTED DEPLOY" | stats count by username</query>
+          <query>$audit_control$ sourcetype="jfrog.rt.artifactory.access" action_response="ACCEPTED DEPLOY" | stats count by username</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
