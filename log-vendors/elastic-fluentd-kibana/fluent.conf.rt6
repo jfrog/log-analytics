@@ -104,6 +104,8 @@
   @id elasticsearch
   host elasticsearch
   port 9200
+  user "elastic"
+  password <password>
   index_name unified-artifactory
   include_tag_key true
   type_name fluentd

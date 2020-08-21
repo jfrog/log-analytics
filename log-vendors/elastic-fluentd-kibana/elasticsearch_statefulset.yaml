@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   serviceName: elasticsearch
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: elasticsearch
@@ -30,21 +30,27 @@ spec:
           name: inter-node
           protocol: TCP
         volumeMounts:
-        - name: data
-          mountPath: /usr/share/elasticsearch/data
+          - name: config
+            mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+            readOnly: true
+            subPath: elasticsearch.yml
+          - name: data
+            mountPath: /usr/share/elasticsearch/data
         env:
-          - name: cluster.name
-            value: k8s-logs
-          - name: node.name
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-          - name: discovery.seed_hosts
-            value: "es-cluster-0.elasticsearch,es-cluster-1.elasticsearch,es-cluster-2.elasticsearch"
-          - name: cluster.initial_master_nodes
-            value: "es-cluster-0,es-cluster-1,es-cluster-2"
+          - name: CLUSTER_NAME
+            value: elasticsearch
+          - name: NODE_NAME
+            value: elasticsearch-data
+          - name: NODE_LIST
+            value: "es-cluster-0.elasticsearch"
+          - name: MASTER_NODES
+            value: "es-cluster-0"
           - name: ES_JAVA_OPTS
             value: "-Xms512m -Xmx512m"
+      volumes:
+        - name: config
+          configMap:
+            name: elasticsearch-config
       initContainers:
       - name: fix-permissions
         image: busybox

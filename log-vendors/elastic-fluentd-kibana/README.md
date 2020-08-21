@@ -12,8 +12,10 @@ The following describes how to configure Elastic and Kibana to gather metrics fr
 
 Elasticsearch kibana setup can be done using the following files or using manual configuration
 
+* [Elastic_configmap](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/elasticsearch_configmap.yaml) - Elasticsearch ConfigMap
 * [Elastic_statefulset](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/elasticsearch_statefulset.yaml) - Elasticsearch Statefulset
 * [Elastic_service](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/elasticsearch_svc.yaml) - Elasticsearch Service
+* [Kibana_configmap](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/kibana_configmap.yaml) - Kibana ConfigMap
 * [Kibana_deployment](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/kibana_deployment.yaml) - Kibana Deplpoyment
 * [Kibana_service](https://github.com/jfrog/log-analytics/blob/master/elastic-fluentd-kibana/kibana_svc.yaml) - Kibana Service
 
@@ -31,12 +33,18 @@ _type_name_ is fluentd by default and it specifies the type name to write to in 
 
 _include_tag_key_ defaults to false and it will add fluentd tag in the json record if set to true
 
+_user_ will be elastic by default
+
+_password_ will be the password specified for elastic user in elasticsearch authentication setup
+
 ```
 <match jfrog.**>
   @type elasticsearch
   @id elasticsearch
   host elasticsearch
   port 9200
+  user "elastic"
+  password <password>
   index_name unified-artifactory
   include_tag_key true
   type_name fluentd
@@ -46,9 +54,10 @@ _include_tag_key_ defaults to false and it will add fluentd tag in the json reco
 
 ## EFK Demo
 
-To run this integration start by creating elasticsearch service, statefulset
+To run this integration start by creating elasticsearch configmap, service and statefulset
 
 ``` 
+kubectl create -f elasticsearch_configmap.yaml
 kubectl create -f elasticsearch_svc.yaml
 kubectl create -f elasticsearch_statefulset.yaml
 ```
@@ -59,9 +68,17 @@ Check for the status of the statefulset using
 kubectl rollout status sts/es-cluster
 ```
 
-Create Kibana service and deployment
+Setup passwords for elasticsearch using
 
 ```
+kubectl exec -it $(kubectl get pods | grep es-cluster-0 | sed -n 1p | awk '{print $1}') -- bin/elasticsearch-setup-passwords interactive
+```
+Note the password given to elastic user
+
+Create Kibana configmap, service and deployment
+
+```
+kubectl create -f kibana_configmap.yaml
 kubectl create -f kibana_svc.yaml
 kubectl create -f kibana_deployment.yaml
 ```
@@ -72,7 +89,7 @@ Wait for the deployment status using
 kubectl rollout status deployment/kibana
 ```
 
-This will create a Kibana web console where the logs can be accessed
+This will create a Kibana web console which can be used using username as elastic and password as specified in the interactive authentication setup
 
 Once the kibana is up, the host and port should be configured in td-agent.conf and td-agent can be started. This creates an index with the name specified in the conf file
 
