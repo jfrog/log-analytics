@@ -136,6 +136,8 @@
   @id elasticsearch
   host elasticsearch
   port 9200
+  user "elastic"
+  password <password>
   index_name unified-xray
   include_tag_key true
   type_name fluentd
