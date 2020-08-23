@@ -44,11 +44,7 @@
   pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/access-service.log.pos"
   tag jfrog.rt.access.service
   <parse>
-      @type multiline
-      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
+    @type none
   </parse>
 </source>
 <source>
@@ -58,11 +54,7 @@
   pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/artifactory-service.log.pos"
   tag jfrog.rt.artifactory.service
   <parse>
-      @type multiline
-      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
+    @type none
   </parse>
 </source>
 <source>
@@ -72,11 +64,7 @@
   pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/frontend-service.log.pos"
   tag jfrog.rt.frontend.service
   <parse>
-      @type multiline
-      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
+    @type none
   </parse>
 </source>
 <source>
@@ -86,11 +74,7 @@
   pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/metadata-service.log.pos"
   tag jfrog.rt.metadata.service
   <parse>
-      @type multiline
-      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
+    @type none
   </parse>
 </source>
 <source>
@@ -100,13 +84,31 @@
   pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/router-service.log.pos"
   tag jfrog.rt.router.service
   <parse>
+    @type none
+  </parse>
+</source>
+# Strip out color codes then field extract the service fields
+<filter jfrog.rt.**.service>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    message ${record["message"].gsub(/\e\[([;\d]+)?m/, '')}
+  </record>
+</filter>
+<filter jfrog.rt.**.service>
+  @type parser
+  key_name message
+  <parse>
       @type multiline
       format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
+      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.*)$/
       time_key timestamp
       time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
-</source>
+</filter>
+# End Service Fields Extraction
+
+
 <source>
   @type tail
   @id router_traefik_tail
@@ -116,7 +118,7 @@
   <parse>
       @type multiline
       format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
+      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.*)$/
       time_key timestamp
       time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
@@ -146,21 +148,9 @@
     expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
     time_key timestamp
     time_format %Y-%m-%dT%H:%M:%S.%LZ
-    types response_content_length:integer, request_content_length:integer, return_status_code:integer
   </parse>
 </source>
-<filter jfrog.rt.artifactory.request>
-  @type record_transformer
-  enable_ruby true
-  <record>
-    repo ${!record["request_url"].strip().start_with?("/api") ? (record["request_url"].strip().split('/')[1]) : ("")}
-    artifact ${!record["request_url"].strip().start_with?("/api") ? (val = record["request_url"].strip().split('/'); val[val.length()-1]) : ("")}
-    dockerRepo ${record["request_url"].strip().include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2") ? (record["request_url"].strip().split('/')[3]) : ("")}
-    dockerImage ${record["request_url"].strip().include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].strip().split('/')[5]) : ("")}
-    data_download ${record["response_content_length"] == -1 ? 0 : record["response_content_length"]}
-    data_upload ${record["request_content_length"] == -1 ? 0 : record["request_content_length"]}
-  </record>
-</filter>
+
 <source>
   @type tail
   @id frontend_request_tail
@@ -196,7 +186,7 @@
   <parse>
     @type json
     time_key time
-    time_format %Y-%m-%dT%H:%M:%SZ
+    time_format %Y-%m-%dT%H:%M:%S%:z
   </parse>
 </source>
 <source>
@@ -220,7 +210,7 @@
   tag jfrog.rt.access.audit
   <parse>
     @type regexp
-    expression /^(?<timestamp>[^ ]*)\|(?<token_id>[^ ]*)\|(?<user_ip>[^ ]*)\|(?<user>[^ ]*)\|(?<logged_principal>[^ ]*)\|(?<entity_name>[^ ]*)\|(?<event_type>[^ ]*)\|(?<event>[^ ]*)\|(?<data_changed>[^.]*)$/
+    expression /^(?<timestamp>[^ ]*)\|(?<token_id>[^ ]*)\|(?<user_ip>[^ ]*)\|(?<user>[^ ]*)\|(?<logged_principal>[^ ]*)\|(?<entity_name>[^ ]*)\|(?<event_type>[^ ]*)\|(?<event>[^ ]*)\|(?<data_changed>.*)/
     time_key timestamp
     time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
@@ -231,6 +221,19 @@
   @type record_transformer
   <record>
     log_source ${tag}
+  </record>
+</filter>
+
+<filter jfrog.rt.artifactory.request>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    repo ${!record["request_url"].strip().start_with?("/api") ? (record["request_url"].strip().split('/')[1]) : ("")}
+    artifact ${!record["request_url"].strip().start_with?("/api") ? (val = record["request_url"].strip().split('/'); val[val.length()-1]) : ("")}
+    dockerRepo ${record["request_url"].strip().include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2") ? (record["request_url"].strip().split('/')[3]) : ("")}
+    dockerImage ${record["request_url"].strip().include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].strip().split('/')[5]) : ("")}
+    data_download ${record["response_content_length"] == -1 ? 0 : record["response_content_length"]}
+    data_upload ${record["request_content_length"] == -1 ? 0 : record["request_content_length"]}
   </record>
 </filter>
 

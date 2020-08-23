@@ -7,7 +7,7 @@
   <parse>
       @type multiline
       format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-      format1 /^(?<timestamp>[^.*]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] (?<class_line_number>.*) - (?<message>.+)$/
+      format1 /^(?<timestamp>[^.*]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] (?<class_line_number>.*) -(?<message>.*)$/
       time_key timestamp
       time_format %Y-%m-%d %H:%M:%S,%L
   </parse>
@@ -46,6 +46,15 @@
   @type record_transformer
   <record>
     log_source ${tag}
+  </record>
+</filter>
+
+<filter jfrog.rt.artifactory.request>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    repo ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2") ? (record["request_url"].split('/')[3]) : ("")}
+    image ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].split('/')[5]) : ("")}
   </record>
 </filter>
 
@@ -92,15 +101,9 @@
 </match>
 #END CALL HOME
 
+# OUTPUT SENT TO STDOUT FOR VERIFICATION
+# LOG VENDOR SPECIFIC OUTPUTS AVAILABLE
+# UNDER THEIR RESPECTIVE FOLDER IN log-vendors
 <match jfrog.**>
-  @type splunk_hec
-  host HEC_HOST
-  port HEC_PORT
-  token HEC_TOKEN
-  format json
-  # buffered output parameter
-  flush_interval 10s
-  # ssl parameter
-  use_ssl true
-  ca_file /path/to/ca.pem
+  @type stdout
 </match>
