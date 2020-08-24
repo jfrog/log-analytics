@@ -7,9 +7,9 @@
   <parse>
       @type multiline
       format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
+      format1 /^(?<timestamp>[^.*]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] (?<class_line_number>.*) -(?<message>.*)$/
       time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
+      time_format %Y-%m-%d %H:%M:%S,%L
   </parse>
 </source>
 
@@ -21,19 +21,11 @@
   tag jfrog.rt.artifactory.request
   <parse>
     @type regexp
-    expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
+    expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<type>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<request_user_agent>[^\|]*)\|(?<return_status>[^\|]*)\|(?<request_duration>.+)$
     time_key timestamp
-    time_format %Y-%m-%dT%H:%M:%S.%LZ
+    time_format %Y%m%d%H%M%S
   </parse>
 </source>
-<filter jfrog.rt.artifactory.request>
-  @type record_transformer
-  enable_ruby true
-  <record>
-    repo ${record["request_url"].split('/')[3]}
-    image ${record["request_url"].split('/')[5]}
-  </record>
-</filter>
 
 <source>
   @type tail
@@ -43,16 +35,35 @@
   tag jfrog.rt.artifactory.access
   <parse>
     @type regexp
-    expression /^(?<timestamp>[^ ]*) \[(?<trace_id>[^\]]*)\] \[(?<action_response>[^\]]*)\] (?<repo_path>.*) for client : (?<username>.+)/(?<ip>.+)$/
+    expression ^(?<timestamp>[^.*]*) \[(?<action_response>[^\]]*)\] (?<repo_path>.*) for client : (?<username>.+) / (?<ip>.+)$
     time_key timestamp
-    time_format %Y-%m-%dT%H:%M:%S.%LZ
+    time_format %Y-%m-%d %H:%M:%S,%L
   </parse>
 </source>
+
 
 <filter jfrog.**>
   @type record_transformer
   <record>
     log_source ${tag}
+  </record>
+</filter>
+
+<filter jfrog.rt.artifactory.request>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    repo ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2") ? (record["request_url"].split('/')[3]) : ("")}
+    image ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].split('/')[5]) : ("")}
+  </record>
+</filter>
+
+<filter jfrog.rt.artifactory.request>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    response_content_length_2 ${record["response_content_length"].to_f}
+    request_content_length_2 ${record["request_content_length"].to_f}
   </record>
 </filter>
 
@@ -100,24 +111,6 @@
 </match>
 #END CALL HOME
 
-<filter jfrog.rt.artifactory.request>
-  @type record_transformer
-  enable_ruby true
-  <record>
-    repo ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2") ? (record["request_url"].split('/')[3]) : ("")}
-    image ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].split('/')[5]) : ("")}
-  </record>
-</filter>
-
-<filter jfrog.rt.artifactory.request>
-  @type record_transformer
-  enable_ruby true
-  <record>
-    response_content_length_2 ${record["response_content_length"].to_f}
-    request_content_length_2 ${record["request_content_length"].to_f}
-  </record>
-</filter>
-#END CALL HOME
 
 # Log Forwarding
 <match jfrog.**>
