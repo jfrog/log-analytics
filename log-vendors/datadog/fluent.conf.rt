@@ -188,6 +188,7 @@
 <filter jfrog.**>
   @type record_transformer
   <record>
+    hostname "#{Socket.gethostname}"
     log_source ${tag}
   </record>
 </filter>
