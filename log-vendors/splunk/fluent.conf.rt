@@ -236,9 +236,9 @@
 #SPLUNK OUTPUT
 <match jfrog.**>
   @type splunk_hec
-  host 10.35.249.242
-  port 8088
-  token 9b92de94-2e49-4e9e-8ec2-a74b95b21131
+  host HEC_HOST
+  port HEC_PORT
+  token HEC_TOKEN
   format json
   sourcetype_key log_source
   use_fluentd_time false

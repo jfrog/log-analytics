@@ -1,44 +1,33 @@
-# Splunk Log Analytics Integration
-Jfrog Log Analytics for Splunk
+# JFrog Platform Log Analytics Splunk App
 
-## Installation / Configuration
+## Getting Started
+Install the app in your Splunk instance. Then restart your Splunk instance by going to _Server Controls > Restart_.
 
-Jfrog unified platform installation of fluentd.
+## Create the HEC Data Input to Receive Data
+You may need to create a new HTTP Event Collector data input. You can do this at _Settings > Data Inputs > HTTP Event Collector_. Use the JFrog app as the context. Then use the token as the HEC_TOKEN as described below in the FluentD configuration.
 
+## Install FluentD
+FluentD is used to send log events to Splunk. This [repo](https://github.com/jfrog/log-analytics) contains instructions on various installations options for Fluentd as a logging agent. The FluentD configuration must specify the HEC_HOST, HEC_PORT and HEC_TOKEN.
 ```
-Install td-agent on each node
-Install td-agent.conf per type on each node
-Run the td-agent on each node
-```
-
-Splunk setup required:
-```
-Install the Jfrog Logs App
-```
-## Getting Started with Splunk searches
-
-Once you have the Jfrog Logs app installed into Splunk and Jfrog Unified platform sending logs over via fluentd you can then search for the log events.
-
-Example search for all log sources:
-
-```
-* | spath log_source
-```
-
-To view the artifactory-service.log:
-
-```
-* | spath log_source | search log_source="jfrog.rt.artifactory.service"
+<match jfrog.**>
+  @type splunk_hec
+    hec_host HEC_HOST <-- splunk host
+    hec_port HEC_PORT <-- splunk HEC port
+    hec_token HEC_TOKEN <-- replace HEC_TOKEN
+    format json
+    sourcetype_key log_source
+    use_fluentd_time false
+    # buffered output parameter
+    # flush_interval 10s
+    # ssl parameter
+    #use_ssl true
+    #ca_file /path/to/ca.pem
+</match>
+#END SPLUNK OUTPUT
 ```
 
-### Tools
-* [Fluentd](https://www.fluentd.org/) - fluent logging platform
+## Additional Setup
 
-## Contributing
-Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull requests to us.
+For complete instructions on setup of the integration between JFrog Artifactory & Xray to Splunk visit our Github [repo](https://github.com/jfrog/log-analytics)
 
-## Versioning
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
-
-## Contact
-* Github
+This [repo](https://github.com/jfrog/log-analytics) will contain instructions on various installations options of fluentd as a logging agent to collect logs to be sent to Splunk.

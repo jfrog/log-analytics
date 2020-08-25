@@ -1,4 +1,4 @@
-# JFrog Splunk App Development
+# JFrog Platform Log Analytics Splunk App Development
 
 ## App Directory Structure
 A Splunk App has a specific directory structure for packaging. Most of your development will be in [jfrog-logs/default/data/ui](jfrog-logs/default/data/ui) using [Simple XML](https://docs.splunk.com/Documentation/Splunk/8.0.5/Viz/PanelreferenceforSimplifiedXML) to layout your dashboard UI. CSS and Javascript in [jfrog-logs/appserver/static](jfrog-logs/appserver/static) can provide additional styling and functionality.
@@ -48,10 +48,11 @@ CSS and JS file changes require cache updates to be seen. Clear your browser cac
 Before packaging the app, update the [app.conf](jfrog-logs/default/app.conf). Make sure  update the version.
 
 ### Package the App
-To package the app, tar it. 
+To package the app, use the Splunk CLI. 
 
 ```
-$ tar -cvf jfrog-logs-<VERSION>.spl jfrog-logs/
+$ cd jfrog-logs
+$ splunk package app jfrog-logs
 ```
 
 ### Install the App
@@ -86,6 +87,11 @@ $ splunk remove app jfrog-logs
 ```
 Note: This will also remove the HEC Event Collector.
 
+### Use Splunk AppInspect to Pre-Validate the App
+Before submitting the app to Splunkbase for validation, use the [Splunk AppInspect API](https://dev.splunk.com/enterprise/docs/developapps/testvalidate/appinspect/splunkappinspectapi/runappinspectrequestsapi) to pre-validate and resolve issues.
+
+### Submitting to Splunkbase
+When testing and validation is complete, follow these [instructions](https://dev.splunk.com/enterprise/docs/releaseapps/splunkbase/submitcontentui) for submitting the app to Splunkbase.
 ## References
 * [Develop Splunk Apps](https://dev.splunk.com/enterprise/docs/developapps)
 * [Simple XML Reference for Apps](https://docs.splunk.com/Documentation/Splunk/8.0.5/Viz/PanelreferenceforSimplifiedXML)
