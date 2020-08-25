@@ -57,8 +57,6 @@
   <parse>
       @type regexp
       expression ^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.+)$
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
 <source>
@@ -69,8 +67,6 @@
   tag jfrog.xray.router.request
   <parse>
     @type json
-    time_key time
-    time_format %Y-%m-%dT%H:%M:%SZ
   </parse>
 </source>
 <source>
@@ -82,8 +78,6 @@
   <parse>
     @type regexp
     expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^ ]*)\|(?<remote_address>.+)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_duration>.*)$
-    time_key timestamp
-    time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
 # STRIP COLOR CODES FROM SERVICE LOGS
@@ -102,8 +96,6 @@
       @type multiline
       format_firstline /\d{4}-\d{1,2}-\d{1,2}/
       format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] (?<message>.*)$/
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </filter>
 <filter jfrog.**>

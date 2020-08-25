@@ -63,8 +63,6 @@
       @type multiline
       format_firstline /\d{4}-\d{1,2}-\d{1,2}/
       format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.*)$/
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </filter>
 # End Service Fields Extraction
@@ -80,8 +78,6 @@
       @type multiline
       format_firstline /\d{4}-\d{1,2}-\d{1,2}/
       format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.*)$/
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
 
@@ -94,8 +90,6 @@
   <parse>
     @type regexp
     expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
-    time_key timestamp
-    time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
 <source>
@@ -107,8 +101,6 @@
   <parse>
     @type regexp
     expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
-    time_key timestamp
-    time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
 <filter jfrog.rt.artifactory.request>
@@ -128,8 +120,6 @@
   <parse>
     @type regexp
     expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
-    time_key timestamp
-    time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
 <source>
@@ -141,8 +131,6 @@
   <parse>
     @type regexp
     expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
-    time_key timestamp
-    time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
 <source>
@@ -153,8 +141,6 @@
   tag jfrog.rt.router.request
   <parse>
     @type json
-    time_key time
-    time_format %Y-%m-%dT%H:%M:%S%:z
   </parse>
 </source>
 <source>
@@ -166,8 +152,6 @@
   <parse>
     @type regexp
     expression /^(?<timestamp>[^ ]*) \[(?<trace_id>[^\]]*)\] \[(?<action_response>[^\]]*)\] (?<repo_path>.*) for client : (?<username>.+)/(?<ip>.+)$/
-    time_key timestamp
-    time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
 <source>
@@ -179,8 +163,6 @@
   <parse>
     @type regexp
     expression /^(?<timestamp>[^ ]*)\|(?<token_id>[^ ]*)\|(?<user_ip>[^ ]*)\|(?<user>[^ ]*)\|(?<logged_principal>[^ ]*)\|(?<entity_name>[^ ]*)\|(?<event_type>[^ ]*)\|(?<event>[^ ]*)\|(?<data_changed>.*)/
-    time_key timestamp
-    time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
 
