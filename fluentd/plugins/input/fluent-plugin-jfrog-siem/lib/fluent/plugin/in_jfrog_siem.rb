@@ -30,7 +30,7 @@ module Fluent
       # `:default` means that the parameter is optional.
       config_param :tag, :string, default: ""
       config_param :artifactory_url, :string, default: ""
-      config_param :artifactory_api_key, :string, default: ""
+      config_param :access_token, :string, default: ""
       config_param :pos_file, :string, default: ""
       config_param :batch_size, :integer, default: 25
       config_param :thread_count, :integer, default: 5
@@ -50,7 +50,7 @@ module Fluent
           raise Fluent::ConfigError, "Must define the Artifactory URL to pull Xray SIEM violations."
         end
 
-        if @artifactory_api_key == ""
+        if @access_token == ""
           raise Fluent::ConfigError, "Must define the Artifactory API key to use for authentication."
         end
 
@@ -102,7 +102,7 @@ module Fluent
 
         while true
           # Grab the batch of records
-          resp=get_xray_violations(xray_json, @artifactory_url, @artifactory_api_key)
+          resp=get_xray_violations(xray_json, @artifactory_url, @access_token)
           number_of_violations = JSON.parse(resp)['total_violations']
           if left_violations <= 0
             left_violations = number_of_violations
@@ -150,7 +150,7 @@ module Fluent
           thread_pool = Thread.pool(thread_count)
           for xray_violation_url in xray_violation_urls_list do
             thread_pool.process {
-              pull_violation_details(xray_violation_url, @artifactory_api_key)
+              pull_violation_details(xray_violation_url, @access_token)
             }
           end
 
@@ -176,11 +176,11 @@ module Fluent
 
 
       # queries the xray API for violations based upon the input json
-      def get_xray_violations_detail(xray_violation_detail_url, artifactory_api_key)
+      def get_xray_violations_detail(xray_violation_detail_url, access_token)
         response = RestClient::Request.new(
             :method => :get,
             :url => xray_violation_detail_url,
-            headers: {Authorization:'Bearer ' + artifactory_api_key}
+            headers: {Authorization:'Bearer ' + access_token}
         ).execute do |response, request, result|
           case response.code
           when 200
@@ -193,12 +193,12 @@ module Fluent
 
 
       # queries the xray API for violations based upon the input json
-      def get_xray_violations(xray_json, artifactory_url, artifactory_api_key)
+      def get_xray_violations(xray_json, artifactory_url, access_token)
         response = RestClient::Request.new(
             :method => :post,
             :url => artifactory_url + "/api/v1/violations",
             :payload => xray_json.to_json,
-            :headers => { :accept => :json, :content_type => :json, Authorization:'Bearer ' + artifactory_api_key }
+            :headers => { :accept => :json, :content_type => :json, Authorization:'Bearer ' + access_token }
         ).execute do |response, request, result|
           case response.code
           when 200
@@ -210,9 +210,9 @@ module Fluent
       end
 
 
-      def pull_violation_details(xray_violation_detail_url, artifactory_api_key)
+      def pull_violation_details(xray_violation_detail_url, access_token)
         begin
-          detailResp=get_xray_violations_detail(xray_violation_detail_url, artifactory_api_key)
+          detailResp=get_xray_violations_detail(xray_violation_detail_url, access_token)
           time = Time.now
           router.emit(@tag, time, detailResp)
         rescue

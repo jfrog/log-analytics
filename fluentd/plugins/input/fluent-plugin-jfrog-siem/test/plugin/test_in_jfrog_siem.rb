@@ -14,7 +14,7 @@ class JfrogSiemInputTest < Test::Unit::TestCase
   CONFIG = %[
     tag "test_tag"
     artifactory_url "https://partnership.jfrog.io/xray"
-    artifactory_api_key "api_key"
+    access_token ""
     pos_file "test_pos.txt"
   ]
 
