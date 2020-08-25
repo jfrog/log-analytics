@@ -9,7 +9,7 @@ The following describes how to configure Fluentd and Splunk to gather logs from 
 
 ## Splunk Config
 
-Fluentd setup must be completed prior to Splunk. Please refer back to the main README for detailed instructions on general fluentd setup.
+Fluentd setup must be completed prior to Splunk. Please refer back to the main README for detailed instructions on general Fluentd setup.
 
 To use the integration an administrator of Splunk will need to install the JFrog Logs Application into Splunk from Splunkbase.
 

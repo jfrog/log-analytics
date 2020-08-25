@@ -248,7 +248,7 @@
   # buffered output parameter
   flush_interval 10s
   # ssl parameter
-  use_ssl true
-  ca_file /path/to/ca.pem
+  #use_ssl true
+  #ca_file /path/to/ca.pem
 </match>
 #END SPLUNK OUTPUT
