@@ -55,10 +55,7 @@
   pos_file "#{ENV['JFROG_HOME']}/xray/var/log/router-traefik.log.pos"
   tag jfrog.xray.router.traefik
   <parse>
-      @type regexp
-      expression ^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.+)$
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
+    @type none
   </parse>
 </source>
 <source>
@@ -68,9 +65,7 @@
   pos_file "#{ENV['JFROG_HOME']}/xray/var/log/router-request.log.pos"
   tag jfrog.xray.router.request
   <parse>
-    @type json
-    time_key time
-    time_format %Y-%m-%dT%H:%M:%SZ
+    @type none
   </parse>
 </source>
 <source>
@@ -80,38 +75,9 @@
   pos_file  "#{ENV['JFROG_HOME']}/xray/var/log/xray-request.log.pos"
   tag jfrog.xray.xray.request
   <parse>
-    @type regexp
-    expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^ ]*)\|(?<remote_address>.+)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_duration>.*)$
-    time_key timestamp
-    time_format %Y-%m-%dT%H:%M:%S.%LZ
+    @type none
   </parse>
 </source>
-# STRIP COLOR CODES FROM SERVICE LOGS
-<filter jfrog.xray.**.service>
-  @type record_transformer
-  enable_ruby true
-  <record>
-    message ${record["message"].gsub(/\e\[([;\d]+)?m/, '')}
-  </record>
-</filter>
-# FIELD EXTRACT SERVICE LOG
-<filter jfrog.xray.**.service>
-  @type parser
-  key_name message
-  <parse>
-      @type multiline
-      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] (?<message>.*)$/
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
-  </parse>
-</filter>
-<filter jfrog.**>
-  @type record_transformer
-  <record>
-    log_source ${tag}
-  </record>
-</filter>
 # Log Forwarding
 <match jfrog.**>
   @type forward
