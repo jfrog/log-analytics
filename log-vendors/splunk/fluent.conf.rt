@@ -183,8 +183,6 @@
     time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
-
-# WHAT LOG IT WAS INTO THE JSON
 <filter jfrog.**>
   @type record_transformer
   <record>
@@ -192,9 +190,6 @@
     log_source ${tag}
   </record>
 </filter>
-
-
-#JFROG CALL HOME
 <source>
   @type exec
   tag jfrog.callhome
@@ -235,7 +230,7 @@
     flush_interval 5s
   </buffer>
 </match>
-#END CALL HOME
+
 #SPLUNK OUTPUT
 <match jfrog.**>
   @type splunk_hec

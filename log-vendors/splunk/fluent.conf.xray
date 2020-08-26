@@ -70,7 +70,7 @@
   <parse>
     @type json
     time_key time
-    time_format %Y-%m-%dT%H:%M:%SZ
+    time_format %Y-%m-%dT%H:%M:%S%:z
   </parse>
 </source>
 <source>
@@ -113,6 +113,8 @@
     log_source ${tag}
   </record>
 </filter>
+
+# SPLUNK OUTPUT
 <match jfrog.**>
   @type splunk_hec
   host HEC_HOST
