@@ -128,8 +128,8 @@ module Fluent
 
               formatted_item = item.map {|p| '%s=%s' % p }.join(', ')
               puts "---------------------"
-              puts formatted_item
-              puts formatted_item.class
+              puts item
+              puts item.class
               puts "------------------------"
               time = Time.now
               #router.emit(@tag, time, URI.decode(formatted_item))
