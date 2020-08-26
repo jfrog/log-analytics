@@ -127,7 +127,7 @@ module Fluent
 
               formatted_item = item.map {|p| '%s=%s' % p }.join(', ')
               time = Time.now
-              router.emit(@tag, time, JSON.parse(item))
+              router.emit(@tag, time, JSON.parse(formatted_item))
 
               # write to the pos_file created_date_string
               #File.open(@pos_file, a) {|f| f.write("#{created_date_string}\n") }
