@@ -127,6 +127,11 @@ module Fluent
             if persistItem
 
               formatted_item = item.map {|p| '%s=%s' % p }.join(', ')
+              puts "---------------------"
+              puts formatted_item
+              puts formatted_item.class
+              puts JSON.parse(formatted_item)
+              puts "------------------------"
               time = Time.now
               #router.emit(@tag, time, URI.decode(formatted_item))
 
