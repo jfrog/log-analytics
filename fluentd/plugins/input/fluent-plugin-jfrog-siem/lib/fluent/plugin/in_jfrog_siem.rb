@@ -56,6 +56,10 @@ module Fluent
 
         if @pos_file == ""
           raise Fluent::ConfigError, "Must define a position file to record last SIEM violation pulled."
+        else
+          if(!File.exist?(@pos_file))
+            @pos_file = File.new(@pos_file, "w")
+          end
         end
 
         if @thread_count < 1
@@ -131,6 +135,7 @@ module Fluent
               router.emit(@tag, time, URI.decode(formatted_item))
 
               # write to the pos_file created_date_string
+              #File.open(@pos_file, a) {|f| f.write("#{created_date_string}\n") }
               open(@pos_file, 'a') do |f|
                 f << "#{created_date_string}\n"
               end
