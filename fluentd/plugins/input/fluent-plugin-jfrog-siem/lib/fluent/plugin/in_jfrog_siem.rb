@@ -130,7 +130,6 @@ module Fluent
               puts "---------------------"
               puts formatted_item
               puts formatted_item.class
-              puts JSON.parse(formatted_item)
               puts "------------------------"
               time = Time.now
               #router.emit(@tag, time, URI.decode(formatted_item))
@@ -222,6 +221,10 @@ module Fluent
         begin
           detailResp=get_xray_violations_detail(xray_violation_detail_url, access_token)
           time = Time.now
+          puts "=================="
+          puts JSON.parse(detailResp)
+          puts (JSON.parse(detailResp)).class
+          puts "=================="
           router.emit(@tag, time, JSON.parse(detailResp))
         rescue
           raise Fluent::BufferError, "Error pulling violation details url #{xray_violation_detail_url}"
