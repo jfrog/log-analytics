@@ -127,8 +127,14 @@ module Fluent
             if persistItem
 
               formatted_item = item.map {|p| '%s=%s' % p }.join(', ')
+              puts "---------------ITEM-------------"
+              puts item
+              puts item.class
+              puts formatted_item
+              puts formatted_item.class
+              puts "--------------------------------"
               time = Time.now
-              router.emit(@tag, time, item)
+              router.emit(@tag, time, formatted_item)
 
               # write to the pos_file created_date_string
               #File.open(@pos_file, a) {|f| f.write("#{created_date_string}\n") }
