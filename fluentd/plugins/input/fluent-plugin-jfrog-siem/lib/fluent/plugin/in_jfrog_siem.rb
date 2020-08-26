@@ -127,12 +127,6 @@ module Fluent
             if persistItem
 
               formatted_item = item.map {|p| '%s=%s' % p }.join(', ')
-              puts "---------------ITEM-------------"
-              puts item
-              puts item.class
-              puts formatted_item
-              puts formatted_item.class
-              puts "--------------------------------"
               time = Time.now
               router.emit(@tag, time, formatted_item)
 
@@ -224,7 +218,7 @@ module Fluent
         begin
           detailResp=get_xray_violations_detail(xray_violation_detail_url, access_token)
           time = Time.now
-          router.emit(@tag, time, detailResp)
+            #router.emit(@tag, time, detailResp)
         rescue
           raise Fluent::BufferError, "Error pulling violation details url #{xray_violation_detail_url}"
         end
