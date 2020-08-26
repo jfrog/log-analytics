@@ -17,7 +17,6 @@ require "rest-client"
 require "thread/pool"
 require "json"
 require "date"
-require "uri"
 
 module Fluent
   module Plugin
@@ -142,7 +141,7 @@ module Fluent
 
               # Grab violation detail url and add to url list to process w/ thread pool
               xray_violation_details_url=item['violation_details_url']
-              xray_violation_urls_list.append(URI.decode(xray_violation_details_url))
+              xray_violation_urls_list.append(xray_violation_details_url)
             end
           end
 
