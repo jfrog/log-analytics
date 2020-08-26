@@ -165,8 +165,6 @@
     expression /^(?<timestamp>[^ ]*)\|(?<token_id>[^ ]*)\|(?<user_ip>[^ ]*)\|(?<user>[^ ]*)\|(?<logged_principal>[^ ]*)\|(?<entity_name>[^ ]*)\|(?<event_type>[^ ]*)\|(?<event>[^ ]*)\|(?<data_changed>.*)/
   </parse>
 </source>
-
-# WHAT LOG IT WAS INTO THE JSON
 <filter jfrog.**>
   @type record_transformer
   <record>
@@ -174,8 +172,6 @@
     log_source ${tag}
   </record>
 </filter>
-
-#JFROG CALL HOME
 <source>
   @type exec
   tag jfrog.callhome
@@ -216,7 +212,6 @@
     flush_interval 5s
   </buffer>
 </match>
-#END CALL HOME
 <filter jfrog.rt.artifactory.request>
   @type record_transformer
   enable_ruby true

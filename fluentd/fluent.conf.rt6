@@ -45,6 +45,7 @@
 <filter jfrog.**>
   @type record_transformer
   <record>
+    hostname "#{Socket.gethostname}"
     log_source ${tag}
   </record>
 </filter>
@@ -57,8 +58,6 @@
     image ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].split('/')[5]) : ("")}
   </record>
 </filter>
-
-#JFROG CALL HOME
 <source>
   @type exec
   tag jfrog.callhome
@@ -99,7 +98,6 @@
     flush_interval 5s
   </buffer>
 </match>
-#END CALL HOME
 
 # OUTPUT SENT TO STDOUT FOR VERIFICATION
 # LOG VENDOR SPECIFIC OUTPUTS AVAILABLE

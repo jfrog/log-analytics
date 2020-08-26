@@ -68,7 +68,6 @@
   </record>
 </filter>
 
-#JFROG CALL HOME
 <source>
   @type exec
   tag jfrog.callhome
@@ -109,8 +108,6 @@
     flush_interval 5s
   </buffer>
 </match>
-#END CALL HOME
-
 <match jfrog.**>
   @type datadog
   @id datadog_agent_artifactory

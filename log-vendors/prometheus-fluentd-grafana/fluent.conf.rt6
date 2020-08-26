@@ -99,7 +99,6 @@
   </record>
 </filter>
 
-#JFROG CALL HOME
 <source>
   @type exec
   tag jfrog.callhome
@@ -140,7 +139,6 @@
     flush_interval 5s
   </buffer>
 </match>
-#END CALL HOME
 
 <filter jfrog.rt.artifactory.request>
   @type prometheus

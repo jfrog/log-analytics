@@ -113,6 +113,8 @@
     log_source ${tag}
   </record>
 </filter>
+
+# SPLUNK OUTPUT
 <match jfrog.**>
   @type splunk_hec
   host HEC_HOST

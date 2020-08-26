@@ -183,16 +183,13 @@
     time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
-
-# WHAT LOG IT WAS INTO THE JSON
 <filter jfrog.**>
   @type record_transformer
   <record>
+    hostname "#{Socket.gethostname}"
     log_source ${tag}
   </record>
 </filter>
-
-#JFROG CALL HOME
 <source>
   @type exec
   tag jfrog.callhome
@@ -233,8 +230,6 @@
     flush_interval 5s
   </buffer>
 </match>
-#END CALL HOME
-
 # OUTPUT SENT TO STDOUT FOR VERIFICATION
 # LOG VENDOR SPECIFIC OUTPUTS AVAILABLE
 # UNDER THEIR RESPECTIVE FOLDER IN log-vendors
