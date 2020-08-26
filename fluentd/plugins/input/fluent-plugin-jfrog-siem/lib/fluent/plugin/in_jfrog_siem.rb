@@ -56,10 +56,6 @@ module Fluent
 
         if @pos_file == ""
           raise Fluent::ConfigError, "Must define a position file to record last SIEM violation pulled."
-        else
-          if(!File.exist?(@pos_file))
-            @pos_file = File.new(@pos_file, "w")
-          end
         end
 
         if @thread_count < 1
@@ -176,6 +172,9 @@ module Fluent
 
       # pull the last item create date from the pos_file return created_date_string
       def get_last_item_create_date()
+        if(!(File.exist?(@pos_file)))
+          @pos_file = File.new(@pos_file, "w")
+        end
         return IO.readlines(@pos_file).last
       end
 
