@@ -132,7 +132,7 @@ module Fluent
 
               formatted_item = item.map {|p| '%s=%s' % p }.join(', ')
               time = Time.now
-              router.emit(URI.decode(formatted_item))
+              router.emit(@tag, time, URI.decode(formatted_item))
 
               # write to the pos_file created_date_string
               #File.open(@pos_file, a) {|f| f.write("#{created_date_string}\n") }
@@ -219,7 +219,7 @@ module Fluent
         begin
           detailResp=get_xray_violations_detail(xray_violation_detail_url, access_token)
           time = Time.now
-          router.emit(detailResp)
+          router.emit(@tag, time, detailResp)
         rescue
           raise Fluent::BufferError, "Error pulling violation details url #{xray_violation_detail_url}"
         end
