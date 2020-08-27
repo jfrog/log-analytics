@@ -1,6 +1,12 @@
 # JFrog Log Analytics Changelog
 All changes to the log analytics integration will be documented in this file.
 
+## [0.3.0] - Aug 26, 2020
+* Adding JFrog Distribution fluent configuration files to capture logs
+
+## [0.2.0] - Aug 24, 2020
+* Splunk updates to launch new version of Splunkbase app v1.1.0
+
 ## [0.1.1] - June 1, 2020
 * Removing the need for user to specify splunk host , user, and token twice
 * Fixing issue with regex on the audit security log
