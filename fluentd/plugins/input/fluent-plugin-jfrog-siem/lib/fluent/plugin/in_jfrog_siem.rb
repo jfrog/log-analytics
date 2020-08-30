@@ -130,6 +130,10 @@ module Fluent
               puts "-------------------------"
               puts item
               puts item.class
+              puts item.methods
+              test_item = item.to_json
+              puts test_item
+              puts test_item.class
               puts "-------------------------"
               router.emit(@tag, time, item)
 
