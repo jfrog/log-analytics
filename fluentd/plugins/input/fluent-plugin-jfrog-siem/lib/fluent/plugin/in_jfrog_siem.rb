@@ -127,15 +127,7 @@ module Fluent
             if persistItem
 
               time = Time.now
-              puts "-------------------------"
-              puts item
-              puts item.class
-              puts item.methods
-              test_item = item.to_json
-              puts test_item
-              puts test_item.class
-              puts "-------------------------"
-              router.emit(@tag, time, item)
+              router.emit(@tag, time, item.to_json)
 
               # write to the pos_file created_date_string
               open(@pos_file, 'a') do |f|
