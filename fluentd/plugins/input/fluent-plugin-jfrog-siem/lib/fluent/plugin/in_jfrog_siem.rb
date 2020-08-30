@@ -127,6 +127,10 @@ module Fluent
             if persistItem
 
               time = Time.now
+              puts "-------------------------"
+              puts item
+              puts item.class
+              puts "-------------------------"
               router.emit(@tag, time, item)
 
               # write to the pos_file created_date_string
