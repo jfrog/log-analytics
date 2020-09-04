@@ -68,7 +68,6 @@
     @type none
   </parse>
 </source>
-
 <source>
   @type tail
   @id distribution_foreman_tail
@@ -80,15 +79,9 @@
   </parse>
 </source>
 
-<filter jfrog.**>
-  @type record_transformer
-  <record>
-    hostname "#{Socket.gethostname}"
-    log_source ${tag}
-  </record>
-</filter>
-
+####################
 # Log Forwarding
+####################
 <match jfrog.**>
   @type forward
   # primary host

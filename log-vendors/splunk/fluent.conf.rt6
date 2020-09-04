@@ -12,7 +12,6 @@
       time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
-
 <source>
   @type tail
   @id artifactory_request_tail
@@ -34,7 +33,6 @@
     image ${record["request_url"].split('/')[5]}
   </record>
 </filter>
-
 <source>
   @type tail
   @id artifactory_access_tail
@@ -48,7 +46,6 @@
     time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
-
 <filter jfrog.**>
   @type record_transformer
   <record>
@@ -56,7 +53,6 @@
     log_source ${tag}
   </record>
 </filter>
-
 <filter jfrog.rt.artifactory.request>
   @type record_transformer
   enable_ruby true
@@ -106,7 +102,9 @@
   </buffer>
 </match>
 
+####################
 # SPLUNK OUTPUT
+####################
 <match jfrog.**>
   @type splunk_hec
   host HEC_HOST

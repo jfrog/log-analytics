@@ -31,7 +31,9 @@
   </parse>
 </source>
 
+####################
 # Log Forwarding
+####################
 <match jfrog.**>
   @type forward
   # primary host

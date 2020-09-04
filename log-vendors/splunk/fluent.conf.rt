@@ -48,7 +48,6 @@
     @type none
   </parse>
 </source>
-# Strip out color codes then field extract the service fields
 <filter jfrog.rt.**.service>
   @type record_transformer
   enable_ruby true
@@ -67,9 +66,6 @@
       time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </filter>
-# End Service Fields Extraction
-
-
 <source>
   @type tail
   @id router_traefik_tail
@@ -84,7 +80,6 @@
       time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
-
 <source>
   @type tail
   @id access_request_tail
@@ -105,20 +100,9 @@
   pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/artifactory-request.log.pos"
   tag jfrog.rt.artifactory.request
   <parse>
-    @type regexp
-    expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
-    time_key timestamp
-    time_format %Y-%m-%dT%H:%M:%S.%LZ
+    @type none
   </parse>
 </source>
-<filter jfrog.rt.artifactory.request>
-  @type record_transformer
-  enable_ruby true
-  <record>
-    repo ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2") ? (record["request_url"].split('/')[3]) : ("")}
-    image ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].split('/')[5]) : ("")}
-  </record>
-</filter>
 <source>
   @type tail
   @id frontend_request_tail
@@ -126,10 +110,7 @@
   pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/frontend-request.log.pos"
   tag jfrog.rt.frontend.request
   <parse>
-    @type regexp
-    expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
-    time_key timestamp
-    time_format %Y-%m-%dT%H:%M:%S.%LZ
+    @type none
   </parse>
 </source>
 <source>
@@ -139,12 +120,27 @@
   pos_file "#{ENV['JFROG_HOME']}/artifactory/var/log/metadata-request.log.pos"
   tag jfrog.rt.metadata.request
   <parse>
+    @type none
+  </parse>
+</source>
+<filter jfrog.rt.**.request>
+  @type parser
+  key_name message
+  <parse>
     @type regexp
     expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
     time_key timestamp
     time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
-</source>
+</filter>
+<filter jfrog.rt.artifactory.request>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    repo ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2") ? (record["request_url"].split('/')[3]) : ("")}
+    image ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].split('/')[5]) : ("")}
+  </record>
+</filter>
 <source>
   @type tail
   @id router_request_tail
@@ -231,7 +227,9 @@
   </buffer>
 </match>
 
-#SPLUNK OUTPUT
+####################
+# SPLUNK OUTPUT
+####################
 <match jfrog.**>
   @type splunk_hec
   host HEC_HOST

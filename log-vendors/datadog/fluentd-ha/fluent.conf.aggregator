@@ -1,10 +1,14 @@
-# FORWARDED INPUT
+####################
+# AGGREGATOR SOCKET
+####################
 <source>
   @type forward
   port 24224
 </source>
 
-# Strip out color codes then field extract the service fields
+####################
+# ARTIFACTORY
+####################
 <filter jfrog.rt.**.service>
   @type record_transformer
   enable_ruby true
@@ -13,18 +17,6 @@
   </record>
 </filter>
 <filter jfrog.rt.**.service>
-  @type parser
-  key_name message
-  <parse>
-      @type multiline
-      format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-      format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.*)$/
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
-  </parse>
-</filter>
-
-<filter jfrog.rt.router.traefik>
   @type parser
   key_name message
   <parse>
@@ -56,16 +48,6 @@
   </record>
 </filter>
 
-<filter jfrog.rt.router.request>
-  @type parser
-  key_name message
-  <parse>
-    @type json
-    time_key time
-    time_format %Y-%m-%dT%H:%M:%S%:z
-  </parse>
-</filter>
-
 <filter jfrog.rt.artifactory.access>
   @type parser
   key_name message
@@ -88,7 +70,9 @@
   </parse>
 </filter>
 
-
+####################
+# XRAY
+####################
 <filter jfrog.xray.**.service>
   @type record_transformer
   enable_ruby true
@@ -106,27 +90,6 @@
       format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] (?<message>.*)$/
       time_key timestamp
       time_format %Y-%m-%dT%H:%M:%S.%LZ
-  </parse>
-</filter>
-
-<filter jfrog.xray.router.traefik>
-  @type parser
-  key_name message
-  <parse>
-      @type regexp
-      expression ^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.+)$
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
-  </parse>
-</filter>
-
-<filter jfrog.xray.router.request>
-  @type parser
-  key_name message
-  <parse>
-    @type json
-    time_key time
-    time_format %Y-%m-%dT%H:%M:%SZ
   </parse>
 </filter>
 
@@ -141,6 +104,9 @@
   </parse>
 </filter>
 
+####################
+# DISTRIBUTION
+####################
 <filter jfrog.distribution.**.service>
   @type record_transformer
   enable_ruby true
@@ -158,27 +124,6 @@
       format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] (?<message>.*)$/
       time_key timestamp
       time_format %Y-%m-%dT%H:%M:%S.%LZ
-  </parse>
-</filter>
-
-<filter jfrog.distribution.router.traefik>
-  @type parser
-  key_name message
-  <parse>
-      @type regexp
-      expression ^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.+)$
-      time_key timestamp
-      time_format %Y-%m-%dT%H:%M:%S.%LZ
-  </parse>
-</filter>
-
-<filter jfrog.distribution.router.request>
-  @type parser
-  key_name message
-  <parse>
-    @type json
-    time_key time
-    time_format %Y-%m-%dT%H:%M:%S%:z
   </parse>
 </filter>
 
@@ -215,6 +160,75 @@
   </parse>
 </filter>
 
+####################
+# MISSION CONTROL
+####################
+<filter jfrog.missioncontrol.**.service>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    message ${record["message"].gsub(/\e\[([;\d]+)?m/, '')}
+  </record>
+</filter>
+
+<filter jfrog.missioncontrol.**.service>
+  @type parser
+  key_name message
+  <parse>
+    @type multiline
+    format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+    format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.*)$/
+    time_key timestamp
+    time_format %Y-%m-%dT%H:%M:%S.%LZ
+  </parse>
+</filter>
+
+<filter jfrog.missioncontrol.service.request>
+  @type parser
+  key_name message
+  <parse>
+    @type regexp
+    expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
+    time_key timestamp
+    time_format %Y-%m-%dT%H:%M:%S.%L
+  </parse>
+</filter>
+
+<filter jfrog.missioncontrol.**.request>
+  @type parser
+  key_name message
+  <parse>
+    @type regexp
+    expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
+    time_key timestamp
+    time_format %Y-%m-%dT%H:%M:%S.%L%:z
+  </parse>
+</filter>
+
+####################
+# ALL SERVICES
+####################
+<filter jfrog.**.router.request>
+  @type parser
+  key_name message
+  <parse>
+    @type json
+    time_key time
+    time_format %Y-%m-%dT%H:%M:%S%:z
+  </parse>
+</filter>
+
+<filter jfrog.**.router.traefik>
+  @type parser
+  key_name message
+  <parse>
+    @type regexp
+    expression ^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.+)$
+    time_key timestamp
+    time_format %Y-%m-%dT%H:%M:%S.%LZ
+  </parse>
+</filter>
+
 <filter jfrog.**>
   @type record_transformer
   <record>
@@ -223,14 +237,6 @@
   </record>
 </filter>
 
-<filter jfrog.rt.artifactory.request>
-  @type record_transformer
-  enable_ruby true
-  <record>
-    repo ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2") ? (record["request_url"].split('/')[3]) : ("")}
-    image ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].split('/')[5]) : ("")}
-  </record>
-</filter>
 
 <source>
   @type exec
@@ -273,7 +279,9 @@
   </buffer>
 </match>
 
-#DataDog Output
+######################
+# DataDog Output
+######################
 <match jfrog.**>
   @type datadog
   @id datadog_agent_artifactory
