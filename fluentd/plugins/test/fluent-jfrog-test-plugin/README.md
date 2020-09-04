@@ -49,7 +49,9 @@ Then run:
 
 `bundle`
 
-`ruby lib/fluent/plugin/jfrog_log_analytic_platform_test.rb`
+`ruby lib/fluent/plugin/jfrog_log_analytic_rt_test.rb`
+`ruby lib/fluent/plugin/jfrog_log_analytic_xray_test.rb`
+`ruby lib/fluent/plugin/jfrog_log_analytic_distribution_test.rb`
 
 
 To use this gem to test JFrog Artifactory 6.x set the `ARTIFACTORY_LOG_DIR` ENV.
