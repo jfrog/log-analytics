@@ -12,7 +12,6 @@
       time_format %Y-%m-%d %H:%M:%S,%L
   </parse>
 </source>
-
 <source>
   @type tail
   @id artifactory_request_tail
@@ -26,7 +25,6 @@
     time_format %Y%m%d%H%M%S
   </parse>
 </source>
-
 <source>
   @type tail
   @id artifactory_access_tail
@@ -40,8 +38,6 @@
     time_format %Y-%m-%d %H:%M:%S,%L
   </parse>
 </source>
-
-
 <filter jfrog.**>
   @type record_transformer
   <record>
@@ -49,7 +45,6 @@
     log_source ${tag}
   </record>
 </filter>
-
 <filter jfrog.rt.artifactory.request>
   @type record_transformer
   enable_ruby true
@@ -58,7 +53,6 @@
     image ${record["request_url"].include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].split('/')[5]) : ("")}
   </record>
 </filter>
-
 <filter jfrog.rt.artifactory.request>
   @type record_transformer
   enable_ruby true
@@ -67,7 +61,6 @@
     request_content_length_2 ${record["request_content_length"].to_f}
   </record>
 </filter>
-
 <source>
   @type exec
   tag jfrog.callhome
@@ -108,6 +101,10 @@
     flush_interval 5s
   </buffer>
 </match>
+
+####################
+# DATADOG OUTPUT
+####################
 <match jfrog.**>
   @type datadog
   @id datadog_agent_artifactory

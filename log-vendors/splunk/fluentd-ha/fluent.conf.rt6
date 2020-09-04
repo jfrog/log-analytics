@@ -8,7 +8,6 @@
     @type none
   </parse>
 </source>
-
 <source>
   @type tail
   @id artifactory_request_tail
@@ -19,7 +18,6 @@
     @type none
   </parse>
 </source>
-
 <source>
   @type tail
   @id artifactory_access_tail
@@ -31,7 +29,9 @@
   </parse>
 </source>
 
+####################
 # Log Forwarding
+####################
 <match jfrog.**>
   @type forward
   # primary host

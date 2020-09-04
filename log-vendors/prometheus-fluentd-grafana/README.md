@@ -1,6 +1,13 @@
 # Artifactory and Xray Logging Analytics with FluentD, Prometheus and Grafana
 The following describes how to configure Prometheus and Grafana to gather metrics from Artifactory and Xray through the use of FluentD. The setup and configuration of Prometheus and Grafana uses Kubernetes and makes use of the Prometheus Operator.
 
+| version | artifactory | xray  | distribution | mission_control | pipelines |
+|---------|-------------|-------|--------------|-----------------|-----------|
+| 0.4.0   | 7.7.3       | 3.8.0 | N/A          | N/A             | N/A       |
+| 0.3.0   | 7.7.3       | 3.8.0 | N/A          | N/A             | N/A       |
+| 0.2.0   | 7.7.3       | 3.8.0 | N/A          | N/A             | N/A       |
+| 0.1.1   | 7.6.3       | 3.6.2 | N/A          | N/A             | N/A       |
+
 ## Installing Prometheus and Grafana (via Operator) on K8s
 The [Prometheus Operator](https://coreos.com/operators/prometheus/docs/latest/) allows the creation of Prometheus instances and includes Grafana. Install the Prometheus Operator via Helm 3:
 

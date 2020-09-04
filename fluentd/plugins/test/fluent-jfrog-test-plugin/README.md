@@ -6,15 +6,15 @@
 
 To build / test locally use rake:
 
-``` 
+````ruby
 rake
-```
+````
 
 To build install locally use bundler:
 
-``` 
+````ruby
 bundle install
-```
+````
 
 This will install the gem shown below from source.
 
@@ -23,44 +23,61 @@ This will install the gem shown below from source.
 
 ### RubyGems
 
-```
-$ gem install fluent-jfrog-test-plugin
-```
+````ruby
+gem install fluent-jfrog-test-plugin
+````
 
 ### Bundler
 
 Add following line to your Gemfile:
 
-```ruby
+````ruby
 gem "fluent-jfrog-test-plugin"
-```
+````
 
 And then execute:
 
-```
-$ bundle
-```
+````ruby
+bundle
+````
 
-## Usage
+## Tests
 
-To use this gem to test JFrog Unified Platform set the `JFROG_LOG_DIR` ENV.
+To test the latest version of our regex against a log directory set the `JFROG_LOG_DIR` ENV.
 
 Then run:
 
-`bundle`
+````ruby
+bundle
+````
 
-`ruby lib/fluent/plugin/jfrog_log_analytic_rt_test.rb`
-`ruby lib/fluent/plugin/jfrog_log_analytic_xray_test.rb`
-`ruby lib/fluent/plugin/jfrog_log_analytic_distribution_test.rb`
+Artifactory
+````ruby
+ruby test/plugin/jfrog_log_analytic_rt_test.rb 
+````
+
+Xray
+````ruby
+ruby test/plugin/jfrog_log_analytic_xray_test.rb
+````
+
+Distribution
+````ruby
+ruby test/plugin/jfrog_log_analytic_distribution_test.rb
+````
 
 
 To use this gem to test JFrog Artifactory 6.x set the `ARTIFACTORY_LOG_DIR` ENV.
 
 Then run:
 
-`bundle`
+````ruby
+bundle
+````
 
-`ruby lib/fluent/plugin/jfrog_log_analytic_rt6_test.rb`
+````ruby
+ruby lib/fluent/plugin/jfrog_log_analytic_rt6_test.rb
+````
 
 ## Copyright
 

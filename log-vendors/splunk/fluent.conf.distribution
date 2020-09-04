@@ -79,7 +79,6 @@
     time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
-
 <source>
   @type tail
   @id distribution_foreman_tail
@@ -93,7 +92,6 @@
     time_format %Y-%m-%d %H:%M:%S,%L
   </parse>
 </source>
-# STRIP COLOR CODES FROM SERVICE LOGS
 <filter jfrog.distribution.**.service>
   @type record_transformer
   enable_ruby true
@@ -101,7 +99,6 @@
     message ${record["message"].gsub(/\e\[([;\d]+)?m/, '')}
   </record>
 </filter>
-# FIELD EXTRACT SERVICE LOG
 <filter jfrog.distribution.**.service>
   @type parser
   key_name message
@@ -121,7 +118,9 @@
   </record>
 </filter>
 
+####################
 # SPLUNK OUTPUT
+####################
 <match jfrog.**>
   @type splunk_hec
   host HEC_HOST

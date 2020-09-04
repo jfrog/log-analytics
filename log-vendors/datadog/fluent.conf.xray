@@ -86,7 +86,6 @@
     time_format %Y-%m-%dT%H:%M:%S.%LZ
   </parse>
 </source>
-# STRIP COLOR CODES FROM SERVICE LOGS
 <filter jfrog.xray.**.service>
   @type record_transformer
   enable_ruby true
@@ -94,7 +93,6 @@
     message ${record["message"].gsub(/\e\[([;\d]+)?m/, '')}
   </record>
 </filter>
-# FIELD EXTRACT SERVICE LOG
 <filter jfrog.xray.**.service>
   @type parser
   key_name message
@@ -113,6 +111,10 @@
     log_source ${tag}
   </record>
 </filter>
+
+####################
+# DATADOG OUTPUT
+####################
 <match jfrog.**>
   @type datadog
   @id datadog_agent_xray
