@@ -205,6 +205,19 @@
   </parse>
 </filter>
 
+
+####################
+# PIPELINES
+####################
+<filter jfrog.pipelines.**>
+  @type parser
+  key_name message
+  <parse>
+    @type json
+  </parse>
+</filter>
+
+
 ####################
 # ALL SERVICES
 ####################

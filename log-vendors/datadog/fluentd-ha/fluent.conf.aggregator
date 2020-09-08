@@ -205,6 +205,21 @@
   </parse>
 </filter>
 
+
+####################
+# PIPELINES
+####################
+<filter jfrog.pipelines.**>
+  @type parser
+  key_name message
+  <parse>
+    @type json
+    time_key timestamp
+    time_format %Y-%m-%dT%H:%M:%S.%LZ
+  </parse>
+</filter>
+
+
 ####################
 # ALL SERVICES
 ####################
