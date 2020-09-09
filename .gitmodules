@@ -7,3 +7,6 @@
 [submodule "datadog"]
 	path = log-vendors/datadog
 	url = https://github.com/jfrog/log-analytics-datadog.git
+[submodule "prometheus"]
+	path = log-vendors/prometheus-fluentd-grafana
+	url = https://github.com/jfrog/log-analytics-prometheus.git
