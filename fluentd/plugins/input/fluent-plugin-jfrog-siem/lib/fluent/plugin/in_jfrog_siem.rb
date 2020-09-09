@@ -126,7 +126,7 @@ module Fluent
             # Publish the record to fluentd
             if persistItem
 
-              now = Time.now.strftime('%Y-%m-%dT%H:%M:%S.%LZ')
+              now = Time.now
               router.emit(@tag, now, item)
 
               # write to the pos_file created_date_string
@@ -216,7 +216,7 @@ module Fluent
         begin
           detailResp=get_xray_violations_detail(xray_violation_detail_url, access_token)
           time = Time.now.strftime('%Y-%m-%dT%H:%M:%S.%LZ')
-          router.emit(@tag, time, JSON.parse(detailResp))
+            #router.emit(@tag, time, JSON.parse(detailResp))
         rescue
           raise Fluent::BufferError, "Error pulling violation details url #{xray_violation_detail_url}"
         end
