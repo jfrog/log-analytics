@@ -4,6 +4,8 @@ This project integrates JFrog logs into various log analytic providers through t
 
 The goal of this project is to provide JFrog customers with robust log analytic solutions that they could use to monitor the JFrog unified platform microservices.
 
+Note this project makes use of git submodules for this reason we recommend you clone with the --recursive flag to ensure all log vendor files are downloaded.
+
 ## Table of Contents
 
    * [Fluentd](#fluentd)
