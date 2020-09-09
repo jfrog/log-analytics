@@ -1,7 +1,7 @@
 # JFrog Log Analytics Changelog
 All changes to the log analytics integration will be documented in this file.
 
-££ [0.5.1] - Sept 9, 2020
+## [0.5.1] - Sept 9, 2020
 * All log vendors Splunk, Datadog, Elastic, and Prometheus are separate git repos as submodules now. Versioning is per individual repo now.
 
 ## [0.5.0] - Sept 8, 2020
