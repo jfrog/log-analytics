@@ -215,8 +215,8 @@ module Fluent
       def pull_violation_details(xray_violation_detail_url, access_token)
         begin
           detailResp=get_xray_violations_detail(xray_violation_detail_url, access_token)
-          time = Time.now.strftime('%Y-%m-%dT%H:%M:%S.%LZ')
-            #router.emit(@tag, time, JSON.parse(detailResp))
+          time = Fluent::Engine.now
+          router.emit(@tag, time, JSON.parse(detailResp))
         rescue
           raise Fluent::BufferError, "Error pulling violation details url #{xray_violation_detail_url}"
         end
