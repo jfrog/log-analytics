@@ -126,8 +126,8 @@ module Fluent
             # Publish the record to fluentd
             if persistItem
 
-              now = Time.now.strftime('%Y-%m-%dT%H:%M:%S.%LZ')
-              router.emit(@tag, "lala", item)
+              now = Time.now
+              router.emit(@tag, now, item)
 
               # write to the pos_file created_date_string
               open(@pos_file, 'a') do |f|
