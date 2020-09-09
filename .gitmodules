@@ -1,0 +1,3 @@
+[submodule "splunk"]
+	path = log-vendors/splunk
+	url = https://github.com/jfrog/log-analytics-splunk.git
