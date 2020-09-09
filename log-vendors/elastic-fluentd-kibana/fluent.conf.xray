@@ -105,7 +105,10 @@
     log_source ${tag}
   </record>
 </filter>
-#ELASTIC OUTPUT
+
+########################
+# ELASTIC OUTPUT
+########################
 <match jfrog.**>
   @type elasticsearch
   @id elasticsearch

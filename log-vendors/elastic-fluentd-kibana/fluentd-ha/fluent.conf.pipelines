@@ -1,0 +1,154 @@
+<source>
+  @type tail
+  @id api_production_out
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/api_production_out.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/api_production_out.log.pos"
+  tag jfrog.pipelines.api.production
+  <parse>
+    @type none
+  </parse>
+</source>
+<source>
+  @type tail
+  @id api_undefined_out
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/api_undefined_out.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/api_undefined_out.log.pos"
+  tag jfrog.pipelines.api.undefined
+  <parse>
+    @type none
+  </parse>
+</source>
+<source>
+  @type tail
+  @id api_production_out
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/www_production_out.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/www_production_out.log.pos"
+  tag jfrog.pipelines.www.production
+  <parse>
+    @type none
+  </parse>
+</source>
+<source>
+  @type tail
+  @id www_undefined_out
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/www_undefined_out.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/www_undefined_out.log.pos"
+  tag jfrog.pipelines.www.undefined.out
+  <parse>
+    @type none
+  </parse>
+</source>
+<source>
+  @type tail
+  @id cron_log
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/cron.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/cron.log.pos"
+  tag jfrog.pipelines.cron
+  <parse>
+    @type none
+  </parse>
+</source>
+<source>
+  @type tail
+  @id extension_sync_log
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/extensionSync.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/extensionSync.log.pos"
+  tag jfrog.pipelines.extension.sync
+  <parse>
+    @type none
+  </parse>
+</source>
+<source>
+  @type tail
+  @id hook_handler_log
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/hookHandler.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/hookHandler.log.pos"
+  tag jfrog.pipelines.hook.handler
+  <parse>
+    @type none
+  </parse>
+</source>
+<source>
+  @type tail
+  @id logup_log
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/logup.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/logup.log.pos"
+  tag jfrog.pipelines.logup
+  <parse>
+    @type none
+  </parse>
+</source>
+<source>
+  @type tail
+  @id marshaller_log
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/marshaller.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/marshaller.log.pos"
+  tag jfrog.pipelines.marshaller
+  <parse>
+    @type none
+  </parse>
+</source>
+<source>
+  @type tail
+  @id nexec_log
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/nexec.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/nexec.log.pos"
+  tag jfrog.pipelines.nexec
+  <parse>
+    @type none
+  </parse>
+</source>
+<source>
+  @type tail
+  @id pipeline_sync_log
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/pipelineSync.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/pipelineSync.log.pos"
+  tag jfrog.pipelines.pipeline.sync
+  <parse>
+    @type none
+  </parse>
+</source>
+<source>
+  @type tail
+  @id run_trigger_log
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/runTrigger.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/runTrigger.log.pos"
+  tag jfrog.pipelines.run.trigger
+  <parse>
+    @type none
+  </parse>
+</source>
+<source>
+  @type tail
+  @id step_trigger_log
+  path "#{ENV['JFROG_HOME']}/pipelines/var/log/stepTrigger.log"
+  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/stepTrigger.log.pos"
+  tag jfrog.pipelines.step.trigger
+  <parse>
+    @type none
+  </parse>
+</source>
+
+
+####################
+# Log Forwarding
+####################
+<match jfrog.**>
+  @type forward
+  # primary host
+  <server>
+    host 192.168.0.1
+    port 24224
+  </server>
+  # use secondary host
+  <server>
+    host 192.168.0.2
+    port 24224
+    standby
+  </server>
+  # use longer flush_interval to reduce CPU usage.
+  # note that this is a trade-off against latency.
+  <buffer>
+    flush_interval 30s
+  </buffer>
+</match>

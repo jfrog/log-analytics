@@ -1,6 +1,9 @@
 # JFrog Log Analytics Changelog
 All changes to the log analytics integration will be documented in this file.
 
+## [0.5.0] - Sept 8, 2020
+* Adding JFrog Pipelines fluent configuration files to capture logs
+
 ## [0.4.0] - Sept 4, 2020
 * Adding JFrog Mission Control fluent configuration files to capture logs
 

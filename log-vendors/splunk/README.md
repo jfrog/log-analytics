@@ -5,6 +5,7 @@ The following describes how to configure Fluentd and Splunk to gather logs from 
 
 | version | artifactory | xray  | distribution | mission_control | pipelines | splunk                    |
 |---------|-------------|-------|--------------|-----------------|-----------|---------------------------|
+| 0.5.0   | 7.7.3       | 3.8.0 | 2.4.2        | 4.5.0           | 1.7.2     | 8.0.5 Build: a1a6394cc5ae |
 | 0.4.0   | 7.7.3       | 3.8.0 | 2.4.2        | 4.5.0           | N/A       | 8.0.5 Build: a1a6394cc5ae |
 | 0.3.0   | 7.7.3       | 3.8.0 | 2.4.2        | N/A             | N/A       | 8.0.5 Build: a1a6394cc5ae |
 | 0.2.0   | 7.7.3       | 3.8.0 | N/A          | N/A             | N/A       | 8.0.5 Build: a1a6394cc5ae |

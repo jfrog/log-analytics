@@ -109,7 +109,9 @@
   </buffer>
 </match>
 
+########################
 # ELASTIC OUTPUT
+########################
 <match jfrog.**>
   @type elasticsearch
   @id elasticsearch
