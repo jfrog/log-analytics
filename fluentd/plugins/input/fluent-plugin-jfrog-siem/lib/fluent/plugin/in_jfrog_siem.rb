@@ -126,7 +126,7 @@ module Fluent
             # Publish the record to fluentd
             if persistItem
 
-              now = Time.now
+              now = Fluent::Engine.now
               router.emit(@tag, now, item)
 
               # write to the pos_file created_date_string
