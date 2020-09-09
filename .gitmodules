@@ -4,3 +4,6 @@
 [submodule "elastic"]
 	path = log-vendors/elastic-fluentd-kibana
 	url = https://github.com/jfrog/log-analytics-elastic.git
+[submodule "datadog"]
+	path = log-vendors/datadog
+	url = https://github.com/jfrog/log-analytics-datadog.git
