@@ -89,7 +89,10 @@ module Fluent
 
 
       def run
-        #response = call_home(@artifactory_url, @access_token)
+        response = call_home(@artifactory_url, @access_token)
+        puts "------------"
+        puts response
+        puts "------------"
         # runs the violation pull
         last_created_date_string = get_last_item_create_date()
         begin
@@ -185,14 +188,8 @@ module Fluent
             :url => artifactory_url + "/artifactory/api/system/usage",
             :payload => call_home_json.to_json,
             :headers => { :accept => :json, :content_type => :json, Authorization:'Bearer ' + access_token }
-        ).execute do |response, request, result|
-          case response.code
-          when 200
-            return response.to_str
-          else
-            raise "Cannot reach Artifactory URL to add call home"
-          end
-        end
+        ).execute
+        return response
       end
 
       # queries the xray API for violations based upon the input json
@@ -234,7 +231,7 @@ module Fluent
         begin
           detailResp=get_xray_violations_detail(xray_violation_detail_url, access_token)
           time = Fluent::Engine.now
-          router.emit(@tag, time, JSON.parse(detailResp))
+            #router.emit(@tag, time, JSON.parse(detailResp))
         rescue
           raise Fluent::StandardError, "Error pulling violation details url #{xray_violation_detail_url}"
         end
