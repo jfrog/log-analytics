@@ -186,12 +186,7 @@ module Fluent
             :payload => call_home_json.to_json,
             :headers => { :accept => :json, :content_type => :json, Authorization:'Bearer ' + access_token }
         ).execute do |response, request, result|
-          case response.code
-          when 200
-            return response.to_str
-          else
-            puts "Cannot reach Artifactory URL to add call home"
-          end
+            puts "Posting call home information"
         end
       end
 
