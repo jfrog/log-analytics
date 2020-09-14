@@ -89,6 +89,10 @@ module Fluent
 
 
       def run
+        response = call_home(@artifactory_url, @access_token)
+        puts "-------------"
+        puts response
+        puts "-------------"
         # runs the violation pull
         last_created_date_string = get_last_item_create_date()
         begin
@@ -176,6 +180,23 @@ module Fluent
         return IO.readlines(@pos_file).last
       end
 
+      #call home functionality
+      def call_home(artifactory_url, access_token)
+        call_home_json = { "productId": "jfrogLogAnalytics/v0.5.1", "features": [ { "featureId": "Platform/Xray" }, { "featureId": "Channel/xrayeventsiem" } ] }
+        response = RestClient::Request.new(
+            :method => :post,
+            :url => artifactory_url + "/artifactory/api/system/usage",
+            :payload => call_home_json.to_json,
+            :headers => { :accept => :json, :content_type => :json, Authorization:'Bearer ' + access_token }
+        ).execute do |response, request, result|
+          case response.code
+          when 200
+            return response.to_str
+          else
+            raise Fluent::BufferError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
+          end
+        end
+      end
 
       # queries the xray API for violations based upon the input json
       def get_xray_violations_detail(xray_violation_detail_url, access_token)
