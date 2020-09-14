@@ -89,7 +89,7 @@ module Fluent
 
 
       def run
-        response = call_home(@artifactory_url, @access_token)
+        #response = call_home(@artifactory_url, @access_token)
         # runs the violation pull
         last_created_date_string = get_last_item_create_date()
         begin
