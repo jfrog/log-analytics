@@ -90,9 +90,6 @@ module Fluent
 
       def run
         response = call_home(@artifactory_url, @access_token)
-        puts "-------------"
-        puts response
-        puts "-------------"
         # runs the violation pull
         last_created_date_string = get_last_item_create_date()
         begin
@@ -193,7 +190,7 @@ module Fluent
           when 200
             return response.to_str
           else
-            raise Fluent::BufferError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
+            raise Fluent::StandardError, "Cannot reach Artifactory URL to add call home"
           end
         end
       end
@@ -209,7 +206,7 @@ module Fluent
           when 200
             return response.to_str
           else
-            raise Fluent::BufferError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
+            raise Fluent::StandardError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
           end
         end
       end
@@ -227,7 +224,7 @@ module Fluent
           when 200
             return response.to_str
           else
-            raise Fluent::BufferError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
+            raise Fluent::StandardError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
           end
         end
       end
@@ -239,7 +236,7 @@ module Fluent
           time = Fluent::Engine.now
           router.emit(@tag, time, JSON.parse(detailResp))
         rescue
-          raise Fluent::BufferError, "Error pulling violation details url #{xray_violation_detail_url}"
+          raise Fluent::StandardError, "Error pulling violation details url #{xray_violation_detail_url}"
         end
       end
 
