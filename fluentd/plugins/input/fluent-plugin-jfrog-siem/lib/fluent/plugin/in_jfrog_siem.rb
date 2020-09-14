@@ -190,7 +190,7 @@ module Fluent
           when 200
             return response.to_str
           else
-            raise Fluent::StandardError, "Cannot reach Artifactory URL to add call home"
+            raise "Cannot reach Artifactory URL to add call home"
           end
         end
       end
