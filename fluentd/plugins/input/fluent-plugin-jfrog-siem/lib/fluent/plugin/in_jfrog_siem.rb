@@ -128,7 +128,7 @@ module Fluent
             if persistItem
 
               now = Fluent::Engine.now
-              #router.emit(@tag, now, item)
+              router.emit(@tag, now, item)
 
               # write to the pos_file created_date_string
               open(@pos_file, 'a') do |f|
