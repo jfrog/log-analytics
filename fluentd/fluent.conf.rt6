@@ -99,9 +99,43 @@
   </buffer>
 </match>
 
-# OUTPUT SENT TO STDOUT FOR VERIFICATION
-# LOG VENDOR SPECIFIC OUTPUTS AVAILABLE
-# UNDER THEIR RESPECTIVE FOLDER IN log-vendors
 <match jfrog.**>
-  @type stdout
+  @type copy
+  <store>
+      @type "elasticsearch"
+      @id elasticsearch
+      host "elasticsearch"
+      port 9200
+      user "elastic"
+      password xxxxxx
+      index_name "unified-artifactory"
+      include_tag_key true
+      type_name "fluentd"
+      logstash_format false
+  </store>
+  <store>
+      @type "splunk_hec"
+      host "splunk"
+      port 8088
+      token xxxxxx
+      format json
+      sourcetype_key "log_source"
+      use_fluentd_time false
+      flush_interval 10s
+      <buffer tag>
+        flush_mode interval
+        retry_type exponential_backoff
+        flush_interval 10s
+      </buffer>
+      <format>
+        @type json
+      </format>
+  </store>
+  <store>
+      @type "datadog"
+      @id datadog_agent_artifactory
+      api_key xxxxxx
+      include_tag_key true
+      dd_source fluentd
+  </store>
 </match>
