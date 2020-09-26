@@ -29,7 +29,7 @@ module Fluent
       # You can refer to a parameter like an instance variable e.g. @port.
       # `:default` means that the parameter is optional.
       config_param :tag, :string, default: ""
-      config_param :artifactory_url, :string, default: ""
+      config_param :jpd_url, :string, default: ""
       config_param :access_token, :string, default: ""
       config_param :pos_file, :string, default: ""
       config_param :batch_size, :integer, default: 25
@@ -46,7 +46,7 @@ module Fluent
           raise Fluent::ConfigError, "Must define a tag for the SIEM data."
         end
 
-        if @artifactory_url == ""
+        if @jpd_url == ""
           raise Fluent::ConfigError, "Must define the Artifactory URL to pull Xray SIEM violations."
         end
 
@@ -89,7 +89,7 @@ module Fluent
 
 
       def run
-        call_home(@artifactory_url, @access_token)
+        call_home(@jpd_url, @access_token)
         # runs the violation pull
         last_created_date_string = get_last_item_create_date()
         begin
@@ -103,7 +103,7 @@ module Fluent
 
         while true
           # Grab the batch of records
-          resp=get_xray_violations(xray_json, @artifactory_url, @access_token)
+          resp=get_xray_violations(xray_json, @jpd_url, @access_token)
           number_of_violations = JSON.parse(resp)['total_violations']
           if left_violations <= 0
             left_violations = number_of_violations
@@ -178,11 +178,11 @@ module Fluent
       end
 
       #call home functionality
-      def call_home(artifactory_url, access_token)
+      def call_home(jpd_url, access_token)
         call_home_json = { "productId": "jfrogLogAnalytics/v0.5.1", "features": [ { "featureId": "Platform/Xray" }, { "featureId": "Channel/xrayeventsiem" } ] }
         response = RestClient::Request.new(
             :method => :post,
-            :url => artifactory_url + "/artifactory/api/system/usage",
+            :url => jpd_url + "/artifactory/api/system/usage",
             :payload => call_home_json.to_json,
             :headers => { :accept => :json, :content_type => :json, Authorization:'Bearer ' + access_token }
         ).execute do |response, request, result|
@@ -208,10 +208,10 @@ module Fluent
 
 
       # queries the xray API for violations based upon the input json
-      def get_xray_violations(xray_json, artifactory_url, access_token)
+      def get_xray_violations(xray_json, jpd_url, access_token)
         response = RestClient::Request.new(
             :method => :post,
-            :url => artifactory_url + "/xray/api/v1/violations",
+            :url => jpd_url + "/xray/api/v1/violations",
             :payload => xray_json.to_json,
             :headers => { :accept => :json, :content_type => :json, Authorization:'Bearer ' + access_token }
         ).execute do |response, request, result|
