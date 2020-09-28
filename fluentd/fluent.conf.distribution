@@ -1,8 +1,8 @@
 <source>
   @type tail
   @id distributor_service_tail
-  path "#{ENV['JFROG_HOME']}/distribution/var/log/distributor-service.log"
-  pos_file "#{ENV['JFROG_HOME']}/distribution/var/log/distributor-service.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/distributor-service.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/distributor-service.log.pos"
   tag jfrog.distribution.distributor.service
   <parse>
     @type none
@@ -11,8 +11,8 @@
 <source>
   @type tail
   @id distribution_service_tail
-  path "#{ENV['JFROG_HOME']}/distribution/var/log/distribution-service.log"
-  pos_file "#{ENV['JFROG_HOME']}/distribution/var/log/distribution-service.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/distribution-service.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/distribution-service.log.pos"
   tag jfrog.distribution.distribution.service
   <parse>
     @type none
@@ -21,8 +21,8 @@
 <source>
   @type tail
   @id distribution_router_tail
-  path "#{ENV['JFROG_HOME']}/distribution/var/log/router-service.log"
-  pos_file "#{ENV['JFROG_HOME']}/distribution/var/log/router-service.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-service.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-service.log.pos"
   tag jfrog.distribution.router.service
   <parse>
     @type none
@@ -31,8 +31,8 @@
 <source>
   @type tail
   @id distribution_router_traefik_tail
-  path "#{ENV['JFROG_HOME']}/distribution/var/log/router-traefik.log"
-  pos_file "#{ENV['JFROG_HOME']}/distribution/var/log/router-traefik.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-traefik.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-traefik.log.pos"
   tag jfrog.distribution.router.traefik
   <parse>
       @type regexp
@@ -44,8 +44,8 @@
 <source>
   @type tail
   @id distribution_router_request_tail
-  path  "#{ENV['JFROG_HOME']}/distribution/var/log/router-request.log"
-  pos_file "#{ENV['JFROG_HOME']}/distribution/var/log/router-request.log.pos"
+  path  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-request.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-request.log.pos"
   tag jfrog.distribution.router.request
   <parse>
     @type json
@@ -56,8 +56,8 @@
 <source>
   @type tail
   @id distribution_request_tail
-  path  "#{ENV['JFROG_HOME']}/distribution/var/log/distribution-request.log"
-  pos_file  "#{ENV['JFROG_HOME']}/distribution/var/log/distribution-request.log.pos"
+  path  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/distribution-request.log"
+  pos_file  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/distribution-request.log.pos"
   tag jfrog.distribution.distribution.request
   <parse>
     @type regexp
@@ -69,8 +69,8 @@
 <source>
   @type tail
   @id distribution_access_tail
-  path "#{ENV['JFROG_HOME']}/distribution/var/log/distribution-access.log"
-  pos_file "#{ENV['JFROG_HOME']}/distribution/var/log/distribution-access.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/distribution-access.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/distribution-access.log.pos"
   tag jfrog.distribution.distribution.access
   <parse>
     @type regexp
@@ -83,8 +83,8 @@
 <source>
   @type tail
   @id distribution_foreman_tail
-  path "#{ENV['JFROG_HOME']}/distribution/var/log/distributor-foreman.log"
-  pos_file "#{ENV['JFROG_HOME']}/distribution/var/log/distributor-foreman.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/distributor-foreman.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/distributor-foreman.log.pos"
   tag jfrog.distribution.distributor.foreman
   <parse>
     @type regexp
@@ -121,9 +121,43 @@
   </record>
 </filter>
 
-# OUTPUT SENT TO STDOUT FOR VERIFICATION
-# LOG VENDOR SPECIFIC OUTPUTS AVAILABLE
-# UNDER THEIR RESPECTIVE FOLDER IN log-vendors
 <match jfrog.**>
-  @type stdout
+  @type copy
+  <store>
+      @type "elasticsearch"
+      @id elasticsearch
+      host "elasticsearch"
+      port 9200
+      user "elastic"
+      password xxxxxx
+      index_name "unified-artifactory"
+      include_tag_key true
+      type_name "fluentd"
+      logstash_format false
+  </store>
+  <store>
+      @type "splunk_hec"
+      host "splunk"
+      port 8088
+      token xxxxxx
+      format json
+      sourcetype_key "log_source"
+      use_fluentd_time false
+      flush_interval 10s
+      <buffer tag>
+        flush_mode interval
+        retry_type exponential_backoff
+        flush_interval 10s
+      </buffer>
+      <format>
+        @type json
+      </format>
+  </store>
+  <store>
+      @type "datadog"
+      @id datadog_agent_artifactory
+      api_key xxxxxx
+      include_tag_key true
+      dd_source fluentd
+  </store>
 </match>

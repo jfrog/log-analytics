@@ -1,8 +1,8 @@
 <source>
   @type tail
   @id api_production_out
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/api_production_out.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/api_production_out.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/api_production_out.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/api_production_out.log.pos"
   tag jfrog.pipelines.api.production
   <parse>
     @type none
@@ -11,8 +11,8 @@
 <source>
   @type tail
   @id api_undefined_out
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/api_undefined_out.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/api_undefined_out.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/api_undefined_out.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/api_undefined_out.log.pos"
   tag jfrog.pipelines.api.undefined
   <parse>
     @type none
@@ -21,8 +21,8 @@
 <source>
   @type tail
   @id api_production_out
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/www_production_out.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/www_production_out.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/www_production_out.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/www_production_out.log.pos"
   tag jfrog.pipelines.www.production
   <parse>
     @type none
@@ -31,8 +31,8 @@
 <source>
   @type tail
   @id www_undefined_out
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/www_undefined_out.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/www_undefined_out.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/www_undefined_out.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/www_undefined_out.log.pos"
   tag jfrog.pipelines.www.undefined.out
   <parse>
     @type none
@@ -41,8 +41,8 @@
 <source>
   @type tail
   @id cron_log
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/cron.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/cron.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/cron.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/cron.log.pos"
   tag jfrog.pipelines.cron
   <parse>
     @type none
@@ -51,8 +51,8 @@
 <source>
   @type tail
   @id extension_sync_log
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/extensionSync.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/extensionSync.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/extensionSync.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/extensionSync.log.pos"
   tag jfrog.pipelines.extension.sync
   <parse>
     @type none
@@ -61,8 +61,8 @@
 <source>
   @type tail
   @id hook_handler_log
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/hookHandler.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/hookHandler.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/hookHandler.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/hookHandler.log.pos"
   tag jfrog.pipelines.hook.handler
   <parse>
     @type none
@@ -71,8 +71,8 @@
 <source>
   @type tail
   @id logup_log
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/logup.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/logup.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/logup.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/logup.log.pos"
   tag jfrog.pipelines.logup
   <parse>
     @type none
@@ -81,8 +81,8 @@
 <source>
   @type tail
   @id marshaller_log
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/marshaller.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/marshaller.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/marshaller.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/marshaller.log.pos"
   tag jfrog.pipelines.marshaller
   <parse>
     @type none
@@ -91,8 +91,8 @@
 <source>
   @type tail
   @id nexec_log
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/nexec.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/nexec.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/nexec.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/nexec.log.pos"
   tag jfrog.pipelines.nexec
   <parse>
     @type none
@@ -101,8 +101,8 @@
 <source>
   @type tail
   @id pipeline_sync_log
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/pipelineSync.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/pipelineSync.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/pipelineSync.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/pipelineSync.log.pos"
   tag jfrog.pipelines.pipeline.sync
   <parse>
     @type none
@@ -111,8 +111,8 @@
 <source>
   @type tail
   @id run_trigger_log
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/runTrigger.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/runTrigger.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/runTrigger.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/runTrigger.log.pos"
   tag jfrog.pipelines.run.trigger
   <parse>
     @type none
@@ -121,8 +121,8 @@
 <source>
   @type tail
   @id step_trigger_log
-  path "#{ENV['JFROG_HOME']}/pipelines/var/log/stepTrigger.log"
-  pos_file "#{ENV['JFROG_HOME']}/pipelines/var/log/stepTrigger.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/stepTrigger.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/stepTrigger.log.pos"
   tag jfrog.pipelines.step.trigger
   <parse>
     @type none
@@ -145,9 +145,43 @@
   </record>
 </filter>
 
-# OUTPUT SENT TO STDOUT FOR VERIFICATION
-# LOG VENDOR SPECIFIC OUTPUTS AVAILABLE
-# UNDER THEIR RESPECTIVE FOLDER IN log-vendors
 <match jfrog.**>
-  @type stdout
+  @type copy
+  <store>
+      @type "elasticsearch"
+      @id elasticsearch
+      host "elasticsearch"
+      port 9200
+      user "elastic"
+      password xxxxxx
+      index_name "unified-artifactory"
+      include_tag_key true
+      type_name "fluentd"
+      logstash_format false
+  </store>
+  <store>
+      @type "splunk_hec"
+      host "splunk"
+      port 8088
+      token xxxxxx
+      format json
+      sourcetype_key "log_source"
+      use_fluentd_time false
+      flush_interval 10s
+      <buffer tag>
+        flush_mode interval
+        retry_type exponential_backoff
+        flush_interval 10s
+      </buffer>
+      <format>
+        @type json
+      </format>
+  </store>
+  <store>
+      @type "datadog"
+      @id datadog_agent_artifactory
+      api_key xxxxxx
+      include_tag_key true
+      dd_source fluentd
+  </store>
 </match>

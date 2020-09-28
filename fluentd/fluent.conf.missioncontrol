@@ -1,8 +1,8 @@
 <source>
   @type tail
   @id insight_scheduler_service_tail
-  path "#{ENV['JFROG_HOME']}/mc/var/log/insight-scheduler-service.log"
-  pos_file "#{ENV['JFROG_HOME']}/mc/var/log/insight-scheduler-service.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/insight-scheduler-service.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/insight-scheduler-service.log.pos"
   tag jfrog.missioncontrol.insight.scheduler.service
   <parse>
     @type none
@@ -11,8 +11,8 @@
 <source>
   @type tail
   @id insight_server_service_tail
-  path "#{ENV['JFROG_HOME']}/mc/var/log/insight-server-service.log"
-  pos_file "#{ENV['JFROG_HOME']}/mc/var/log/insight-server-service.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/insight-server-service.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/insight-server-service.log.pos"
   tag jfrog.missioncontrol.insight.server.service
   <parse>
     @type none
@@ -21,8 +21,8 @@
 <source>
   @type tail
   @id router_service_tail
-  path "#{ENV['JFROG_HOME']}/mc/var/log/router-service.log"
-  pos_file "#{ENV['JFROG_HOME']}/mc/var/log/router-service.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-service.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-service.log.pos"
   tag jfrog.missioncontrol.router.service
   <parse>
     @type none
@@ -31,8 +31,8 @@
 <source>
   @type tail
   @id mc_error_tail
-  path "#{ENV['JFROG_HOME']}/mc/var/log/mc-error.log"
-  pos_file "#{ENV['JFROG_HOME']}/mc/var/log/mc-error.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/mc-error.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/mc-error.log.pos"
   tag jfrog.missioncontrol.error.service
   <parse>
     @type none
@@ -41,8 +41,8 @@
 <source>
   @type tail
   @id mc_service_tail
-  path "#{ENV['JFROG_HOME']}/mc/var/log/mc-service.log"
-  pos_file "#{ENV['JFROG_HOME']}/mc/var/log/mc-service.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/mc-service.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/mc-service.log.pos"
   tag jfrog.missioncontrol.service
   <parse>
     @type none
@@ -51,8 +51,8 @@
 <source>
   @type tail
   @id mc_router_traefik_tail
-  path "#{ENV['JFROG_HOME']}/mc/var/log/router-traefik.log"
-  pos_file "#{ENV['JFROG_HOME']}/mc/var/log/router-traefik.log.pos"
+  path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-traefik.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-traefik.log.pos"
   tag jfrog.missioncontrol.router.traefik
   <parse>
       @type regexp
@@ -64,8 +64,8 @@
 <source>
   @type tail
   @id mc_router_request_tail
-  path  "#{ENV['JFROG_HOME']}/mc/var/log/router-request.log"
-  pos_file "#{ENV['JFROG_HOME']}/mc/var/log/router-request.log.pos"
+  path  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-request.log"
+  pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-request.log.pos"
   tag jfrog.missioncontrol.router.request
   <parse>
     @type json
@@ -76,8 +76,8 @@
 <source>
   @type tail
   @id insight_server_request_tail
-  path  "#{ENV['JFROG_HOME']}/mc/var/log/insight-server-request.log"
-  pos_file  "#{ENV['JFROG_HOME']}/mc/var/log/insight-server-request.log.pos"
+  path  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/insight-server-request.log"
+  pos_file  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/insight-server-request.log.pos"
   tag jfrog.missioncontrol.insight.server.request
   <parse>
     @type regexp
@@ -89,8 +89,8 @@
 <source>
   @type tail
   @id insight_scheduler_request_tail
-  path  "#{ENV['JFROG_HOME']}/mc/var/log/insight-scheduler-request.log"
-  pos_file  "#{ENV['JFROG_HOME']}/mc/var/log/insight-scheduler-request.log.pos"
+  path  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/insight-scheduler-request.log"
+  pos_file  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/insight-scheduler-request.log.pos"
   tag jfrog.missioncontrol.insight.scheduler.request
   <parse>
     @type regexp
@@ -102,8 +102,8 @@
 <source>
   @type tail
   @id mc_request_tail
-  path  "#{ENV['JFROG_HOME']}/mc/var/log/mc-request.log"
-  pos_file  "#{ENV['JFROG_HOME']}/mc/var/log/mc-request.log.pos"
+  path  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/mc-request.log"
+  pos_file  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/mc-request.log.pos"
   tag jfrog.missioncontrol.service.request
   <parse>
     @type regexp
@@ -138,9 +138,43 @@
   </record>
 </filter>
 
-# OUTPUT SENT TO STDOUT FOR VERIFICATION
-# LOG VENDOR SPECIFIC OUTPUTS AVAILABLE
-# UNDER THEIR RESPECTIVE FOLDER IN log-vendors
 <match jfrog.**>
-  @type stdout
+  @type copy
+  <store>
+      @type "elasticsearch"
+      @id elasticsearch
+      host "elasticsearch"
+      port 9200
+      user "elastic"
+      password xxxxxx
+      index_name "unified-artifactory"
+      include_tag_key true
+      type_name "fluentd"
+      logstash_format false
+  </store>
+  <store>
+      @type "splunk_hec"
+      host "splunk"
+      port 8088
+      token xxxxxx
+      format json
+      sourcetype_key "log_source"
+      use_fluentd_time false
+      flush_interval 10s
+      <buffer tag>
+        flush_mode interval
+        retry_type exponential_backoff
+        flush_interval 10s
+      </buffer>
+      <format>
+        @type json
+      </format>
+  </store>
+  <store>
+      @type "datadog"
+      @id datadog_agent_artifactory
+      api_key xxxxxx
+      include_tag_key true
+      dd_source fluentd
+  </store>
 </match>
