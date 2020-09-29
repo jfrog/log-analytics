@@ -15,7 +15,6 @@ jobs:
           SLACK_CHANNEL: partnereng-pullrequest
           SLACK_COLOR: '#3278BD'
           SLACK_ICON: https://pbs.twimg.com/profile_images/978188446178082817/86ulJdF0.jpg
-          SLACK_MESSAGE: 'New PR on ${{ github.repository }} from ${{ github.base_ref }} by ${{ github.actor }} :rocket:'
-          SLACK_TITLE: New ${{ github.repository }} Pull Request
+          SLACK_TITLE: 'New PR in ${{ github.repository }} from ${{ github.head_ref }} to ${{ github.base_ref }} by ${{ github.actor }} :rocket:
           SLACK_USERNAME: PartnerEngineers
           SLACK_WEBHOOK: ${{ secrets.SLACK_PR_WEBHOOK }}
