@@ -16,6 +16,6 @@ jobs:
           SLACK_COLOR: '#3278BD'
           SLACK_ICON: https://pbs.twimg.com/profile_images/978188446178082817/86ulJdF0.jpg
           SLACK_TITLE: "TEST ${{ github.repository }} Pull Request :rocket:"
-          SLACK_MESSAGE: 'PR on ${{ github.repository }} from ${{ github.head_ref }} to ${{ github.base_ref }} by ${{ github.actor }} link: ${{ github.event.pull_request._links.html.href }} ... ${{ toJSON( github.event.pull_request.base ) }}'
+          SLACK_MESSAGE: 'PR on ${{ github.repository }} from ${{ github.head_ref }} to ${{ github.base_ref }} by ${{ github.actor }} link: ${{ github.event.pull_request._links.html.href }} ... ${{ toJSON( github ) }}'
           SLACK_USERNAME: PartnerEngineers
           SLACK_WEBHOOK: ${{ secrets.SLACK_PR_WEBHOOK }}
