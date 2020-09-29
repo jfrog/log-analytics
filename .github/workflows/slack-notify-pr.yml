@@ -15,7 +15,7 @@ jobs:
           SLACK_CHANNEL: partnereng-pullrequest
           SLACK_COLOR: '#3278BD'
           SLACK_ICON: https://pbs.twimg.com/profile_images/978188446178082817/86ulJdF0.jpg
-          SLACK_TITLE: '${{ github.repository }} Pull Request :rocket:'
+          SLACK_TITLE: '${{ github.repository }} Pull Request: ${{ join(github.event.issue.labels.*.name, ",") }} :rocket:'
           SLACK_MESSAGE: 'PR on ${{ github.repository }} from ${{ github.head_ref }} to ${{ github.base_ref }} by ${{ github.actor }} link: ${{ github.event.pull_request._links.html.href }}'
           SLACK_USERNAME: PartnerEngineers
           SLACK_WEBHOOK: ${{ secrets.SLACK_PR_WEBHOOK }}
