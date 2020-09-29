@@ -14,7 +14,7 @@ jobs:
         uses: rtCamp/action-slack-notify@master
         env:
           SLACK_CHANNEL: partnereng-pullrequest
-          SLACK_COLOR: '#3278BD'
+          SLACK_COLOR: '#00A86B'
           SLACK_ICON: https://pbs.twimg.com/profile_images/978188446178082817/86ulJdF0.jpg
           SLACK_TITLE: "[${{ github.event.pull_request.state}}] ${{ github.event.pull_request.title }} on ${{ github.repository }} :rocket:"
           SLACK_MESSAGE: 'Merging from ${{ github.head_ref }} to ${{ github.base_ref }} by ${{ github.actor }}. Link: ${{ github.event.pull_request._links.html.href }}'
