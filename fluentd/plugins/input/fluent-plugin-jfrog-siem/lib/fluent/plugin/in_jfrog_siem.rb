@@ -246,10 +246,16 @@ module Fluent
         cvss_v2 = cvss_v2_list.sort.reverse[0]
         cvss_v3 = cvss_v3_list.sort.reverse[0]
         if cvss_v3.length() > 0
-          detailResp_json["cvss"] = cvss_v3[0..2]
+          cvss = cvss_v3
         elsif cvss_v2.length() > 0
-          detailResp_json["cvss"] = cvss_v2[0..2]
+          cvss = cvss_v2
         end
+        puts "----------"
+        puts cvss
+        cvss_score = cvss[0..2]
+        cvss_version = cvss.split(':')[1][0..2]
+        detailResp_json["cvss_score"] = cvss_score
+        detailResp_json["cvss_version"] = cvss_version
         return detailResp_json
       end
 
