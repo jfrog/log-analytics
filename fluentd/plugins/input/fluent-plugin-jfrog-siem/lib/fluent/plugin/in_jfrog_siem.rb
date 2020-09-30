@@ -229,22 +229,27 @@ module Fluent
         detailResp_json = JSON.parse(detailResp)
         properties = detailResp_json['properties']
         cve = []
-        cvss_v2 = []
-        cvss_v3 = []
+        cvss_v2_list = []
+        cvss_v3_list = []
         for index in 0..properties.length-1 do
           if properties[index].key?('cve')
             cve.push(properties[index]['cve'])
           end
           if properties[index].key?('cvss_v2')
-            cvss_v2.push(properties[index]['cvss_v2'])
+            cvss_v2_list.push(properties[index]['cvss_v2'])
           end
           if properties[index].key?('cvss_v3')
-            cvss_v3.push(properties[index]['cvss_v3'])
+            cvss_v3_list.push(properties[index]['cvss_v3'])
           end
         end
-        detailResp_json["cve"] = cve
-        detailResp_json["cvss_v2"] = cvss_v2.sort.reverse[0]
-        detailResp_json["cvss_v3"] = cvss_v3.sort.reverse[0]
+        detailResp_json["cve"] = cve.sort.reverse[0]
+        cvss_v2 = cvss_v2_list.sort.reverse[0]
+        cvss_v3 = cvss_v3_list.sort.reverse[0]
+        if cvss_v3.length() > 0
+          detailResp_json["cvss"] = cvss_v3[0..2]
+        elsif cvss_v2.length() > 0
+          detailResp_json["cvss"] = cvss_v2[0..2]
+        end
         return detailResp_json
       end
 
