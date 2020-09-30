@@ -250,12 +250,13 @@ module Fluent
         elsif cvss_v2.length() > 0
           cvss = cvss_v2
         end
-        puts "----------"
         puts cvss
         cvss_score = cvss[0..2]
         cvss_version = cvss.split(':')[1][0..2]
         detailResp_json["cvss_score"] = cvss_score
         detailResp_json["cvss_version"] = cvss_version
+        puts "----------"
+        puts detailResp_json
         return detailResp_json
       end
 
