@@ -1,20 +1,20 @@
-# fluent-jfrog-test-plugin
+# fluent-plugin-jfrog-siem
 
-[Fluentd](https://fluentd.org/) test plugin to verify JFrog Log Analytics integration
+[Fluentd](https://fluentd.org/) input plugin to download JFrog Xray SIEM violations and export them to Fluentd to process into various output plugins
 
 ## Building
 
 To build / test locally use rake:
 
-````ruby
+``` 
 rake
-````
+```
 
 To build install locally use bundler:
 
-````ruby
+``` 
 bundle install
-````
+```
 
 This will install the gem shown below from source.
 
@@ -23,62 +23,49 @@ This will install the gem shown below from source.
 
 ### RubyGems
 
-````ruby
-gem install fluent-jfrog-test-plugin
-````
+```
+$ gem install fluent-plugin-jfrog-siem
+```
 
 ### Bundler
 
 Add following line to your Gemfile:
 
-````ruby
-gem "fluent-jfrog-test-plugin"
-````
+```ruby
+gem "fluent-plugin-jfrog-siem"
+```
 
 And then execute:
 
-````ruby
-bundle
-````
+```
+$ bundle
+```
 
-## Tests
+## Configuration
 
-To test the latest version of our regex against a log directory set the `JFROG_LOG_DIR` ENV.
+You can generate configuration template:
 
-Then run:
+```
+$ fluent-plugin-config-format input jfrog-siem
+```
 
-````ruby
-bundle
-````
+You can copy and paste generated documents here.
 
-Artifactory
-````ruby
-ruby test/plugin/jfrog_log_analytic_rt_test.rb 
-````
+###Setup & configuration parameters
 
-Xray
-````ruby
-ruby test/plugin/jfrog_log_analytic_xray_test.rb
-````
+Xray setup is required. Obtain JPD url and access token for API
 
-Distribution
-````ruby
-ruby test/plugin/jfrog_log_analytic_distribution_test.rb
-````
-
-
-To use this gem to test JFrog Artifactory 6.x set the `ARTIFACTORY_LOG_DIR` ENV.
-
-Then run:
-
-````ruby
-bundle
-````
-
-````ruby
-ruby lib/fluent/plugin/jfrog_log_analytic_rt6_test.rb
-````
-
+* **tag** (string) (required): The value is the tag assigned to the generated events.
+* **jpd_url** (string) (required): JPD url required to pull Xray SIEM violations
+* **access_token** (string) (required): [Access token](https://www.jfrog.com/confluence/display/JFROG/Access+Tokens) to authenticate Xray
+* **pos_file** (string) (required): Position file to record last SIEM violation pulled
+* **batch_size** (integer) (optional): Batch size for processing violations
+    * Default value: `25`.
+* **thread_count** (integer) (optional): Number of workers to process violation records in thread pool
+    * Default value: `5`.
+* **wait_interval** (integer) (optional): Wait interval between pulling new events
+    * Default value: `60`.
+    
 ## Copyright
 
 * Copyright(c) 2020 - JFrog
