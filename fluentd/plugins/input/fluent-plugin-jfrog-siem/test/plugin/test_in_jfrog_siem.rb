@@ -13,8 +13,8 @@ class JfrogSiemInputTest < Test::Unit::TestCase
   # Default configuration for tests
   CONFIG = %[
     tag "test_tag"
-    artifactory_url "https://partnership.jfrog.io/xray"
-    access_token ""
+    jpd_url <jpd_url>>
+    access_token <access_token>
     pos_file "test_pos.txt"
   ]
 
@@ -25,7 +25,7 @@ class JfrogSiemInputTest < Test::Unit::TestCase
   end
 
   sub_test_case 'Testing' do
-    test 'Testing in_jfrog_siem' do
+    test 'Testing plugin in_jfrog_siem' do
       d = create_driver(CONFIG)
       d.run
     end
