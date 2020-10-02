@@ -57,7 +57,7 @@ Xray setup is required. Obtain JPD url and access token for API
 
 * **tag** (string) (required): The value is the tag assigned to the generated events.
 * **jpd_url** (string) (required): JPD url required to pull Xray SIEM violations
-* **access_token** (string) (required): Access token to authenticate Xray
+* **access_token** (string) (required): [Access token](https://www.jfrog.com/confluence/display/JFROG/Access+Tokens) to authenticate Xray
 * **pos_file** (string) (required): Position file to record last SIEM violation pulled
 * **batch_size** (integer) (optional): Batch size for processing violations
     * Default value: `25`.
