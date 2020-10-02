@@ -47,11 +47,11 @@ module Fluent
         end
 
         if @jpd_url == ""
-          raise Fluent::ConfigError, "Must define the Artifactory URL to pull Xray SIEM violations."
+          raise Fluent::ConfigError, "Must define the JPD URL to pull Xray SIEM violations."
         end
 
         if @access_token == ""
-          raise Fluent::ConfigError, "Must define the Artifactory API key to use for authentication."
+          raise Fluent::ConfigError, "Must define the access token to use for authentication."
         end
 
         if @pos_file == ""

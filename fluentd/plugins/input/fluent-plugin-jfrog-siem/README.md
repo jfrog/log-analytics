@@ -51,6 +51,21 @@ $ fluent-plugin-config-format input jfrog-siem
 
 You can copy and paste generated documents here.
 
+###Setup & configuration parameters
+
+Xray setup is required. Obtain JPD url and access token for API
+
+* **tag** (string) (required): The value is the tag assigned to the generated events.
+* **jpd_url** (string) (required): JPD url required to pull Xray SIEM violations
+* **access_token** (string) (required): Access token to authenticate Xray
+* **pos_file** (string) (required): Position file to record last SIEM violation pulled
+* **batch_size** (integer) (optional): Batch size for processing violations
+    * Default value: `25`.
+* **thread_count** (integer) (optional): Number of workers to process violation records in thread pool
+    * Default value: `5`.
+* **wait_interval** (integer) (optional): Wait interval between pulling new events
+    * Default value: `60`.
+    
 ## Copyright
 
 * Copyright(c) 2020 - JFrog
