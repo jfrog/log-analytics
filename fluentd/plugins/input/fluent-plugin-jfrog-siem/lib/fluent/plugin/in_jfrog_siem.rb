@@ -224,7 +224,7 @@ module Fluent
         end
       end
 
-      # normalizes data according to common information models
+      # normalizes Xray data according to common information models for all log-vendors
       def data_normalization(detailResp)
         detailResp_json = JSON.parse(detailResp)
         properties = detailResp_json['properties']
