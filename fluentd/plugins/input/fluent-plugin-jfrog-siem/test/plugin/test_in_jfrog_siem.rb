@@ -1,5 +1,5 @@
 require "helper"
-require "../../input/fluent-plugin-jfrog-siem/lib/fluent/plugin/in_jfrog_siem.rb"
+require "fluent/plugin/in_jfrog_siem.rb"
 
 class JfrogSiemInputTest < Test::Unit::TestCase
   setup do
@@ -13,7 +13,7 @@ class JfrogSiemInputTest < Test::Unit::TestCase
   # Default configuration for tests
   CONFIG = %[
     tag "test_tag"
-    jpd_url <jpd_url>
+    jpd_url <jpd_url>>
     access_token <access_token>
     pos_file "test_pos.txt"
   ]
