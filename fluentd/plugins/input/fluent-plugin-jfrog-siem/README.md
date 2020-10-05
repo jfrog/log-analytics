@@ -24,6 +24,12 @@ This will install the gem shown below from source.
 ### RubyGems
 
 ```
+$ gem install rest-client
+```
+```
+$ gem install thread
+```
+```
 $ gem install fluent-plugin-jfrog-siem
 ```
 
