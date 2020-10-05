@@ -1,5 +1,5 @@
 require "helper"
-require "../../input/fluent-plugin-jfrog-siem/lib/fluent/plugin/in_jfrog_siem.rb"
+require "fluent/plugin/in_jfrog_siem.rb"
 
 class JfrogSiemInputTest < Test::Unit::TestCase
   setup do
