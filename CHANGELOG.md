@@ -1,6 +1,9 @@
 # JFrog Log Analytics Changelog
 All changes to the log analytics integration will be documented in this file.
 
+## [0.7.0] - Oct 20, 2020
+* Fixing issue with ip_address in access logs having space and . at the end
+
 ## [0.6.0] - Sept 25, 2020
 * [BREAKING] Fluentd configs updated to use JF_PRODUCT_DATA_INTERNAL env.
 
