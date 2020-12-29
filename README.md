@@ -11,7 +11,8 @@ This project makes use of git submodules for this reason we recommend you clone 
 Followed by using the --remote flag in the git submodule update command to pull the latest changes.
 
 ````bash
-git clone https://github.com/jfrog/log-analytics.git
+git clone https://github.com/jfrog/log-analytics.git --recursive
+cd log-analytics
 git submodule update --remote
 ````
 
