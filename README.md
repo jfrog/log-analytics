@@ -13,7 +13,8 @@ Followed by using the --remote flag in the git submodule update command to pull 
 ````bash
 git clone https://github.com/jfrog/log-analytics.git --recursive
 cd log-analytics
-git submodule update --remote
+git submodule foreach git checkout master
+git submodule foreach git pull origin master
 ````
 
 ## Table of Contents
