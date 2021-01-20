@@ -8,8 +8,6 @@ The goal of this project is to provide JFrog customers with robust log analytic 
 
 This project makes use of git submodules for this reason we recommend you clone with the --recursive flag to ensure all log vendor files are downloaded.
 
-Followed by using the --remote flag in the git submodule update command to pull the latest changes.
-
 ````bash
 git clone https://github.com/jfrog/log-analytics.git --recursive
 cd log-analytics
