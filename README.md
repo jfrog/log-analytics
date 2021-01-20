@@ -82,17 +82,127 @@ export JF_PRODUCT_DATA_INTERNAL=/opt/jfrog/pipelines/var/
 
 Note if you are using Artifactory 6.x you will need to use the legacy environment variable ARTIFACTORY_HOME instead.
 
-#### Root Installation
 
-Install the td-agent agent on Redhat UBI we need to run the below command:
+## Fluentd Install
 
-```
-$ curl -L https://toolbelt.treasuredata.com/sh/install-redhat-td-agent3.sh | sh
-```
+### OS / Virtual Machine
 
-Root access will be required as this will use yum to install td-agent
+Recommended install is through fluentd's native OS based package installs:
 
-#### User Installation
+| OS            | Package Manager | Link |
+|---------------|-----------------|------|
+| CentOS/RHEL   | RPM (YUM)       | https://docs.fluentd.org/installation/install-by-rpm |
+| Debian/Ubuntu | APT             | https://docs.fluentd.org/installation/install-by-deb |
+| MacOS/Darwin  | DMG             | https://docs.fluentd.org/installation/install-by-dmg |
+| Windows       | MSI             | https://docs.fluentd.org/installation/install-by-msi |
+
+User installs can utilize the zip installer for Linux
+
+| OS            | Package Manager | Link |
+|---------------|-----------------|------|
+| Linux (x86_64)| ZIP             | https://github.com/jfrog/log-analytics/raw/master/fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz |
+
+Download it to a directory the user has permissions to write such as the `$JF_PRODUCT_DATA_INTERNAL` locations discussed above:
+
+````text
+cd $JF_PRODUCT_DATA_INTERNAL
+wget https://github.com/jfrog/log-analytics/raw/master/fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz
+````
+
+Untar to create the folder:
+````text
+tar -xvf fluentd-1.11.0-linux-x86_64.tar.gz
+````
+Move into the new folder:
+
+````text
+cd fluentd-1.11.0-linux-x86_64
+````
+Run the fluentd wrapper with one argument pointed to the configuration file to load:
+
+````text
+./fluentd test.conf
+````
+
+Next steps are to setup a  `fluentd.conf` file using the relevant integrations for Splunk, DataDog, Elastic, or Prometheus.
+
+
+### Docker
+
+Recommended install for Docker is to utilize the zip installer for Linux
+
+| OS            | Package Manager | Link |
+|---------------|-----------------|------|
+| Linux (x86_64)| ZIP             | https://github.com/jfrog/log-analytics/raw/master/fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz |
+
+Download it to a directory the user has permissions to write such as the `$JF_PRODUCT_DATA_INTERNAL` locations discussed above:
+
+````text
+cd $JF_PRODUCT_DATA_INTERNAL
+wget https://github.com/jfrog/log-analytics/raw/master/fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz
+````
+
+Untar to create the folder:
+````text
+tar -xvf fluentd-1.11.0-linux-x86_64.tar.gz
+````
+Move into the new folder:
+
+````text
+cd fluentd-1.11.0-linux-x86_64
+````
+Run the fluentd wrapper with one argument pointed to the configuration file to load:
+
+````text
+./fluentd test.conf
+````
+
+Next steps are to setup a  `fluentd.conf` file using the relevant integrations for Splunk, DataDog, Elastic, or Prometheus.
+
+### Kubernetes
+
+Recommended install for Kubernetes is to utilize the helm chart with the associated values.yaml in this repo.
+
+| Product | Example Values File |
+|---------|-------------|
+| Artifactory | helm/artifactory-values.yaml |
+| Artifactory HA | helm/artifactory-ha-values.yaml |
+| Xray | helm/xray-values.yaml |
+| Distribution | helm/distribution-values.yaml |
+| Mission Control | helm/mission-control-values.yaml |
+| Pipelines | helm/pipelines-values.yaml |
+
+To modify existing Kubernetes based deployments without using Helm users can use the zip installer for Linux:
+
+| OS            | Package Manager | Link |
+|---------------|-----------------|------|
+| Linux (x86_64)| ZIP             | https://github.com/jfrog/log-analytics/raw/master/fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz |
+
+Download it to a directory the user has permissions to write such as the `$JF_PRODUCT_DATA_INTERNAL` locations discussed above:
+
+````text
+cd $JF_PRODUCT_DATA_INTERNAL
+wget https://github.com/jfrog/log-analytics/raw/master/fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz
+````
+
+Untar to create the folder:
+````text
+tar -xvf fluentd-1.11.0-linux-x86_64.tar.gz
+````
+Move into the new folder:
+
+````text
+cd fluentd-1.11.0-linux-x86_64
+````
+Run the fluentd wrapper with one argument pointed to the configuration file to load:
+
+````text
+./fluentd test.conf
+````
+
+Next steps are to setup a  `fluentd.conf` file using the relevant integrations for Splunk, DataDog, Elastic, or Prometheus.
+
+### User Installation
 
 Non-root users to make life easier for we have provided a tar.gz containing everything you need to run fluentd.
 
@@ -118,9 +228,9 @@ Adding any fluentd plugins like Datadog as works in the same fashion:
 $JF_PRODUCT_DATA_INTERNAL/fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem install fluent-plugin-datadog
 ```
 
-#### Logger Agent
+### Root Installation
 
-* Package Manager installations only.
+* Package Manager installations of td-agent only.
 
 The default configuration file for td-agent is located at:
 
@@ -153,7 +263,11 @@ Elastic:
 td-agent-gem install fluent-plugin-elasticsearch
 ```
 
-#### Config Files
+## Fluentd Configuration
+
+The following sections will cover how you can configure fluentd once it has been installed.
+
+### Config Files
 
 Fluentd requires configuration file to know which logs to tail and how to ship them to the correct log provider.
 
@@ -194,7 +308,7 @@ export JF_PRODUCT_DATA_INTERNAL=/opt/jfrog/pipelines/var/
 
 If you are running on RT 6.x you will need to ensure the ARTIFACTORY_HOME environment variable is set instead.
 
-#### Running as a service
+### Running as a service
 
 By default td-agent will run as the td-agent user however the JFrog logs folder only has file permissions for the artifactory or xray user.
 
@@ -221,7 +335,7 @@ systemctl start td-agent
 systemctl status td-agent
 ```
 
-#### Running as a service as a regular user
+### Running as a service as a regular user
 
 Using systemd:
 
