@@ -120,7 +120,7 @@ module Fluent
 
             # Determine if we need to persist this record or not
             persistItem = true
-            if created_date < last_created_date
+            if created_date <= last_created_date
               persistItem = false
             end
 
@@ -148,12 +148,11 @@ module Fluent
           # iterate over url array adding to thread pool each url.
           # limit max workers to thread count to prevent overloading xray.
           thread_pool = Thread.pool(thread_count)
-          for xray_violation_url in xray_violation_urls_list do
-            thread_pool.process {
+          thread_pool.process {
+            for xray_violation_url in xray_violation_urls_list do
               pull_violation_details(xray_violation_url, @access_token)
-            }
-          end
-
+            end
+          }
           thread_pool.shutdown
 
           # reduce left violations by jump size (not all batches have full item count??)
