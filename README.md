@@ -93,7 +93,7 @@ Recommended install is through fluentd's native OS based package installs:
 | MacOS/Darwin  | DMG             | https://docs.fluentd.org/installation/install-by-dmg |
 | Windows       | MSI             | https://docs.fluentd.org/installation/install-by-msi |
 
-Alternatively, it's also possible to use the shell script to install Fluentd as service (td-agent4):
+Alternatively, it's also possible to use the shell script to install Fluentd as service (td-agent4, root access required):
 
 | OS            | Package Manager | Link |
 |---------------|-----------------|------|
@@ -249,7 +249,7 @@ If you wish to only run td-agent against a test configuration file you can also 
 td-agent -c fluentd.conf
 ```
 
-Once td-agent has been installed on an Artifactory or Xray node you will also need to install the relevant plugin if you are using Splunk or Datadog:
+If Fluentd was installed with [fluentd-agent-installer.sh](https://raw.githubusercontent.com/jfrog/log-analytics/master/fluentd-installer/scripts/linux/fluentd-agent-installer.sh) this step can be skipped. Once td-agent has been installed on an Artifactory or Xray node you will also need to install the relevant plugin if you are using Splunk or Datadog:
 
 Splunk:
 ```
@@ -313,7 +313,7 @@ If you are running on RT 6.x you will need to ensure the ARTIFACTORY_HOME enviro
 
 ### Running as a service
 
-By default td-agent will run as the td-agent user however the JFrog logs folder only has file permissions for the artifactory or xray user.
+If Fluentd was installed with [fluentd-agent-installer.sh](https://raw.githubusercontent.com/jfrog/log-analytics/master/fluentd-installer/scripts/linux/fluentd-agent-installer.sh) this step can be omitted. By default td-agent will run as the td-agent user however the JFrog logs folder only has file permissions for the artifactory or xray user.
 
 * Fix the group and file permissions issue in Artifactory as root:
 
