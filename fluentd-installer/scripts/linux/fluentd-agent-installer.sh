@@ -39,11 +39,12 @@ modify_conf_file() {
 update_permissions() {
   group=$1
   default_path=$2
+  echo ----------------------------------------
   update_perm=$(question "Would you like to update the $group log permissions? [y/n]: ");
   if [ "$update_perm" == true ]; then
     {
       read -p "Please provide $group path [default: ${default_path}]:" product_path
-      if [ -z "$var" ]; then
+      if [ -z "$product_path" ]; then
         product_path=$default_path
       fi
       sudo usermod -a -G "$group" td-agent
@@ -57,10 +58,16 @@ update_permissions() {
 }
 
 ## Fluentd Install Script
+help_link=https://github.com/jfrog/log-analytics
 echo ==============================================================
-echo This script installs Fluentd td-agent4 service
-echo and clones Jfrog Log Analitics GitHub repository \(optional\).
-echo More information: https://github.com/karolh2000/log-analytics
+echo 'The script performs the following tasks:'
+echo  '- Downloads the github repo and all dependencies [optional].'
+echo  '- Checks if the Fluentd requirements are met and updates the OS if needed [optional].'
+echo  '- Installs/Updates Fluentd as a service depending on Linux distro (Centos and Amazon is supported, more to come).'
+echo  '- Updates the log files/folders permissions [optional].'
+echo  '- Installs Fluentd plugins (Splunk, Datadog, Elastic)[optional].'
+echo  '- Starts and enables the td service [optional].'
+echo More information: $help_link
 echo ==============================================================
 
 ## Clone github repository?
@@ -84,8 +91,8 @@ fi
 ulimit_output=$(ulimit -n)
 if [ $ulimit_output -lt 65536 ]; then
   # Update the file descriptors limit per process and 'high load environments' if needed
-  echo "Fluentd requires higher limit of the file descriptors per process and optimize the network kernel parameters. More info: https://docs.fluentd.org/installation/before-install"
-  update_limit=$(question "Would you like to change the mentioned configuration (current: $(ulimit -n), minimum: 65536)? [y/n]: ")
+  echo ----------------------------------------
+  update_limit=$(question "Fluentd requires higher limit of the file descriptors per process and the network kernel parameters adjustment (more info: https://docs.fluentd.org/installation/before-install). Would you like to update the mentioned configuration? [y/n]: ")
   if [ $update_limit == true ]; then
     limit_conf_file_path=/etc/security/limits.conf
     limit_config="
@@ -114,6 +121,7 @@ fi
 
 # Fetch and installing td-agent4 (for now only Centos and Amazon distros)
 linux_distro=$(cat /etc/*-release | tr [:upper:] [:lower:] | grep -Poi '(centos|ubuntu|red hat|amazon|debian)' | uniq)
+echo ----------------------------------------
 if [ "$linux_distro" == "centos" ]; then
   echo "Centos detected. Installing td-agent 4..."
   {
@@ -141,7 +149,8 @@ update_permissions "artifactory" "/var/opt/jfrog/artifactory"
 update_permissions "xray" "/var/opt/jfrog/xray"
 
 # Install additional plugins (splunk, datadog, elastic)
-install_plugins=$(question "Would you like to install additional plugins (Splunk, Datadog or Elastic)? [y/n]: ");
+config_link=$help_link
+install_plugins=$(question "Would you like to install additional Fluentd plugins like Splunk, Datadog, Elastic, etc? [y/n]: ");
 if [ "$install_plugins" == true ]; then
   while true; do
     read -p "What plugin would you like to install [Splunk, Datadog or Elastic]: " plugin_name
@@ -150,16 +159,19 @@ if [ "$install_plugins" == true ]; then
     [splunk]*)
       echo Installing fluent-plugin-splunk-enterprise...
       sudo td-agent-gem install fluent-plugin-splunk-enterprise
+      help_link=https://github.com/jfrog/log-analytics-splunk
       break
       ;;
     [datadog]*)
       echo Installing fluent-plugin-datadog...
       sudo td-agent-gem install fluent-plugin-datadog
+      help_link=https://github.com/jfrog/log-analytics-datadog
       break
       ;;
     [elastic]*)
       echo Installing fluent-plugin-elasticsearch...
       sudo td-agent-gem install fluent-plugin-elasticsearch
+      help_link=https://github.com/jfrog/log-analytics-elastic
       break
       ;;
     *) echo "Please answer Splunk, Datadog or Elastic." ;;
@@ -167,18 +179,25 @@ if [ "$install_plugins" == true ]; then
   done
 fi
 
-# Start td service
-echo Starting td-agent service...
-if [[ $(systemctl) =~ -\.mount ]]; then
-  sudo systemctl start td-agent.service
-  sudo systemctl status td-agent.service
-else
-  sudo /etc/init.d/td-agent start
-  sudo /etc/init.d/td-agent status
+# Start/enable/status td service
+start_service=$(question "Would you like to start and enable td-agent service? [y/n]: ");
+if [ "$start_service" == true ]; then
+  echo ----------------------------------------
+  echo Starting and enabling td-agent service...
+  if [[ $(systemctl) =~ -\.mount ]]; then
+    sudo systemctl enable td-agent.service
+    sudo systemctl start td-agent.service
+    sudo systemctl status td-agent.service
+  else
+    sudo chkconfig td-agent on
+    sudo /etc/init.d/td-agent start
+    sudo /etc/init.d/td-agent status
+  fi
 fi
 
 # Fin!
 # TODO Better error handling needed so we're 100% sure that it's actually successful.
-echo ==================================
-echo Done! Installation was successful!
-echo ==================================
+echo ===================================================================================================================
+echo Fluentd service was successfully installed!
+echo The Fluentd configuration might require addition steps, more info: $config_link
+echo ===================================================================================================================
