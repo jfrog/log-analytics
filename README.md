@@ -66,7 +66,7 @@ export JF_PRODUCT_DATA_INTERNAL=/var/opt/jfrog/xray/
 ````
 
 ````text
-Mision Control:
+Mission Control:
 export JF_PRODUCT_DATA_INTERNAL=/var/opt/jfrog/mc/
 ````
 
