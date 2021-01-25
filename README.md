@@ -39,10 +39,7 @@ Fluentd is a required component to use this integration.
 
 Fluentd has an logger agent called td-agent which will be required to be installed into each node you wish to monitor logs on.
 
-For more details on how to install Fluentd into your environment please visit:
-
-[Fluentd installation guide](https://docs.fluentd.org/installation)
-
+For more details on how to install Fluentd into your environment please visit: [Fluentd installation guide] (https://docs.fluentd.org/installation) or read the steps provided in this document.
 #### JFrog Installation Configurations
 
 Due to the nature of customer installations varying we cannot account for all possible installations however to ensure our integration works with your installation please review:
@@ -95,6 +92,12 @@ Recommended install is through fluentd's native OS based package installs:
 | Debian/Ubuntu | APT             | https://docs.fluentd.org/installation/install-by-deb |
 | MacOS/Darwin  | DMG             | https://docs.fluentd.org/installation/install-by-dmg |
 | Windows       | MSI             | https://docs.fluentd.org/installation/install-by-msi |
+
+Alternatively, it's also possible to use the shell script to install Fluentd as service (td-agent4):
+
+| OS            | Package Manager | Link |
+|---------------|-----------------|------|
+| Linux (x86_64) Centos/Amazon| N/A             | https://raw.githubusercontent.com/jfrog/log-analytics/master/fluentd-installer/scripts/linux/fluentd-agent-installer.sh |
 
 User installs can utilize the zip installer for Linux
 
