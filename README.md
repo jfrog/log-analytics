@@ -93,7 +93,15 @@ Recommended install is through fluentd's native OS based package installs:
 | MacOS/Darwin  | DMG             | https://docs.fluentd.org/installation/install-by-dmg |
 | Windows       | MSI             | https://docs.fluentd.org/installation/install-by-msi |
 
-Alternatively, it's also possible to use the shell script to install Fluentd as service (td-agent4, root access required):
+Alternatively, it's also possible to use the shell script to install Fluentd as service (experimental). The script installs td-agent 4 and requires sudo rights. 
+The script performs the following tasks:
+- Downloads the github repo and all dependencies [optional]
+- Checks if the Fluentd requirements are met and updates the OS if needed [optional]
+- Installs Fluentd as a service depending on Linux distro (Centos and Amazon is supported, more to come).
+- Updates the log files/folders permissions [optional].
+- Install Fluentd plugins (Splunk, Datadog, Elastic)[optional].
+- Starts and enables the td service [optional] // TODO
+- Suggests next step based (link to the fluentd configuration steps based on the installed plugin) // TODO
 
 | OS            | Package Manager | Link |
 |---------------|-----------------|------|
@@ -310,6 +318,12 @@ export JF_PRODUCT_DATA_INTERNAL=/opt/jfrog/pipelines/var/
 ````
 
 If you are running on RT 6.x you will need to ensure the ARTIFACTORY_HOME environment variable is set instead.
+
+Additional information how to configure fluentd conf:
+
+- [Splunk](https://github.com/jfrog/log-analytics-splunk)
+- [Elastic](https://github.com/jfrog/log-analytics-elastic)
+- [Datadog](https://github.com/jfrog/log-analytics-datadog)
 
 ### Running as a service
 
