@@ -133,7 +133,7 @@ if [ "$linux_distro" == "centos" ]; then
 elif [ "$linux_distro" == "amazon" ]; then
   echo "Amazon Linux detected. Installing td-agent 4..."
   {
-    curl -L https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh | sh
+    curl -L https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh | sh
   } || {
     echo Error, td agent 4 installation failed
     exit 0
