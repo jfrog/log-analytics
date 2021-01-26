@@ -174,6 +174,12 @@ if [ "$install_plugins" == true ]; then
       help_link=https://github.com/jfrog/log-analytics-elastic
       break
       ;;
+    [prometheus]*)
+      echo Installing fluent-plugin-prometheus...
+      sudo td-agent-gem install fluent-plugin-prometheus
+      help_link=https://github.com/jfrog/log-analytics-prometheus
+      break
+      ;;
     *) echo "Please answer Splunk, Datadog or Elastic." ;;
     esac
   done
@@ -197,7 +203,7 @@ fi
 
 # Fin!
 # TODO Better error handling needed so we're 100% sure that it's actually successful.
-echo ===================================================================================================================
+echo ===============================================================
 echo Fluentd service was successfully installed!
 echo The Fluentd configuration might require addition steps, more info: $config_link
-echo ===================================================================================================================
+echo ===============================================================

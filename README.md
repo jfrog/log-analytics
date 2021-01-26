@@ -100,8 +100,8 @@ The script performs the following tasks:
 - Installs/Updates Fluentd as a service depending on Linux distro (Centos and Amazon is supported, more to come).
 - Updates the log files/folders permissions [optional].
 - Installs Fluentd plugins (Splunk, Datadog, Elastic)[optional].
-- Starts and enables the td service [optional]
-- Suggests next step (link to the fluentd configuration steps based on the installed plugin) // TODO
+- Starts and enables the td service [optional].
+- Suggests next step (link to the fluentd configuration steps based on the installed plugin).
 
 | OS            | Package Manager | Link |
 |---------------|-----------------|------|
