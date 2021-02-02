@@ -39,10 +39,7 @@ Fluentd is a required component to use this integration.
 
 Fluentd has an logger agent called td-agent which will be required to be installed into each node you wish to monitor logs on.
 
-For more details on how to install Fluentd into your environment please visit:
-
-[Fluentd installation guide](https://docs.fluentd.org/installation)
-
+For more details on how to install Fluentd into your environment please visit: [Fluentd installation guide] (https://docs.fluentd.org/installation) or read the steps provided in this document.
 #### JFrog Installation Configurations
 
 Due to the nature of customer installations varying we cannot account for all possible installations however to ensure our integration works with your installation please review:
@@ -66,7 +63,7 @@ export JF_PRODUCT_DATA_INTERNAL=/var/opt/jfrog/xray/
 ````
 
 ````text
-Mision Control:
+Mission Control:
 export JF_PRODUCT_DATA_INTERNAL=/var/opt/jfrog/mc/
 ````
 
@@ -95,6 +92,20 @@ Recommended install is through fluentd's native OS based package installs:
 | Debian/Ubuntu | APT             | https://docs.fluentd.org/installation/install-by-deb |
 | MacOS/Darwin  | DMG             | https://docs.fluentd.org/installation/install-by-dmg |
 | Windows       | MSI             | https://docs.fluentd.org/installation/install-by-msi |
+
+__[EXPERIMENTAL]__ Alternatively, it's also possible to use the shell script to install Fluentd as service (experimental). The script installs td-agent 4 and requires sudo rights. 
+The script performs the following tasks:
+- Downloads the github repo and all dependencies [optional]
+- Checks if the Fluentd requirements are met and updates the OS if needed [optional]
+- Installs/Updates Fluentd as a service depending on Linux distro (Centos and Amazon is supported, more to come).
+- Updates the log files/folders permissions [optional].
+- Installs Fluentd plugins (Splunk, Datadog, Elastic)[optional].
+- Starts and enables the td service [optional].
+- Suggests next step (link to the fluentd configuration steps based on the installed plugin).
+
+| OS            | Package Manager | Link |
+|---------------|-----------------|------|
+| Linux (x86_64) Centos/Amazon| N/A             | https://raw.githubusercontent.com/jfrog/log-analytics/master/fluentd-installer/scripts/linux/fluentd-agent-installer.sh |
 
 User installs can utilize the zip installer for Linux
 
@@ -246,7 +257,7 @@ If you wish to only run td-agent against a test configuration file you can also 
 td-agent -c fluentd.conf
 ```
 
-Once td-agent has been installed on an Artifactory or Xray node you will also need to install the relevant plugin if you are using Splunk or Datadog:
+If Fluentd was installed with [fluentd-agent-installer.sh](https://raw.githubusercontent.com/jfrog/log-analytics/master/fluentd-installer/scripts/linux/fluentd-agent-installer.sh) this step can be skipped. Once td-agent has been installed on an Artifactory or Xray node you will also need to install the relevant plugin if you are using Splunk or Datadog:
 
 Splunk:
 ```
@@ -308,9 +319,15 @@ export JF_PRODUCT_DATA_INTERNAL=/opt/jfrog/pipelines/var/
 
 If you are running on RT 6.x you will need to ensure the ARTIFACTORY_HOME environment variable is set instead.
 
+Additional information how to configure fluentd conf:
+
+- [Splunk](https://github.com/jfrog/log-analytics-splunk)
+- [Datadog](https://github.com/jfrog/log-analytics-datadog)
+- [Elastic](https://github.com/jfrog/log-analytics-elastic)
+
 ### Running as a service
 
-By default td-agent will run as the td-agent user however the JFrog logs folder only has file permissions for the artifactory or xray user.
+If Fluentd was installed with [fluentd-agent-installer.sh](https://raw.githubusercontent.com/jfrog/log-analytics/master/fluentd-installer/scripts/linux/fluentd-agent-installer.sh) this step can be omitted. By default td-agent will run as the td-agent user however the JFrog logs folder only has file permissions for the artifactory or xray user.
 
 * Fix the group and file permissions issue in Artifactory as root:
 
