@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ## Util functions
 # Yes/No Input
@@ -57,18 +57,61 @@ update_permissions() {
   fi
 }
 
+download_install_td_4() {
+  script_url=$1
+  # check url
+  curl -L -f "$script_url" || error_script=true
+  if [ $error_script == true ]; then
+    echo "ERROR: Error while downloading ${script_url}. Fluentd was NOT installed. Exiting..."
+    exit 1
+  fi
+  # install td-agent script
+  curl -L -f "$script_url" | sh
+}
+
 ## Fluentd Install Script
 help_link=https://github.com/jfrog/log-analytics
-echo ==============================================================
+echo ==================================================================
+echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
+echo ==================================================================
 echo 'The script performs the following tasks:'
 echo '- Downloads the github repo and all dependencies [optional].'
 echo '- Checks if the Fluentd requirements are met and updates the OS if needed [optional].'
 echo '- Installs/Updates Fluentd as a service depending on Linux distro (Centos and Amazon is supported, more to come).'
 echo '- Updates the log files/folders permissions [optional].'
-echo '- Installs Fluentd plugins (Splunk, Datadog, Elastic)[optional].'
-echo '- Starts and enables the td service [optional].'
+echo '- Installs Fluentd plugins (Splunk, Datadog, Elastic, Prometheus) [optional].'
+echo '- Starts and enables the Fluentd service [optional].'
+echo '- Provides info where to find info relevant to installed plugins.'
 echo More information: $help_link
-echo ==============================================================
+echo ==================================================================
+echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
+echo ==================================================================
+
+# const
+supported_distros=("centos" "amazon")
+
+# Check distro
+detected_distro=$(cat /etc/*-release | tr [:upper:] [:lower:] | grep -Poi '(centos|ubuntu|red hat|amazon|debian)' | uniq)
+supported_distros=("centos" "amazon")
+is_supported_distro=false
+for supported_distro in "${supported_distros[@]}"; do
+  if [[ $detected_distro == $supported_distro ]]; then
+    is_supported_distro=true
+    break
+  fi
+done
+
+if [ "$is_supported_distro" == false ]; then
+  echo "Linux distro '${detected_distro}' is not supported. Fluentd was NOT installed. Exiting..."
+  exit 0
+fi
+
+# Experimental warning
+experiments_warning=$(question "The installer is still in the EXPERIMENTAL phase (might be unstable). Would you like to continue? [y/n]: ")
+if [ "$experiments_warning" == false ]; then
+  echo Have a nice day! Good Bye!
+  exit 0
+fi
 
 # Clone github repository?
 clone_repo=$(question "Would you like to clone JFrog log analytics GitHub repository (optional and not required)? [y/n]: ")
@@ -82,8 +125,8 @@ if [ "$clone_repo" == true ]; then
     git submodule foreach git checkout master
     git submodule foreach git pull origin master
   } || {
-    echo Error while cloning the repository.
-    exit 0
+    echo ERROR: Error while cloning the repository. Fluentd was NOT installed. Exiting...
+    exit 1
   }
 fi
 
@@ -128,27 +171,27 @@ No  - Fluentd will be installed in a folder specified in the next step (read/wri
 
 if [ "$install_as_service" == true ]; then
   # Fetches and installs td-agent4 (for now only Centos and Amazon distros supported)
-  linux_distro=$(cat /etc/*-release | tr [:upper:] [:lower:] | grep -Poi '(centos|ubuntu|red hat|amazon|debian)' | uniq)
-  if [ "$linux_distro" == "centos" ]; then
+  if [ "$detected_distro" == "centos" ]; then
+    error_message="ERROR: td-agent 4 installation failed. Fluentd was NOT installed. Exiting..."
     echo "Centos detected. Installing td-agent 4..."
     {
-      curl -L https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh | sh
+      download_install_td_4 "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh"
     } || {
-      echo Error, td agent 4 installation failed
-      exit 0
+      echo "$error_message"
+      exit 1
     }
     update_log_permissions=true
-  elif [ "$linux_distro" == "amazon" ]; then
+  elif [ "$detected_distro" == "amazon" ]; then
     echo "Amazon Linux detected. Installing td-agent 4..."
     {
-      curl -L https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh | sh
+      download_install_td_4 "https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh"
     } || {
-      echo Error, td agent 4 installation failed
-      exit 0
+      echo "$error_message"
+      exit 1
     }
     update_log_permissions=true
   else
-    echo "Unsupported (${linux_distro}) Linux distro."
+    echo "Unsupported (${detected_distro}) Linux distro."
     update_log_permissions=false
   fi
   if [ "$update_log_permissions" == true ]; then
@@ -170,7 +213,7 @@ else
   mkdir -p "$user_install_path"
   # check if user has write permissions in the specified path
   if ! [ -w "$user_install_path" ]; then
-    echo "ERROR: Write permission denied in ${user_install_path}. Fluentd was NOT installed."
+    echo "ERROR: Write permission denied in ${user_install_path}. Please make sure that you have read/write permissions in ${user_install_path}. Fluentd was NOT installed. Exiting..."
     exit 0
   fi
   # cd to the specified folder
@@ -186,7 +229,7 @@ fi
 
 # Install additional plugins (splunk, datadog, elastic)
 config_link=$help_link
-install_plugins=$(question "Would you like to install additional Fluentd plugins: Splunk, Datadog, Elastic, etc? [y/n]: ")
+install_plugins=$(question "Would you like to install additional Fluentd plugins: e.g. Splunk, Datadog, Elastic, etc? [y/n]: ")
 # check if gem/td-agent-gem is installed
 if [ -x "$(command -v td-agent-gem)" ]; then
   gem_command="sudo td-agent-gem"
@@ -198,7 +241,7 @@ else
 fi
 if [ "$install_plugins" == true ]; then
   while true; do
-    read -p "What plugin would you like to install [Splunk, Datadog or Elastic]: " plugin_name
+    read -p "What plugin would you like to install [Splunk, Datadog, Prometheus or Elastic]: " plugin_name
     plugin_name=${plugin_name,,}
     case $plugin_name in
     [splunk]*)
