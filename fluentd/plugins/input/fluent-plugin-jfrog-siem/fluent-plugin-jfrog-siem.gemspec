@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name    = "fluent-plugin-jfrog-siem"
-  spec.version = "0.1.0"
+  spec.version = "0.1.4"
   spec.authors = ["John Peterson", "Mahitha Byreddy"]
   spec.email   = ["johnp@jfrog.com", "mahithab@jfrog.com"]
 
@@ -24,5 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 12.0"
   spec.add_development_dependency "test-unit", "~> 3.0"
   spec.add_development_dependency "rest-client", "~> 2.0"
+  spec.add_development_dependency "thread", "~> 0.2.2"
+  spec.add_runtime_dependency "thread", "~> 0.2.2"
   spec.add_runtime_dependency "fluentd", [">= 0.14.10", "< 2"]
 end

@@ -18,16 +18,22 @@ git submodule foreach git pull origin master
 ## Table of Contents
 
    * [Fluentd](#fluentd)
-     * [Root Installation](#root-installation)
+     * [JFrog Installation Configurations](#jfrog-installation-configurations)
+   * [Fluentd Install](#fluentd-install)
+     * [OS / Virtual Machine](#os--virtual-machine)
+     * [Docker](#docker)
+     * [Kubernetes](#kubernetes)
      * [User Installation](#user-installation)
-     * [Logger Agent](#logger-agent)
+     * [Root Installation](#root-installation)
+   * [Fluent Config](#fluentd-configuration)
      * [Config Files](#config-files)
      * [Running As A Service](#running-as-a-service)
      * [Running As A Service As A Regular User](#running-as-a-service-as-a-regular-user)
-   * [Splunk](https://github.com/jfrog/log-analytics-splunk/blob/master/README.md)
-   * [Elasticsearch - Kibana](https://github.com/jfrog/log-analytics-elastic/blob/master/README.md)
-   * [Prometheus-Grafana](https://github.com/jfrog/log-analytics-prometheus/blob/master/README.md)
-   * [Datadog](https://github.com/jfrog/log-analytics-datadog/blob/master/README.md)
+   * [Log Vendors](#log-vendors)
+     * [Splunk](https://github.com/jfrog/log-analytics-splunk/blob/master/README.md)
+     * [Elasticsearch - Kibana](https://github.com/jfrog/log-analytics-elastic/blob/master/README.md)
+     * [Prometheus-Grafana](https://github.com/jfrog/log-analytics-prometheus/blob/master/README.md)
+     * [Datadog](https://github.com/jfrog/log-analytics-datadog/blob/master/README.md)
    * [Tools](#tools)
    * [Contributing](#contributing)
    * [Versioning](#versioning)
@@ -393,6 +399,14 @@ systemctl --user status jfrogfluentd
 
 * Enjoy!
 
+## Log Vendors
+We currently support Splunk, Datadog, Elastic, and Prometheus as log vendors. The relevant configuration files can be found in the related sub repo for each vendor.
+
+* [Splunk](https://github.com/jfrog/log-analytics-splunk/blob/master/README.md)
+* [Elasticsearch - Kibana](https://github.com/jfrog/log-analytics-elastic/blob/master/README.md)
+* [Prometheus-Grafana](https://github.com/jfrog/log-analytics-prometheus/blob/master/README.md)
+* [Datadog](https://github.com/jfrog/log-analytics-datadog/blob/master/README.md)
+
 ## Tools
 * [Fluentd](https://www.fluentd.org) - Fluentd Logging Aggregator/Agent
 * [Splunk](https://www.splunk.com/) - Splunk Logging Platform
@@ -407,4 +421,4 @@ Please read CONTRIBUTING.md for details on our code of conduct, and the process 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
 
 ## Contact
-* Github
+* Github issues.
