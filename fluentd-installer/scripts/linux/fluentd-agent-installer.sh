@@ -81,7 +81,7 @@ echo '- Installs/Updates Fluentd as a service depending on Linux distro (Centos 
 echo '- Updates the log files/folders permissions [optional].'
 echo '- Installs Fluentd plugins (Splunk, Datadog, Elastic, Prometheus) [optional].'
 echo '- Starts and enables the Fluentd service [optional].'
-echo '- Provides info where to find info relevant to installed plugins.'
+echo '- Provides additional info related to the installed plugins.'
 echo More information: $help_link
 echo ==================================================================
 echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
