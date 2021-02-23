@@ -160,9 +160,11 @@ module Fluent
           left_violations = left_violations - batch_size
           if left_violations <= 0
             sleep(@wait_interval)
+          else
+            # Grab the next record to process for the violation details url
+            offset_count = offset_count + 1
+            xray_json={"filters": { "created_from": original_last_created_date }, "pagination": {"order_by": "created","limit": batch_size , "offset": offset_count } }
           end
-          offset_count = offset_count + 1
-          xray_json={"filters": { "created_from": original_last_created_date }, "pagination": {"order_by": "created","limit": batch_size , "offset": offset_count } }
         end
       end
 
