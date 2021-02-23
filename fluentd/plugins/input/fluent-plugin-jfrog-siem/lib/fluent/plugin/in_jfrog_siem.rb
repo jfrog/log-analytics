@@ -91,15 +91,16 @@ module Fluent
         call_home(@jpd_url, @access_token)
         batch_size=10
         # runs the violation pull
-        last_created_date_string = get_last_item_create_date()
+        original_last_created_date_string = get_last_item_create_date()
         begin
-          last_created_date = DateTime.parse(last_created_date_string).strftime("%Y-%m-%dT%H:%M:%SZ")
+          original_last_created_date = DateTime.parse(original_last_created_date_string).strftime("%Y-%m-%dT%H:%M:%SZ")
         rescue
-          last_created_date = DateTime.parse("1970-01-01T00:00:00Z").strftime("%Y-%m-%dT%H:%M:%SZ")
+          original_last_created_date = DateTime.parse("1970-01-01T00:00:00Z").strftime("%Y-%m-%dT%H:%M:%SZ")
         end
+        last_created_date=original_last_created_date
         offset_count=1
         left_violations=0
-        xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": batch_size ,"offset": offset_count } }
+        xray_json={"filters": { "created_from": original_last_created_date }, "pagination": {"order_by": "created","limit": batch_size ,"offset": offset_count } }
 
         while true
           # Grab the batch of records
@@ -162,7 +163,7 @@ module Fluent
           else
             # Grab the next record to process for the violation details url
             offset_count = offset_count + 1
-            xray_json={"filters": { "created_from": last_created_date_string }, "pagination": {"order_by": "created","limit": batch_size , "offset": offset_count } }
+            xray_json={"filters": { "created_from": original_last_created_date }, "pagination": {"order_by": "created","limit": batch_size , "offset": offset_count } }
           end
         end
       end
