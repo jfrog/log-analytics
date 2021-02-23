@@ -32,7 +32,6 @@ module Fluent
       config_param :jpd_url, :string, default: ""
       config_param :access_token, :string, default: ""
       config_param :pos_file, :string, default: ""
-      config_param :batch_size, :integer, default: 25
       config_param :thread_count, :integer, default: 5
       config_param :wait_interval, :integer, default: 60
 
@@ -62,7 +61,7 @@ module Fluent
           raise Fluent::ConfigError, "Must define at least one thread to process violation details."
         end
 
-        if @thread_count > @batch_size
+        if @thread_count > 10
           raise Fluent::ConfigError, "Violation detail url thread count exceeds batch size."
         end
 
@@ -90,6 +89,7 @@ module Fluent
 
       def run
         call_home(@jpd_url, @access_token)
+        batch_size=10
         # runs the violation pull
         last_created_date_string = get_last_item_create_date()
         begin
@@ -99,7 +99,7 @@ module Fluent
         end
         offset_count=1
         left_violations=0
-        xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": offset_count } }
+        xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": batch_size ,"offset": offset_count } }
 
         while true
           # Grab the batch of records
@@ -120,7 +120,7 @@ module Fluent
 
             # Determine if we need to persist this record or not
             persistItem = true
-            if created_date <= last_created_date
+            if created_date < last_created_date
               persistItem = false
             end
 
@@ -156,13 +156,13 @@ module Fluent
           thread_pool.shutdown
 
           # reduce left violations by jump size (not all batches have full item count??)
-          left_violations = left_violations - @batch_size
+          left_violations = left_violations - batch_size
           if left_violations <= 0
             sleep(@wait_interval)
           else
             # Grab the next record to process for the violation details url
             offset_count = offset_count + 1
-            xray_json={"filters": { "created_from": last_created_date_string }, "pagination": {"order_by": "created","limit": @batch_size , "offset": offset_count } }
+            xray_json={"filters": { "created_from": last_created_date_string }, "pagination": {"order_by": "created","limit": batch_size , "offset": offset_count } }
           end
         end
       end
