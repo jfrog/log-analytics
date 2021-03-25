@@ -275,7 +275,7 @@ module Fluent
             #docker formatting
             repo_name = impacted_artifact.split('/', -1)[1]
             image_name = impacted_artifact.split('/', -1)[2]
-            tag_name = impacted_artifact.split('/', -1)[-3]
+            tag_name = impacted_artifact.split('/', -1)[3]
             impacted_artifact_url = "/api/docker/" + repo_name + "/v2/" + image_name + "/manifests/" + tag_name
           else
             impacted_artifact_url = impacted_artifact.gsub("default", "")
