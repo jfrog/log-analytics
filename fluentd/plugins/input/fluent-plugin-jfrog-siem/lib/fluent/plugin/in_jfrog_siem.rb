@@ -240,6 +240,7 @@ module Fluent
         cve = []
         cvss_v2_list = []
         cvss_v3_list = []
+        impacted_artifact_url = ''
         if detailResp_json.key?('properties')
           properties = detailResp_json['properties']
           for index in 0..properties.length-1 do
@@ -268,6 +269,19 @@ module Fluent
           detailResp_json["cvss_version"] = cvss_version
 
         end
+
+        impacted_artifact = detailResp_json['impacted_artifacts']
+        if impacted_artifact.split('/', -1)[-1] == "manifest.json"
+          #docker formatting
+          repo_name = impacted_artifact.split('/', -1)[1]
+          image_name = impacted_artifact.split('/', -1)[2]
+          tag_name = impacted_artifact.split('/', -1)[-3]
+          impacted_artifact_url = "/api/docker/" + repo_name + "/v2/" + image_name + "/manifests/" + tag_name
+        else
+          impacted_artifact_url = impacted_artifact.gsub("default", "")
+        end
+        detailResp_json['impacted_artifact_url'] = impacted_artifact_url
+        
         return detailResp_json
       end
 
