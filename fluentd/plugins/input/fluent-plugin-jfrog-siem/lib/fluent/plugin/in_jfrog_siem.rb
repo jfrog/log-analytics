@@ -99,7 +99,7 @@ module Fluent
         end
         offset_count=1
         left_violations=0
-        wait_for_left_violations = false
+        waiting_for_violations = false
         xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": offset_count } }
 
         while true
@@ -123,7 +123,7 @@ module Fluent
             persistItem = true
             if wait_for_left_violations
               if created_date <= last_created_date
-                # "not persisting it - wait reason"
+                # "not persisting it - waiting for violations"
                 persistItem = false
               end
             else
@@ -167,11 +167,11 @@ module Fluent
           # reduce left violations by jump size (not all batches have full item count??)
           left_violations = left_violations - @batch_size
           if left_violations <= 0
-            wait_for_left_violations = true
+            waiting_for_violations = true
             sleep(@wait_interval)
           else
             # Grab the next record to process for the violation details url
-            wait_for_left_violations = false
+            waiting_for_violations = false
             offset_count = offset_count + 1
             xray_json={"filters": { "created_from": last_created_date_string }, "pagination": {"order_by": "created","limit": @batch_size , "offset": offset_count } }
           end
