@@ -128,7 +128,7 @@ module Fluent
               end
             else
               if created_date < last_created_date
-                # "not persisting it"
+                # "persisting everything"
                 persistItem = true
               end
             end
@@ -282,7 +282,7 @@ module Fluent
           end
           impacted_artifact_url_list.append(impacted_artifact_url)
         end
-        detailResp_json['impacted_artifact_url'] = impacted_artifact_url_list
+        detailResp_json['impacted_artifacts_url'] = impacted_artifact_url_list
         return detailResp_json
       end
 
