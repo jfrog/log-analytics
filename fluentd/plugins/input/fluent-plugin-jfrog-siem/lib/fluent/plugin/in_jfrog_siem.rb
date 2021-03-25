@@ -121,7 +121,7 @@ module Fluent
 
             # Determine if we need to persist this record or not
             persistItem = true
-            if wait_for_left_violations
+            if waiting_for_violations
               if created_date <= last_created_date
                 # "not persisting it - waiting for violations"
                 persistItem = false
