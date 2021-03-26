@@ -99,6 +99,7 @@ module Fluent
         end
         offset_count=1
         left_violations=0
+        waiting_for_violations = false
         xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": offset_count } }
 
         while true
@@ -120,8 +121,16 @@ module Fluent
 
             # Determine if we need to persist this record or not
             persistItem = true
-            if created_date <= last_created_date
-              persistItem = false
+            if waiting_for_violations
+              if created_date <= last_created_date
+                # "not persisting it - waiting for violations"
+                persistItem = false
+              end
+            else
+              if created_date < last_created_date
+                # "persisting everything"
+                persistItem = true
+              end
             end
 
             # Publish the record to fluentd
@@ -158,9 +167,11 @@ module Fluent
           # reduce left violations by jump size (not all batches have full item count??)
           left_violations = left_violations - @batch_size
           if left_violations <= 0
+            waiting_for_violations = true
             sleep(@wait_interval)
           else
             # Grab the next record to process for the violation details url
+            waiting_for_violations = false
             offset_count = offset_count + 1
             xray_json={"filters": { "created_from": last_created_date_string }, "pagination": {"order_by": "created","limit": @batch_size , "offset": offset_count } }
           end
@@ -226,33 +237,52 @@ module Fluent
       # normalizes Xray data according to common information models for all log-vendors
       def data_normalization(detailResp)
         detailResp_json = JSON.parse(detailResp)
-        properties = detailResp_json['properties']
         cve = []
         cvss_v2_list = []
         cvss_v3_list = []
-        for index in 0..properties.length-1 do
-          if properties[index].key?('cve')
-            cve.push(properties[index]['cve'])
+        impacted_artifact_url_list = []
+        if detailResp_json.key?('properties')
+          properties = detailResp_json['properties']
+          for index in 0..properties.length-1 do
+            if properties[index].key?('cve')
+              cve.push(properties[index]['cve'])
+            end
+            if properties[index].key?('cvss_v2')
+              cvss_v2_list.push(properties[index]['cvss_v2'])
+            end
+            if properties[index].key?('cvss_v3')
+              cvss_v3_list.push(properties[index]['cvss_v3'])
+            end
           end
-          if properties[index].key?('cvss_v2')
-            cvss_v2_list.push(properties[index]['cvss_v2'])
+
+          detailResp_json["cve"] = cve.sort.reverse[0]
+          cvss_v2 = cvss_v2_list.sort.reverse[0]
+          cvss_v3 = cvss_v3_list.sort.reverse[0]
+          if !cvss_v3.nil?
+            cvss = cvss_v3
+          elsif !cvss_v2.nil?
+            cvss = cvss_v2
           end
-          if properties[index].key?('cvss_v3')
-            cvss_v3_list.push(properties[index]['cvss_v3'])
-          end
+          cvss_score = cvss[0..2]
+          cvss_version = cvss.split(':')[1][0..2]
+          detailResp_json["cvss_score"] = cvss_score
+          detailResp_json["cvss_version"] = cvss_version
         end
-        detailResp_json["cve"] = cve.sort.reverse[0]
-        cvss_v2 = cvss_v2_list.sort.reverse[0]
-        cvss_v3 = cvss_v3_list.sort.reverse[0]
-        if cvss_v3.length() > 0
-          cvss = cvss_v3
-        elsif cvss_v2.length() > 0
-          cvss = cvss_v2
+
+        impacted_artifacts = detailResp_json['impacted_artifacts']
+        for impacted_artifact in impacted_artifacts do
+          if impacted_artifact.split('/', -1)[-1] == "manifest.json"
+            #docker formatting
+            repo_name = impacted_artifact.split('/', -1)[1]
+            image_name = impacted_artifact.split('/', -1)[2]
+            tag_name = impacted_artifact.split('/', -1)[3]
+            impacted_artifact_url = "/api/docker/" + repo_name + "/v2/" + image_name + "/manifests/" + tag_name
+          else
+            impacted_artifact_url = impacted_artifact.gsub("default", "")
+          end
+          impacted_artifact_url_list.append(impacted_artifact_url)
         end
-        cvss_score = cvss[0..2]
-        cvss_version = cvss.split(':')[1][0..2]
-        detailResp_json["cvss_score"] = cvss_score
-        detailResp_json["cvss_version"] = cvss_version
+        detailResp_json['impacted_artifacts_url'] = impacted_artifact_url_list
         return detailResp_json
       end
 
