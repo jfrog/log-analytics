@@ -137,7 +137,7 @@ module Fluent
             if persistItem
 
               now = Fluent::Engine.now
-              #router.emit(@tag, now, item)
+              router.emit(@tag, now, item)
 
               # write to the pos_file created_date_string
               open(@pos_file, 'a') do |f|
@@ -284,8 +284,7 @@ module Fluent
           detailResp=get_xray_violations_detail(xray_violation_detail_url, access_token)
           time = Fluent::Engine.now
           detailResp_json = data_normalization(detailResp)
-          #router.emit(@tag, time, detailResp_json)
-          puts detailResp_json
+          router.emit(@tag, time, detailResp_json)
         rescue
           raise Fluent::StandardError, "Error pulling violation details url #{xray_violation_detail_url}"
         end
