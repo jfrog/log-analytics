@@ -272,7 +272,7 @@ module Fluent
         impacted_artifacts = detailResp_json['impacted_artifacts']
         for impacted_artifact in impacted_artifacts do
           matchdata = impacted_artifact.match /default\/(?<repo_name>[^\/]*)\/(?<path>.*)/
-          impacted_artifact_url = matchdata['repo_name'] + ":" + matchdata['path']
+          impacted_artifact_url = matchdata['repo_name'] + ":" + matchdata['path'] + " "
           impacted_artifact_url_list.append(impacted_artifact_url)
         end
         detailResp_json['impacted_artifacts_url'] = impacted_artifact_url_list
