@@ -137,7 +137,7 @@ module Fluent
             if persistItem
 
               now = Fluent::Engine.now
-              router.emit(@tag, now, item)
+              #router.emit(@tag, now, item)
 
               # write to the pos_file created_date_string
               open(@pos_file, 'a') do |f|
@@ -271,15 +271,8 @@ module Fluent
 
         impacted_artifacts = detailResp_json['impacted_artifacts']
         for impacted_artifact in impacted_artifacts do
-          if impacted_artifact.split('/', -1)[-1] == "manifest.json"
-            #docker formatting
-            repo_name = impacted_artifact.split('/', -1)[1]
-            image_name = impacted_artifact.split('/', -1)[2]
-            tag_name = impacted_artifact.split('/', -1)[3]
-            impacted_artifact_url = "/api/docker/" + repo_name + "/v2/" + image_name + "/manifests/" + tag_name
-          else
-            impacted_artifact_url = impacted_artifact.gsub("default", "")
-          end
+          matchdata = impacted_artifact.match /default\/(?<repo_name>[^\/]*)\/(?<path>.*)/
+          impacted_artifact_url = matchdata['repo_name'] + ":" + matchdata['path']
           impacted_artifact_url_list.append(impacted_artifact_url)
         end
         detailResp_json['impacted_artifacts_url'] = impacted_artifact_url_list
@@ -291,7 +284,8 @@ module Fluent
           detailResp=get_xray_violations_detail(xray_violation_detail_url, access_token)
           time = Fluent::Engine.now
           detailResp_json = data_normalization(detailResp)
-          router.emit(@tag, time, detailResp_json)
+          #router.emit(@tag, time, detailResp_json)
+          puts detailResp_json
         rescue
           raise Fluent::StandardError, "Error pulling violation details url #{xray_violation_detail_url}"
         end
