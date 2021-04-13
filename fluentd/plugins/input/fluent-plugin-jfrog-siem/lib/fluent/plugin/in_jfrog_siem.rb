@@ -271,15 +271,8 @@ module Fluent
 
         impacted_artifacts = detailResp_json['impacted_artifacts']
         for impacted_artifact in impacted_artifacts do
-          if impacted_artifact.split('/', -1)[-1] == "manifest.json"
-            #docker formatting
-            repo_name = impacted_artifact.split('/', -1)[1]
-            image_name = impacted_artifact.split('/', -1)[2]
-            tag_name = impacted_artifact.split('/', -1)[3]
-            impacted_artifact_url = "/api/docker/" + repo_name + "/v2/" + image_name + "/manifests/" + tag_name
-          else
-            impacted_artifact_url = impacted_artifact.gsub("default", "")
-          end
+          matchdata = impacted_artifact.match /default\/(?<repo_name>[^\/]*)\/(?<path>.*)/
+          impacted_artifact_url = matchdata['repo_name'] + ":" + matchdata['path'] + " "
           impacted_artifact_url_list.append(impacted_artifact_url)
         end
         detailResp_json['impacted_artifacts_url'] = impacted_artifact_url_list
