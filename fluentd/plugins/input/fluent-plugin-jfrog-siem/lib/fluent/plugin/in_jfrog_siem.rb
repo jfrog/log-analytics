@@ -240,6 +240,8 @@ module Fluent
         cve = []
         cvss_v2_list = []
         cvss_v3_list = []
+        policy_list = []
+        rule_list = []
         impacted_artifact_url_list = []
         if detailResp_json.key?('properties')
           properties = detailResp_json['properties']
@@ -267,6 +269,20 @@ module Fluent
           cvss_version = cvss.split(':')[1][0..2]
           detailResp_json["cvss_score"] = cvss_score
           detailResp_json["cvss_version"] = cvss_version
+        end
+
+        if detailResp_json.key?('matched_policies')
+          matched_policies = detailResp_json['matched_policies']
+          for index in 0..matched_policies.length-1 do
+            if matched_policies[index].key?('policy')
+              policy_list.push(matched_policies[index]['policy'])
+            end
+            if matched_policies[index].key?('rule')
+              rule_list.push(matched_policies[index]['rule'])
+            end
+          end
+          detailResp_json['policies'] = policy_list
+          detailResp_json['rules'] = rule_list
         end
 
         impacted_artifacts = detailResp_json['impacted_artifacts']
