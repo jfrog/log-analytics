@@ -68,13 +68,19 @@ Splunk:
 
 Splunk setup can be found at [README.](https://github.com/jfrog/log-analytics-splunk/blob/master/README.md)
 ````text
-wget https://raw.githubusercontent.com/jfrog/log-analytics/master/fluentd/plugins/input/fluent-plugin-jfrog-siem/splunk.conf
+wget https://raw.githubusercontent.com/jfrog/log-analytics-splunk/master/siem/splunk_siem.conf
 ````
 Elasticsearch: 
 
 Elasticsearch Kibana setup can be found at [README.](https://github.com/jfrog/log-analytics-elastic/blob/master/README.md)
 ````text
-wget https://raw.githubusercontent.com/jfrog/log-analytics/master/fluentd/plugins/input/fluent-plugin-jfrog-siem/elastic.conf
+wget https://raw.githubusercontent.com/jfrog/log-analytics-elastic/master/siem/elastic_siem.conf
+````
+Datadog: 
+
+Datadog setup can be found at [README.](https://github.com/jfrog/log-analytics-datadog/blob/master/README.md)
+````text
+wget https://raw.githubusercontent.com/jfrog/log-analytics-datadog/master/siem/datadog_siem.conf
 ````
 
 #### Configuration parameters
