@@ -30,7 +30,8 @@ module Fluent
       # `:default` means that the parameter is optional.
       config_param :tag, :string, default: ""
       config_param :jpd_url, :string, default: ""
-      config_param :access_token, :string, default: ""
+      config_param :username, :string, default: ""
+      config_param :apikey, :string, default: ""
       config_param :pos_file, :string, default: ""
       config_param :batch_size, :integer, default: 25
       config_param :thread_count, :integer, default: 5
@@ -50,8 +51,12 @@ module Fluent
           raise Fluent::ConfigError, "Must define the JPD URL to pull Xray SIEM violations."
         end
 
-        if @access_token == ""
-          raise Fluent::ConfigError, "Must define the access token to use for authentication."
+        if @username == ""
+          raise Fluent::ConfigError, "Must define the username to use for authentication."
+        end
+
+        if @apikey == ""
+          raise Fluent::ConfigError, "Must define the API Key to use for authentication."
         end
 
         if @pos_file == ""
@@ -89,7 +94,7 @@ module Fluent
 
 
       def run
-        call_home(@jpd_url, @access_token)
+        call_home(@jpd_url)
         # runs the violation pull
         last_created_date_string = get_last_item_create_date()
         begin
@@ -104,7 +109,7 @@ module Fluent
 
         while true
           # Grab the batch of records
-          resp=get_xray_violations(xray_json, @jpd_url, @access_token)
+          resp=get_xray_violations(xray_json, @jpd_url)
           number_of_violations = JSON.parse(resp)['total_violations']
           if left_violations <= 0
             left_violations = number_of_violations
@@ -159,7 +164,7 @@ module Fluent
           thread_pool = Thread.pool(thread_count)
           thread_pool.process {
             for xray_violation_url in xray_violation_urls_list do
-              pull_violation_details(xray_violation_url, @access_token)
+              pull_violation_details(xray_violation_url)
             end
           }
           thread_pool.shutdown
@@ -188,48 +193,53 @@ module Fluent
       end
 
       #call home functionality
-      def call_home(jpd_url, access_token)
+      def call_home(jpd_url)
         call_home_json = { "productId": "jfrogLogAnalytics/v0.5.1", "features": [ { "featureId": "Platform/Xray" }, { "featureId": "Channel/xrayeventsiem" } ] }
         response = RestClient::Request.new(
             :method => :post,
             :url => jpd_url + "/artifactory/api/system/usage",
             :payload => call_home_json.to_json,
-            :headers => { :accept => :json, :content_type => :json, Authorization:'Bearer ' + access_token }
+            :user => @username,
+            :password => @apikey,
+            :headers => { :accept => :json, :content_type => :json}
         ).execute do |response, request, result|
             puts "Posting call home information"
         end
       end
 
       # queries the xray API for violations based upon the input json
-      def get_xray_violations_detail(xray_violation_detail_url, access_token)
+      def get_xray_violations_detail(xray_violation_detail_url)
         response = RestClient::Request.new(
             :method => :get,
             :url => xray_violation_detail_url,
-            headers: {Authorization:'Bearer ' + access_token}
+            :user => @username,
+            :password => @apikey
         ).execute do |response, request, result|
           case response.code
           when 200
             return response.to_str
           else
-            raise Fluent::StandardError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
+            raise Fluent::ConfigError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
           end
         end
       end
 
 
       # queries the xray API for violations based upon the input json
-      def get_xray_violations(xray_json, jpd_url, access_token)
+      def get_xray_violations(xray_json, jpd_url)
         response = RestClient::Request.new(
             :method => :post,
             :url => jpd_url + "/xray/api/v1/violations",
             :payload => xray_json.to_json,
-            :headers => { :accept => :json, :content_type => :json, Authorization:'Bearer ' + access_token }
+            :user => @username,
+            :password => @apikey,
+            :headers => { :accept => :json, :content_type => :json}
         ).execute do |response, request, result|
           case response.code
           when 200
             return response.to_str
           else
-            raise Fluent::StandardError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
+            raise Fluent::ConfigError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
           end
         end
       end
@@ -295,14 +305,14 @@ module Fluent
         return detailResp_json
       end
 
-      def pull_violation_details(xray_violation_detail_url, access_token)
+      def pull_violation_details(xray_violation_detail_url)
         begin
-          detailResp=get_xray_violations_detail(xray_violation_detail_url, access_token)
+          detailResp=get_xray_violations_detail(xray_violation_detail_url)
           time = Fluent::Engine.now
           detailResp_json = data_normalization(detailResp)
           router.emit(@tag, time, detailResp_json)
         rescue
-          raise Fluent::StandardError, "Error pulling violation details url #{xray_violation_detail_url}"
+          raise Fluent::ConfigError, "Error pulling violation details url #{xray_violation_detail_url}"
         end
       end
 

@@ -13,8 +13,9 @@ class JfrogSiemInputTest < Test::Unit::TestCase
   # Default configuration for tests
   CONFIG = %[
     tag "test_tag"
-    jpd_url <jpd_url>
-    access_token <access_token>
+    jpd_url JPD_URL
+    username USER
+    apikey API_KEY
     pos_file "test_pos.txt"
   ]
 
