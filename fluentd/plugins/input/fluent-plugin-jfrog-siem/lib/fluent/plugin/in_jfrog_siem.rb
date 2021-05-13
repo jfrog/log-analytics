@@ -127,11 +127,8 @@ module Fluent
             # Determine if we need to persist this record or not
             persistItem = true
             if waiting_for_violations
-              if created_date < last_created_date
+              if created_date <= last_created_date
                 # "not persisting it - waiting for violations"
-                persistItem = false
-              end
-              if created_date == last_created_date
                 # waiting and same last timestamp (left violations in batch)
                 persistItem = false
               end
