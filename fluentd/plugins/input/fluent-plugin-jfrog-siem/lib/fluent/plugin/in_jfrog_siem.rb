@@ -111,11 +111,13 @@ module Fluent
           # Grab the batch of records
           resp=get_xray_violations(xray_json, @jpd_url)
           number_of_violations = JSON.parse(resp)['total_violations']
+
           if left_violations <= 0
             left_violations = number_of_violations
           end
 
           xray_violation_urls_list = []
+
           for index in 0..JSON.parse(resp)['violations'].length-1 do
             # Get the violation
             item = JSON.parse(resp)['violations'][index]
@@ -127,9 +129,18 @@ module Fluent
             # Determine if we need to persist this record or not
             persistItem = true
             if waiting_for_violations
-              if created_date <= last_created_date
+              if created_date < last_created_date
                 # "not persisting it - waiting for violations"
                 persistItem = false
+              end
+              if created_date == last_created_date
+                # waiting and same last timestamp (left violations in batch)
+                persistItem = false
+              end
+              if created_date > last_created_date
+                # new violation while waiting
+                persistItem = true
+                waiting_for_violations = false
               end
             else
               if created_date < last_created_date
