@@ -87,7 +87,8 @@ wget https://raw.githubusercontent.com/jfrog/log-analytics-datadog/master/siem/d
 Integration is done by setting up Xray. Obtain JPD url and access token for API. Configure the source directive parameters specified below
 * **tag** (string) (required): The value is the tag assigned to the generated events.
 * **jpd_url** (string) (required): JPD url required to pull Xray SIEM violations
-* **access_token** (string) (required): [Access token](https://www.jfrog.com/confluence/display/JFROG/Access+Tokens) to authenticate Xray
+* **apikey** (string) (required): API Key is the [Artifactory API Key](https://www.jfrog.com/confluence/display/JFROG/User+Profile#UserProfile-APIKey) for authentication
+* **username** (string) (required): USER is the Artifactory username for authentication
 * **pos_file** (string) (required): Position file to record last SIEM violation pulled
 * **batch_size** (integer) (optional): Batch size for processing violations
     * Default value: `25`
