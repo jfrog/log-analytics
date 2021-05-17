@@ -129,7 +129,13 @@ module Fluent
             if waiting_for_violations
               if created_date <= last_created_date
                 # "not persisting it - waiting for violations"
+                # waiting and same last timestamp (left violations in batch)
                 persistItem = false
+              end
+              if created_date > last_created_date
+                # new violation while waiting
+                persistItem = true
+                waiting_for_violations = false
               end
             else
               if created_date < last_created_date
