@@ -23,33 +23,46 @@ logs will be in `/opt/jfrog/artifactory/var/log` or `/var/opt/jfrog/artifactory/
 ### Start Artifactory
 
 ```
-sudo service artifactory start|stop|status
+sudo service artifactory start
 ## Run tail to ensure that console.log shows success messages
 tail -F $JFROG_HOME/artifactory/var/log/console.log #$JFROG_HOME is usually same as $JF_PRODUCT_HOME as specified above.
 ```
 
-## Install td-agent as specified
+## Install fluentd
 ```
-export JF_PRODUCT_DATA_INTERNAL=/var/opt/jfrog/artifactory/data
+export JF_PRODUCT_DATA_INTERNAL=/var/opt/jfrog/artifactory/
+cd $JF_PRODUCT_DATA_INTERNAL
+wget https://github.com/jfrog/log-analytics/raw/master/fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz
+tar -xvf fluentd-1.11.0-linux-x86_64.tar.gz
 
-curl -L https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh | sh
+cd fluentd-1.11.0-linux-x86_64
 ```
-
-## Install the gem to support Datadog
-```
-td-agent-gem install fluent-plugin-datadog
-```
-###### @Mahitha - I have not tested the steps below yet.
-
-## Download the configuration file to stream logs to Datadog
+### Download the configuration file to stream logs to Datadog
 
 ```
 cd $JF_PRODUCT_DATA_INTERNAL
 curl https://raw.githubusercontent.com/jfrog/log-analytics-datadog/master/fluent.conf.rt  --output fluet.conf.rt
 ```
+Override the match directive(last section) of the downloaded fluent.conf.rt with the details given below
+```
+<match jfrog.**>
+  @type datadog
+  @id datadog_agent_jfrog_artifactory
+  api_key API_KEY
+  include_tag_key true
+  dd_source fluentd
+</match>
+```
+required: API_KEY is the apiKey from Datadog
 
-## Start td-agent with fluent config
+dd_source attribute is set to the name of the log integration in your logs in order to trigger the integration automatic setup in datadog.
+
+include_tag_key defaults to false and it will add fluentd tag in the json record if set to true
+
+### Start fluentd with fluent config
 
 ```
-
+sudo $JF_PRODUCT_DATA_INTERNAL/fluentd-1.11.0-linux-x86_64/fluentd $JF_PRODUCT_DATA_INTERNAL/fluent.conf.rt
 ```
+
+You should start seeing logs appear under Logs section in Datadog. 
