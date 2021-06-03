@@ -32,7 +32,7 @@ tail -F $JFROG_HOME/artifactory/var/log/console.log #$JFROG_HOME is usually same
 ```
 export JF_PRODUCT_DATA_INTERNAL=/var/opt/jfrog/artifactory/
 cd $JF_PRODUCT_DATA_INTERNAL
-wget https://github.com/jfrog/log-analytics/raw/master/fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz
+sudo wget https://github.com/jfrog/log-analytics/raw/master/fluentd-installer/fluentd-1.11.0-linux-x86_64.tar.gz
 tar -xvf fluentd-1.11.0-linux-x86_64.tar.gz
 
 cd fluentd-1.11.0-linux-x86_64
@@ -41,7 +41,7 @@ cd fluentd-1.11.0-linux-x86_64
 
 ```
 cd $JF_PRODUCT_DATA_INTERNAL
-curl https://raw.githubusercontent.com/jfrog/log-analytics-datadog/master/fluent.conf.rt  --output fluet.conf.rt
+curl https://raw.githubusercontent.com/jfrog/log-analytics-datadog/master/fluent.conf.rt  --output fluent.conf.rt
 ```
 Override the match directive(last section) of the downloaded fluent.conf.rt with the details given below
 ```
@@ -62,7 +62,20 @@ include_tag_key defaults to false and it will add fluentd tag in the json record
 ### Start fluentd with fluent config
 
 ```
-sudo $JF_PRODUCT_DATA_INTERNAL/fluentd-1.11.0-linux-x86_64/fluentd $JF_PRODUCT_DATA_INTERNAL/fluent.conf.rt
+sudo su -
+export JF_PRODUCT_DATA_INTERNAL=/var/opt/jfrog/artifactory/ && $JF_PRODUCT_DATA_INTERNAL/fluentd-1.11.0-linux-x86_64/fluentd $JF_PRODUCT_DATA_INTERNAL/fluent.conf.rt
 ```
 
 You should start seeing logs appear under Logs section in Datadog. 
+
+### Install via td-agent
+This eliminates the step to download and install via zip installer
+
+Follow instructions here: https://docs.fluentd.org/installation/install-by-rpm#step-1-install-from-rpm-repository to install `td-agent`
+
+Install gem for datadog
+`td-agent-gem install fluent-plugin-datadog`
+
+`export JF_PRODUCT_DATA_INTERNAL=/var/opt/jfrog/artifactory/ && td-agent -c $JF_PRODUCT_DATA_INTERNAL/fluent.conf.rt`
+
+You should start seeing logs appear under Logs section in Datadog in a few minutes (< 5 mins)
