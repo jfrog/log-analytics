@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 12.0"
   spec.add_development_dependency "test-unit", "~> 3.0"
   spec.add_development_dependency "rest-client", "~> 2.0"
-  spec.add_development_dependency "thread", "~> 0.2.2"
-  spec.add_runtime_dependency "thread", "~> 0.2.2"
+  spec.add_development_dependency "concurrent-ruby", "~> 1.1.8"
+  spec.add_runtime_dependency "concurrent-ruby", "~> 1.1.8"
   spec.add_runtime_dependency "fluentd", [">= 0.14.10", "< 2"]
 end
