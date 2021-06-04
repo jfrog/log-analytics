@@ -162,7 +162,12 @@ module Fluent
           xray_violation_urls_list.map do |xv_url|
             Concurrent::Promises.future(xv_url)) { |xv| pull_violation_details xv }
           end
-          xray_violation_urls_list.value!.map(&:value!) rescue $!
+
+          begin
+            xray_violation_urls_list.value!.map(&:value!) 
+          rescue => e 
+            puts "Failed to pull violation details due to #{e}"
+          end
 
           # reduce left violations by jump size (not all batches have full item count??)
           left_violations = left_violations - @batch_size
