@@ -95,7 +95,7 @@ module Fluent
 
       def run
         call_home(@jpd_url)
-        # runs the violation pull
+
         last_created_date_string = get_last_item_create_date()
         begin
           last_created_date = DateTime.parse(last_created_date_string).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -106,81 +106,98 @@ module Fluent
         left_violations=0
         waiting_for_violations = false
         xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": offset_count } }
+        
+        # Channel is still a concurrent-ruby-edge feature but concurrent::array is threadsafe so using that instead.
+        violations_channel = Concurrent::Array.new[]
 
-        while true
-          # Grab the batch of records
-          resp=get_xray_violations(xray_json, @jpd_url)
-          number_of_violations = JSON.parse(resp)['total_violations']
-          if left_violations <= 0
-            left_violations = number_of_violations
-          end
-
-          xray_violation_urls_list = []
-          for index in 0..JSON.parse(resp)['violations'].length-1 do
-            # Get the violation
-            item = JSON.parse(resp)['violations'][index]
-
-            # Get the created date and check if we should skip (already processed) or process this record.
-            created_date_string = item['created']
-            created_date = DateTime.parse(created_date_string).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-            # Determine if we need to persist this record or not
-            persistItem = true
-            if waiting_for_violations
-              if created_date <= last_created_date
-                # "not persisting it - waiting for violations"
-                persistItem = false
-              end
-            else
-              if created_date < last_created_date
-                # "persisting everything"
-                persistItem = true
-              end
-            end
-
-            # Publish the record to fluentd
-            if persistItem
-
-              now = Fluent::Engine.now
-              router.emit(@tag, now, item)
-
-              # write to the pos_file created_date_string
-              open(@pos_file, 'a') do |f|
-                f << "#{created_date_string}\n"
-              end
-
-              # Mark this as the last record successfully processed
-              last_created_date_string = created_date_string
-              last_created_date = created_date
-
-              # Grab violation detail url and add to url list to process w/ thread pool
-              xray_violation_details_url=item['violation_details_url']
-              xray_violation_urls_list.append(xray_violation_details_url)
-            end
-          end
-
-          xray_violation_urls_list.map do |xv_url|
-            Concurrent::Promises.future(xv_url)) { |xv| pull_violation_details xv }
-          end
-
-          begin
-            xray_violation_urls_list.value!.map(&:value!) 
-          rescue => e 
-            puts "Failed to pull violation details due to #{e}"
-          end
-
-          # reduce left violations by jump size (not all batches have full item count??)
-          left_violations = left_violations - @batch_size
-          if left_violations <= 0
-            waiting_for_violations = true
-            sleep(@wait_interval)
-          else
-            # Grab the next record to process for the violation details url
-            waiting_for_violations = false
-            offset_count = offset_count + 1
-            xray_json={"filters": { "created_from": last_created_date_string }, "pagination": {"order_by": "created","limit": @batch_size , "offset": offset_count } }
+        timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 5) do
+          violations = JSON.parse(get_xray_violations(xray_json, @jpd_url))
+          violations.each do |v|
+            violations_channel << v
           end
         end
+        timer_task.execute
+
+        violations_channel.each do |v|
+          Concurrent::Promises.future(v)) { |v| pull_violation_details v['violation_details_url'] }
+        end
+
+        # Need to add persistItem logic based on created_date
+
+        # while true
+        #   # Grab the batch of records
+        #   resp=get_xray_violations(xray_json, @jpd_url)
+        #   number_of_violations = JSON.parse(resp)['total_violations']
+        #   if left_violations <= 0
+        #     left_violations = number_of_violations
+        #   end
+
+        #   xray_violation_urls_list = []
+        #   for index in 0..JSON.parse(resp)['violations'].length-1 do
+        #     # Get the violation
+        #     item = JSON.parse(resp)['violations'][index]
+
+        #     # Get the created date and check if we should skip (already processed) or process this record.
+        #     created_date_string = item['created']
+        #     created_date = DateTime.parse(created_date_string).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        #     # Determine if we need to persist this record or not
+        #     persistItem = true
+        #     if waiting_for_violations
+        #       if created_date <= last_created_date
+        #         # "not persisting it - waiting for violations"
+        #         persistItem = false
+        #       end
+        #     else
+        #       if created_date < last_created_date
+        #         # "persisting everything"
+        #         persistItem = true
+        #       end
+        #     end
+
+        #     # Publish the record to fluentd
+        #     if persistItem
+
+        #       now = Fluent::Engine.now
+        #       router.emit(@tag, now, item)
+
+        #       # write to the pos_file created_date_string
+        #       open(@pos_file, 'a') do |f|
+        #         f << "#{created_date_string}\n"
+        #       end
+
+        #       # Mark this as the last record successfully processed
+        #       last_created_date_string = created_date_string
+        #       last_created_date = created_date
+
+        #       # Grab violation detail url and add to url list to process w/ thread pool
+        #       xray_violation_details_url=item['violation_details_url']
+        #       xray_violation_urls_list.append(xray_violation_details_url)
+        #     end
+        #   end
+
+        #   xray_violation_urls_list.map do |xv_url|
+        #     Concurrent::Promises.future(xv_url)) { |xv| pull_violation_details xv }
+        #   end
+
+        #   begin
+        #     xray_violation_urls_list.value!.map(&:value!) 
+        #   rescue => e 
+        #     puts "Failed to pull violation details due to #{e}"
+        #   end
+
+        #   # reduce left violations by jump size (not all batches have full item count??)
+        #   left_violations = left_violations - @batch_size
+        #   if left_violations <= 0
+        #     waiting_for_violations = true
+        #     sleep(@wait_interval)
+        #   else
+        #     # Grab the next record to process for the violation details url
+        #     waiting_for_violations = false
+        #     offset_count = offset_count + 1
+        #     xray_json={"filters": { "created_from": last_created_date_string }, "pagination": {"order_by": "created","limit": @batch_size , "offset": offset_count } }
+        #   end
+        # end
       end
 
 
