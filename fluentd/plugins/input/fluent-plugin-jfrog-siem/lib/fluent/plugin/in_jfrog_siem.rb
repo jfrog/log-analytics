@@ -118,9 +118,12 @@ module Fluent
         end
         timer_task.execute
 
-        violations_channel.each do |v|
-          Concurrent::Promises.future(v)) { |v| pull_violation_details v['violation_details_url'] }
+        details_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 5) do
+          violations_channel.each do |v|
+            Concurrent::Promises.future(v)) { |v| pull_violation_details v['violation_details_url'] }
+          end
         end
+        details_task.execute
 
         # Need to add persistItem logic based on created_date
 
