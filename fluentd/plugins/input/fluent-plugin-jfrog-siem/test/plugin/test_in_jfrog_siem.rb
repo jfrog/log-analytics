@@ -28,7 +28,11 @@ class JfrogSiemInputTest < Test::Unit::TestCase
   sub_test_case 'Testing' do
     test 'Testing plugin in_jfrog_siem' do
       d = create_driver(CONFIG)
-      d.run
+      begin
+        d.run
+      rescue => e
+        raise "Test failed due to #{e}"
+      end
     end
   end
 end

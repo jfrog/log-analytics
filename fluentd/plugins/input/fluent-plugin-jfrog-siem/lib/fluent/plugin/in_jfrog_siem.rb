@@ -15,6 +15,7 @@
 require "fluent/plugin/input"
 require "rest-client"
 require 'concurrent'
+require 'concurrent-edge'
 require "json"
 require "date"
 require "uri"
@@ -108,23 +109,21 @@ module Fluent
         xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": offset_count } }
         
         # Channel is still a concurrent-ruby-edge feature but concurrent::array is threadsafe so using that instead.
-        violations_channel = Concurrent::Array.new[]
-
-        timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 5) do
-          violations = JSON.parse(get_xray_violations(xray_json, @jpd_url))
-          violations.each do |v|
+        violations_channel = Concurrent::Channel.new(capacity: 100)
+        timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 30) do
+          resp = JSON.parse(get_xray_violations(xray_json, @jpd_url))
+          puts "Violations count is #{resp['total_violations']}"
+          resp['violations'].each do |v|
             violations_channel << v
           end
         end
         timer_task.execute
 
-        details_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 5) do
-          violations_channel.each do |v|
-            Concurrent::Promises.future(v)) { |v| pull_violation_details v['violation_details_url'] }
-          end
+        violations_channel.each do |v|
+          puts "Collecting violation details for #{v['infected_components']}: #{v['watch_name']} : #{v['issue_id']}"
+          Concurrent::Promises.future(v) { |v| pull_violation_details(v['violation_details_url'])}
         end
-        details_task.execute
-
+        sleep 100
         # Need to add persistItem logic based on created_date
 
         # while true
@@ -239,6 +238,7 @@ module Fluent
           when 200
             return response.to_str
           else
+            puts "error: #{response.to_json}"
             raise Fluent::ConfigError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
           end
         end
@@ -247,6 +247,7 @@ module Fluent
 
       # queries the xray API for violations based upon the input json
       def get_xray_violations(xray_json, jpd_url)
+        puts "jpd_url for #{jpd_url}"
         response = RestClient::Request.new(
             :method => :post,
             :url => jpd_url + "/xray/api/v1/violations",
@@ -259,7 +260,8 @@ module Fluent
           when 200
             return response.to_str
           else
-            raise Fluent::ConfigError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
+            puts "error: #{response.to_json}"
+            raise Fluent::ConfigError, "Cannot reach Artifactory URL to pull Xray SIEM violations. #{response.to_json}"
           end
         end
       end
@@ -327,12 +329,14 @@ module Fluent
 
       def pull_violation_details(xray_violation_detail_url)
         begin
+          puts "Pulling violation details for #{xray_violation_detail_url}"
           detailResp=get_xray_violations_detail(xray_violation_detail_url)
           time = Fluent::Engine.now
           detailResp_json = data_normalization(detailResp)
           router.emit(@tag, time, detailResp_json)
-        rescue
-          raise Fluent::ConfigError, "Error pulling violation details url #{xray_violation_detail_url}"
+        rescue => e
+          puts "error: #{e}"
+          raise Fluent::ConfigError, "Error pulling violation details url #{xray_violation_detail_url}: #{e}"
         end
       end
 
