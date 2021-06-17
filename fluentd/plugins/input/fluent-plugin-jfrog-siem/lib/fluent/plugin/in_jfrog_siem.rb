@@ -108,7 +108,6 @@ module Fluent
         waiting_for_violations = false
         xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": offset_count } }
         
-        # Channel is still a concurrent-ruby-edge feature but concurrent::array is threadsafe so using that instead.
         violations_channel = Concurrent::Channel.new(capacity: 100)
         timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 30) do
           resp = JSON.parse(get_xray_violations(xray_json, @jpd_url))
@@ -121,7 +120,17 @@ module Fluent
 
         violations_channel.each do |v|
           puts "Collecting violation details for #{v['infected_components']}: #{v['watch_name']} : #{v['issue_id']}"
-          Concurrent::Promises.future(v) { |v| pull_violation_details(v['violation_details_url'])}
+          Concurrent::Promises.future(v) do |v|
+            puts "In the future for #{v}"
+            created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
+            # puts created_date
+            open(@pos_file, 'a') do |f|
+              puts created_date
+              f.puts created_date
+            end
+
+            pull_violation_details(v['violation_details_url'])
+          end
         end
         sleep 100
         # Need to add persistItem logic based on created_date
