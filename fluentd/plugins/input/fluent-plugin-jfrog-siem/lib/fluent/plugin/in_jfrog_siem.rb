@@ -103,30 +103,28 @@ module Fluent
         rescue
           last_created_date = DateTime.parse("1970-01-01T00:00:00Z").strftime("%Y-%m-%dT%H:%M:%SZ")
         end
-        offset_count=1
+        page_number=1
         left_violations=0
         waiting_for_violations = false
-        xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": offset_count } }
         
         violations_channel = Concurrent::Channel.new(capacity: 100)
         timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 30) do
+          xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": page_number } }
           resp = JSON.parse(get_xray_violations(xray_json, @jpd_url))
           puts "Violations count is #{resp['total_violations']}"
           resp['violations'].each do |v|
             violations_channel << v
           end
+          page_number += 1
         end
         timer_task.execute
 
         violations_channel.each do |v|
-          puts "Collecting violation details for #{v['infected_components']}: #{v['watch_name']} : #{v['issue_id']}"
           Concurrent::Promises.future(v) do |v|
-            puts "In the future for #{v}"
-            created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
-            # puts created_date
+            puts "In future: Collecting violation details for #{v['infected_components']}: #{v['watch_name']} : #{v['issue_id']}"
             open(@pos_file, 'a') do |f|
-              puts created_date
-              f.puts created_date
+              created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
+              f.puts [created_date, v['watch_name'], v['issue_id']].join(',')
             end
 
             pull_violation_details(v['violation_details_url'])
