@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name    = "fluent-plugin-jfrog-siem"
-  spec.version = "0.1.8"
+  spec.version = "1.0.0"
   spec.authors = ["John Peterson", "Mahitha Byreddy"]
   spec.email   = ["johnp@jfrog.com", "mahithab@jfrog.com"]
 
