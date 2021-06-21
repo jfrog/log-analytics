@@ -14,11 +14,9 @@
 # limitations under the License.
 require "fluent/plugin/input"
 require "rest-client"
-require 'concurrent'
-require 'concurrent-edge'
-require "json"
 require "date"
 require "uri"
+require 'xray'
 
 module Fluent
   module Plugin
@@ -103,33 +101,37 @@ module Fluent
         rescue
           last_created_date = DateTime.parse("1970-01-01T00:00:00Z").strftime("%Y-%m-%dT%H:%M:%SZ")
         end
-        page_number=1
-        left_violations=0
-        waiting_for_violations = false
+        date_since = last_created_date
         
-        violations_channel = Concurrent::Channel.new(capacity: 100)
-        timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 30) do
-          xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": page_number } }
-          resp = JSON.parse(get_xray_violations(xray_json, @jpd_url))
-          puts "Violations count is #{resp['total_violations']}"
-          resp['violations'].each do |v|
-            violations_channel << v
-          end
-          page_number += 1
-        end
-        timer_task.execute
+        xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
+        violations_channel = xray.violations(date_since)
 
-        violations_channel.each do |v|
-          Concurrent::Promises.future(v) do |v|
-            puts "In future: Collecting violation details for #{v['infected_components']}: #{v['watch_name']} : #{v['issue_id']}"
-            open(@pos_file, 'a') do |f|
-              created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
-              f.puts [created_date, v['watch_name'], v['issue_id']].join(',')
-            end
+        xray.violation_details(violations_channel)
+        
 
-            pull_violation_details(v['violation_details_url'])
-          end
-        end
+        # violations_channel = Concurrent::Channel.new(capacity: 100)
+        # timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 30) do
+        #   xray_json={"filters": { "created_from": last_created_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": page_number } }
+        #   resp = JSON.parse(get_xray_violations(xray_json, @jpd_url))
+        #   puts "Violations count is #{resp['total_violations']}"
+        #   resp['violations'].each do |v|
+        #     violations_channel << v
+        #   end
+        #   page_number += 1
+        # end
+        # timer_task.execute
+
+        # violations_channel.each do |v|
+        #   Concurrent::Promises.future(v) do |v|
+        #     puts "In future: Collecting violation details for #{v['infected_components']}: #{v['watch_name']} : #{v['issue_id']}"
+        #     open(@pos_file, 'a') do |f|
+        #       created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
+        #       f.puts [created_date, v['watch_name'], v['issue_id']].join(',')
+        #     end
+
+        #     pull_violation_details(v['violation_details_url'])
+        #   end
+        # end
         sleep 100
         # Need to add persistItem logic based on created_date
 
@@ -252,26 +254,6 @@ module Fluent
       end
 
 
-      # queries the xray API for violations based upon the input json
-      def get_xray_violations(xray_json, jpd_url)
-        puts "jpd_url for #{jpd_url}"
-        response = RestClient::Request.new(
-            :method => :post,
-            :url => jpd_url + "/xray/api/v1/violations",
-            :payload => xray_json.to_json,
-            :user => @username,
-            :password => @apikey,
-            :headers => { :accept => :json, :content_type => :json}
-        ).execute do |response, request, result|
-          case response.code
-          when 200
-            return response.to_str
-          else
-            puts "error: #{response.to_json}"
-            raise Fluent::ConfigError, "Cannot reach Artifactory URL to pull Xray SIEM violations. #{response.to_json}"
-          end
-        end
-      end
 
       # normalizes Xray data according to common information models for all log-vendors
       def data_normalization(detailResp)

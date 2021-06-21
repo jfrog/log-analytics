@@ -11,12 +11,22 @@ class JfrogSiemInputTest < Test::Unit::TestCase
   end
 
   # Default configuration for tests
+  # CONFIG = %[
+  #   tag "partnership.test_tag"
+  #   jpd_url "https://partnership.jfrog.io/"
+  #   username "sudhindrar"
+  #   apikey "AKCp8ihpNg2JE5PV3nRXZQsmMGmzX9VTX6wN51hQBFRC1CXQWzGrKQvFL1tsw7aochjoQXAZq"
+  #   pos_file "test_pos.txt"
+  #   wait_interval 30
+  # ]
+
   CONFIG = %[
-    tag "test_tag"
-    jpd_url JPD_URL
-    username USER
-    apikey API_KEY
+    tag "sudhindra-xray-rt.test_tag"
+    jpd_url "https://sudhindra-xray-rt.jfrog.tech/"
+    username "admin"
+    apikey "AKCp8jQd1zP4oKv43SNgewrNwikd1iAQznfhSfx3T249eVMkGnJnSjCpNsuv8vtHWChKLfJ1w"
     pos_file "test_pos.txt"
+    wait_interval 10
   ]
 
   private

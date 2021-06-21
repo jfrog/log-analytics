@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rest-client", "~> 2.0"
   spec.add_development_dependency "concurrent-ruby", "~> 1.1.8"
   spec.add_development_dependency "concurrent-ruby-edge", '>= 0'
+  spec.add_development_dependency 'rspec', '~> 3.10.0'
   
   spec.add_runtime_dependency "concurrent-ruby", "~> 1.1.8"
   spec.add_runtime_dependency "concurrent-ruby-edge", '>= 0'

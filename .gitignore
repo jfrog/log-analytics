@@ -4,3 +4,4 @@
 ./idea
 .idea/
 .DS_Store
+**/test_pos.txt
