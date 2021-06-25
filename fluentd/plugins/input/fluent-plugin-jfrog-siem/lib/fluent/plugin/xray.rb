@@ -1,6 +1,8 @@
 require 'concurrent'
 require 'concurrent-edge'
 require 'json'
+require "rest-client"
+
 
 class Xray
   def initialize(jpd_url, username, api_key, wait_interval, batch_size, pos_file)
@@ -12,35 +14,37 @@ class Xray
     @pos_file = pos_file
   end
 
-  def violations(date_since)
-    violations_channel = Concurrent::Channel.new(capacity: 100)
-    request_json = Concurrent::Channel.new(capacity: 1)
-    page_number = 1
-    # timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 30) do
-      xray_json = {"filters": { "created_from": date_since }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": page_number } }
-      resp = JSON.parse(get_xray_violations(xray_json))
-      puts "Violations count is #{resp['total_violations']}"
-      resp['violations'].each do |v|
-        violations_channel << v
-      end
-      page_number += 1
-    # end
-    # timer_task.execute
-    violations_channel
+  def violations_count(for_date)
+    xray_json = {"filters": { "created_from": for_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": 1 } }
+    JSON.parse(get_xray_violations(xray_json))['total_violations']
   end
 
-  def violation_details(violations_channel)
-    puts "violations details"
-    violations_channel.each do |v|
-      puts v
-      Concurrent::Promises.future(v) do |v|
-        puts "do nothing"
-        # open(@pos_file, 'a') do |f|
-        #   created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
-        #   f.puts [created_date, v['watch_name'], v['issue_id']].join(',')
-        # end
+  def page_count(total_violations)
+    pages = total_violations / @batch_size
+    another_page = total_violations % @batch_size
+    return pages + 1 if another_page > 0
+    return pages
+  end
 
-        # pull_violation_details(v['violation_details_url'])
+  def violations_by_page(for_date, page_number)
+    violations = Concurrent::Array.new(@batch_size)
+    xray_json = {"filters": { "created_from": for_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": page_number } }
+    resp = JSON.parse(get_xray_violations(xray_json))
+    resp['violations'].each do |v|
+      violations << v
+    end
+    violations
+  end
+
+  def violation_details(violations)
+    violations.each do |v|
+      Concurrent::Promises.future(v) do |v|
+        open(@pos_file, 'a') do |f|
+          created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
+          f.puts [created_date, v['watch_name'], v['issue_id']].join(',')
+        end
+
+        pull_violation_details(v['violation_details_url'])
       end
     end
   end

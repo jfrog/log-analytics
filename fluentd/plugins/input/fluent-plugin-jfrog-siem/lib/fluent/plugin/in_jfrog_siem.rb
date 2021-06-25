@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 require "fluent/plugin/input"
-require "rest-client"
 require "date"
 require "uri"
 require 'xray'
@@ -32,7 +31,7 @@ module Fluent
       config_param :username, :string, default: ""
       config_param :apikey, :string, default: ""
       config_param :pos_file, :string, default: ""
-      config_param :batch_size, :integer, default: 25
+      config_param :batch_size, :integer, default: 5
       config_param :thread_count, :integer, default: 5
       config_param :wait_interval, :integer, default: 60
 
@@ -101,12 +100,20 @@ module Fluent
         rescue
           last_created_date = DateTime.parse("1970-01-01T00:00:00Z").strftime("%Y-%m-%dT%H:%M:%SZ")
         end
-        date_since = last_created_date
+        for_date = last_created_date
         
         xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
-        violations_channel = xray.violations(date_since)
 
-        xray.violation_details(violations_channel)
+        violations_count = xray.violations_count(for_date)
+        puts violations_count
+        puts xray.page_count(violations_count)
+        page_count = xray.page_count(violations_count)
+        (1..xray.page_count(violations_count)).each  do |page_number|
+          violations = xray.violations_by_page(for_date, page_number)
+          puts "getting details for #{page_number}"
+          xray.violation_details(violations)
+        end
+
         
 
         # violations_channel = Concurrent::Channel.new(capacity: 100)
