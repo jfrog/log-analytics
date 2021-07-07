@@ -28,21 +28,20 @@ RSpec.describe Xray do
     end
   end
 
-  # Need to fix expectation on the instance_double to fix this spec 
-  #describe "#violations_by_page" do
-  #   it "gets violations for for_date" do
-  #     xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, 5, @pos_file)
-  # 
-  #     rest_client = instance_double(RestClient::Request)
-  #     expect(rest_client).to receive(:execute).and_return({"violations": [1, 2, 3, 4, 5]})
+  describe "#violations_by_page" do
+    it "gets violations for for_date" do
+      xray = Xray.new("@jpd_url", @username, @apikey, @wait_interval, 5, @pos_file)
 
-  #     json = class_double(JSON)
-  #     expect(json).to receive(:parse).and_return({'violations': [1, 2, 3, 4, 5]})
+      rest_client = double("A Rest Client")
+      expect(RestClient::Request).to receive(:new).and_return rest_client
+      expect(rest_client).to receive(:execute).and_return('{"violations": [1, 2, 3, 4, 5]}')
 
-  #     violations = xray.violations_by_page(Date.today, 1)
-  #     expect(violations).to eq ([1, 2, 3, 4, 5])
-  #   end
-  # end
+      expect(JSON).to receive(:parse).and_return({'violations': [1, 2, 3, 4, 5]})
+
+      violations = xray.violations_by_page(Date.today, 1)
+      expect(violations).to eq ([1, 2, 3, 4, 5])
+    end
+  end
 
   describe "#page_count" do
     it "calculates page_count based on batch_size to account for last page smaller than batch_size" do

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fluent-plugin-jfrog-siem (0.1.8)
+    fluent-plugin-jfrog-siem (1.0.0)
       concurrent-ruby (~> 1.1.8)
       concurrent-ruby-edge
       fluentd (>= 0.14.10, < 2)
@@ -16,7 +16,7 @@ GEM
     diff-lcs (1.4.4)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
-    fluentd (1.13.0)
+    fluentd (1.13.1)
       bundler
       cool.io (>= 1.4.5, < 2.0.0)
       http_parser.rb (>= 0.5.1, < 0.7.0)

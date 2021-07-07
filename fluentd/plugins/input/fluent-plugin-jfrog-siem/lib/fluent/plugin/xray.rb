@@ -27,10 +27,10 @@ class Xray
   end
 
   def violations_by_page(for_date, page_number)
-    violations = Concurrent::Array.new(@batch_size)
+    violations = Concurrent::Array.new
     xray_json = {"filters": { "created_from": for_date }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": page_number } }
-    resp = JSON.parse(get_xray_violations(xray_json))
-    resp['violations'].each do |v|
+    resp = JSON.parse(get_xray_violations(xray_json), {symbolize_names: true})
+    resp[:violations].each do |v|
       violations << v
     end
     violations
@@ -62,7 +62,7 @@ class Xray
       ).execute do |response, request, result|
         case response.code
         when 200
-          return response.to_str
+          return response
         else
           puts "error: #{response.to_json}"
           raise Fluent::ConfigError, "Cannot reach Artifactory URL to pull Xray SIEM violations. #{response.to_json}"
