@@ -27,6 +27,8 @@ class JfrogSiemInputTest < Test::Unit::TestCase
     apikey "AKCp8jQd1zP4oKv43SNgewrNwikd1iAQznfhSfx3T249eVMkGnJnSjCpNsuv8vtHWChKLfJ1w"
     pos_file "test_pos.txt"
     wait_interval 10
+    start_date "2021-06-15"
+    batch_size 25
   ]
 
   private

@@ -34,6 +34,7 @@ module Fluent
       config_param :batch_size, :integer, default: 5
       config_param :thread_count, :integer, default: 5
       config_param :wait_interval, :integer, default: 60
+      config_param :start_date, :string, default: Date.today.to_s
 
 
       # `configure` is called before `start`.
@@ -104,15 +105,20 @@ module Fluent
         
         xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
 
-        violations_count = xray.violations_count(for_date)
-        puts violations_count
-        puts xray.page_count(violations_count)
-        page_count = xray.page_count(violations_count)
-        (1..xray.page_count(violations_count)).each  do |page_number|
-          violations = xray.violations_by_page(for_date, page_number)
-          puts "getting details for #{page_number}"
-          xray.violation_details(violations)
+        DateTime.parse(start_date).upto(Date.today) do |for_date|
+          # Concurrent::Promises.future(for_date) do |for_date|
+            violations_count = xray.violations_count(for_date)
+            puts violations_count
+            puts xray.page_count(violations_count)
+            page_count = xray.page_count(violations_count)
+            (1..xray.page_count(violations_count)).each  do |page_number|
+              violations = xray.violations_by_page(for_date, page_number)
+              puts "getting details for #{page_number}"
+              xray.violation_details(violations)
+            end
+          # end
         end
+
       end
 
       # pull the last item create date from the pos_file return created_date_string

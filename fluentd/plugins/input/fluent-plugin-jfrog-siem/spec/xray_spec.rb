@@ -13,7 +13,7 @@ require 'rspec'
 
 RSpec.describe Xray do
   describe "#violation_details" do
-    it "creates a future for every item in the channel" do
+    it "creates a future for every violation" do
       xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
       violations = Concurrent::Array.new
       
@@ -23,6 +23,27 @@ RSpec.describe Xray do
       
       promises = class_double("Concurrent::Promises").as_stubbed_const(:transfer_nested_constants => true)
       expect(promises).to receive(:future).exactly(5).times
+
+      xray.violation_details(violations)
+    end
+
+    xit "updates pos file for every violation" do
+      pos_file = double('pos_file')
+
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, "pos_file.txt")
+      violations = Concurrent::Array.new
+      
+      (1..5).each do |i|
+        violations << i
+      end
+      
+      datetime = double (DateTime)
+      expect(datetime).to receive(:parse)
+      promises = class_double("Concurrent::Promises").as_stubbed_const(:transfer_nested_constants => true)
+      allow(promises).to receive(:future) { |&block| block.call }
+
+      expect(File).to receive(:open).with("pos_file.txt", "a").and_yield(pos_file)
+      expect(pos_file).to receive(:puts).exactly(5).times
 
       xray.violation_details(violations)
     end

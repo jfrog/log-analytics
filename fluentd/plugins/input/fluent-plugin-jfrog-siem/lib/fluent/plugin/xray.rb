@@ -39,19 +39,19 @@ class Xray
   def violation_details(violations)
     violations.each do |v|
       Concurrent::Promises.future(v) do |v|
-        open(@pos_file, 'a') do |f|
-          created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
-          f.puts [created_date, v['watch_name'], v['issue_id']].join(',')
+        puts "In future: ", v
+        File.open(@pos_file, 'a') do |f|
+          timestamp = DateTime.parse(v[:created]).strftime("%Y-%m-%dT%H:%M:%SZ")
+          f.puts [timestamp, v[:watch_name], v[:issue_id]].join(',')
         end
 
-        pull_violation_details(v['violation_details_url'])
+        pull_violation_details(v[:violation_details_url])
       end
     end
   end
 
   private
     def get_xray_violations(xray_json)
-      puts "jpd_url for #{@jpd_url}"
       response = RestClient::Request.new(
           :method => :post,
           :url => @jpd_url + "/xray/api/v1/violations",
