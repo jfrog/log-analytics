@@ -1,7 +1,7 @@
 [submodule "splunk"]
 	path = log-vendors/splunk
 	url = https://github.com/jfrog/log-analytics-splunk.git
-        branch = master
+	branch = master
 [submodule "elastic"]
 	path = log-vendors/elastic-fluentd-kibana
 	url = https://github.com/jfrog/log-analytics-elastic.git
@@ -14,3 +14,7 @@
 	path = log-vendors/prometheus-fluentd-grafana
 	url = https://github.com/jfrog/log-analytics-prometheus.git
         branch = master
+[submodule "elastic-fluentd-kibana"]
+	branch = master
+[submodule "prometheus-fluentd-grafana"]
+	branch = master
