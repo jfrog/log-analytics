@@ -13,7 +13,7 @@ require 'rspec'
 
 RSpec.describe Xray do
   describe "#violation_details" do
-    it "creates a future for every item in the channel" do
+    it "creates a future for every violation" do
       xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
       violations = Concurrent::Array.new
       
@@ -26,23 +26,43 @@ RSpec.describe Xray do
 
       xray.violation_details(violations)
     end
+
+    xit "updates pos file for every violation" do
+      pos_file = double('pos_file')
+
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, "pos_file.txt")
+      violations = Concurrent::Array.new
+      
+      (1..5).each do |i|
+        violations << i
+      end
+      
+      datetime = double (DateTime)
+      expect(datetime).to receive(:parse)
+      promises = class_double("Concurrent::Promises").as_stubbed_const(:transfer_nested_constants => true)
+      allow(promises).to receive(:future) { |&block| block.call }
+
+      expect(File).to receive(:open).with("pos_file.txt", "a").and_yield(pos_file)
+      expect(pos_file).to receive(:puts).exactly(5).times
+
+      xray.violation_details(violations)
+    end
   end
 
-  # Need to fix expectation on the instance_double to fix this spec 
-  #describe "#violations_by_page" do
-  #   it "gets violations for for_date" do
-  #     xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, 5, @pos_file)
-  # 
-  #     rest_client = instance_double(RestClient::Request)
-  #     expect(rest_client).to receive(:execute).and_return({"violations": [1, 2, 3, 4, 5]})
+  describe "#violations_by_page" do
+    it "gets violations for for_date" do
+      xray = Xray.new("@jpd_url", @username, @apikey, @wait_interval, 5, @pos_file)
 
-  #     json = class_double(JSON)
-  #     expect(json).to receive(:parse).and_return({'violations': [1, 2, 3, 4, 5]})
+      rest_client = double("A Rest Client")
+      expect(RestClient::Request).to receive(:new).and_return rest_client
+      expect(rest_client).to receive(:execute).and_return('{"violations": [1, 2, 3, 4, 5]}')
 
-  #     violations = xray.violations_by_page(Date.today, 1)
-  #     expect(violations).to eq ([1, 2, 3, 4, 5])
-  #   end
-  # end
+      expect(JSON).to receive(:parse).and_return({'violations': [1, 2, 3, 4, 5]})
+
+      violations = xray.violations_by_page(Date.today, 1)
+      expect(violations).to eq ([1, 2, 3, 4, 5])
+    end
+  end
 
   describe "#page_count" do
     it "calculates page_count based on batch_size to account for last page smaller than batch_size" do
