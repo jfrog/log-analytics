@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 require "fluent/plugin/input"
+require "rest-client"
 require "date"
 require "uri"
-require 'xray'
+require "fluent/plugin/xray.rb"
 
 module Fluent
   module Plugin
@@ -31,10 +32,10 @@ module Fluent
       config_param :username, :string, default: ""
       config_param :apikey, :string, default: ""
       config_param :pos_file, :string, default: ""
-      config_param :batch_size, :integer, default: 5
+      config_param :batch_size, :integer, default: 25
       config_param :thread_count, :integer, default: 5
       config_param :wait_interval, :integer, default: 60
-
+      config_param :from_date, :string, default: ""
 
       # `configure` is called before `start`.
       # 'conf' is a `Hash` that includes the configuration parameters.
@@ -98,21 +99,19 @@ module Fluent
         begin
           last_created_date = DateTime.parse(last_created_date_string).strftime("%Y-%m-%dT%H:%M:%SZ")
         rescue
-          last_created_date = DateTime.parse("1970-01-01T00:00:00Z").strftime("%Y-%m-%dT%H:%M:%SZ")
+          last_created_date = DateTime.now.strftime("%Y-%m-%dT%H:%M:%SZ")
         end
-        for_date = last_created_date
-        
-        xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
 
-        violations_count = xray.violations_count(for_date)
-        puts violations_count
-        puts xray.page_count(violations_count)
-        page_count = xray.page_count(violations_count)
-        (1..xray.page_count(violations_count)).each  do |page_number|
-          violations = xray.violations_by_page(for_date, page_number)
-          puts "getting details for #{page_number}"
-          xray.violation_details(violations)
+        if (@from_date != "")
+          last_created_date = DateTime.parse(@from_date).strftime("%Y-%m-%dT%H:%M:%SZ")
         end
+        date_since = last_created_date
+        xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
+        violations_channel = xray.violations(date_since)
+        xray.violation_details(violations_channel)
+
+        sleep 100
+
       end
 
       # pull the last item create date from the pos_file return created_date_string
@@ -134,10 +133,10 @@ module Fluent
             :password => @apikey,
             :headers => { :accept => :json, :content_type => :json}
         ).execute do |response, request, result|
-            puts "Posting call home information"
+          puts "Posting call home information"
         end
       end
-
     end
   end
 end
+
