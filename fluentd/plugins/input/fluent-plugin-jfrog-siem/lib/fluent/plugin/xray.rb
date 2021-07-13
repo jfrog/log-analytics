@@ -23,22 +23,10 @@ class Xray
       puts "Total violations count is #{total_violation_count}"
       if total_violation_count > 0
         puts "Number of Violations in page #{page_number} are #{page_violation_count}"
-        last_limit_lines = get_last_limit_lines_from_pos_file(page_violation_count)
-
         if is_pos_file_empty
-          resp['violations'].each do |v|
-            violations_channel << v
-          end
+          violations_channel = push_to_violations_channel(violations_channel, resp)
         else
-          resp['violations'].each do |v|
-            alreadyProcessed = check_if_violation_already_processed(v, last_limit_lines)
-            if !alreadyProcessed
-              puts "Not processed"
-              violations_channel << v
-            else
-              puts "Already processed"
-            end
-          end
+          violations_channel = push_unique_violations_to_violations_channel(violations_channel, resp, page_violation_count)
         end
         if page_violation_count == @batch_size
           page_number += 1
@@ -46,6 +34,27 @@ class Xray
       end
     end
     timer_task.execute
+    violations_channel
+  end
+
+  def push_to_violations_channel(violations_channel, resp)
+    resp['violations'].each do |v|
+      violations_channel << v
+    end
+    violations_channel
+  end
+
+  def push_unique_violations_to_violations_channel(violations_channel, resp, page_violation_count)
+    last_limit_lines = get_last_limit_lines_from_pos_file(page_violation_count)
+    resp['violations'].each do |v|
+      alreadyProcessed = check_if_violation_already_processed(v, last_limit_lines)
+      if !alreadyProcessed
+        puts "Not processed"
+        violations_channel << v
+      else
+        puts "Already processed"
+      end
+    end
     violations_channel
   end
 
@@ -73,24 +82,27 @@ class Xray
     violations_channel.each do |v|
       Concurrent::Promises.future(v) do |v7|
         pull_violation_details(v['violation_details_url'])
-        open(@pos_file, 'a') do |f|
-          created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
-          f.puts [created_date, v['watch_name'], v['issue_id']].join(',')
-        end
+        write_to_pos_file(v)
       end
+    end
+  end
+
+  def write_to_pos_file(v)
+    open(@pos_file, 'a') do |f|
+      created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
+      f.puts [created_date, v['watch_name'], v['issue_id']].join(',')
     end
   end
 
   def pull_violation_details(xray_violation_detail_url)
     begin
-      #puts "Pulling violation details for #{xray_violation_detail_url}"
       detailResp=get_xray_violations_detail(xray_violation_detail_url)
       time = Fluent::Engine.now
       detailResp_json = data_normalization(detailResp)
         #puts detailResp_json
         #router.emit(@tag, time, detailResp_json)
     rescue => e
-      puts "error1: #{e}"
+      puts "error: #{e}"
       raise Fluent::ConfigError, "Error pulling violation details url #{xray_violation_detail_url}: #{e}"
     end
   end
@@ -106,7 +118,7 @@ class Xray
       when 200
         return response.to_str
       else
-        puts "error2: #{response.to_json}"
+        puts "error: #{response.to_json}"
         raise Fluent::ConfigError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
       end
     end
@@ -186,7 +198,7 @@ class Xray
       when 200
         return response.to_str
       else
-        puts "error3: #{response.to_json}"
+        puts "error: #{response.to_json}"
         raise Fluent::ConfigError, "Cannot reach Artifactory URL to pull Xray SIEM violations. #{response.to_json}"
       end
     end

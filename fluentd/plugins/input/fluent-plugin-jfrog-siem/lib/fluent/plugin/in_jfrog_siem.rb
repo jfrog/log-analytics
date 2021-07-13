@@ -31,7 +31,7 @@ module Fluent
       config_param :jpd_url, :string, default: ""
       config_param :username, :string, default: ""
       config_param :apikey, :string, default: ""
-      config_param :pos_file, :string, default: ""
+      config_param :pos_file, :string, default: "jfrog_siem.log.pos." + DateTime.now.strftime("%Y-%m-%d")
       config_param :batch_size, :integer, default: 25
       config_param :thread_count, :integer, default: 5
       config_param :wait_interval, :integer, default: 60
