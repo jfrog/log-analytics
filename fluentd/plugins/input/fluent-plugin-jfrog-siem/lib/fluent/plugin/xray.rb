@@ -25,7 +25,7 @@ class Xray
         puts "Number of Violations in page #{page_number} are #{page_violation_count}"
         last_limit_lines = get_last_limit_lines_from_pos_file(page_violation_count)
 
-        if is_pos_file_empty
+        if File.zero?(@pos_file)
           resp['violations'].each do |v|
             violations_channel << v
           end
@@ -47,14 +47,6 @@ class Xray
     end
     timer_task.execute
     violations_channel
-  end
-
-  def is_pos_file_empty()
-    file_lines = File.foreach(@pos_file).count
-    if file_lines == 0
-      return true
-    end
-    return false
   end
 
   def check_if_violation_already_processed(v, last_limit_lines)
