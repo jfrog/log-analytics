@@ -33,7 +33,6 @@ module Fluent
       config_param :apikey, :string, default: ""
       config_param :pos_file, :string, default: "jfrog_siem.log.pos." + DateTime.now.strftime("%Y-%m-%d")
       config_param :batch_size, :integer, default: 25
-      config_param :thread_count, :integer, default: 5
       config_param :wait_interval, :integer, default: 60
       config_param :from_date, :string, default: ""
 
@@ -60,14 +59,6 @@ module Fluent
 
         if @pos_file == ""
           raise Fluent::ConfigError, "Must define a position file to record last SIEM violation pulled."
-        end
-
-        if @thread_count < 1
-          raise Fluent::ConfigError, "Must define at least one thread to process violation details."
-        end
-
-        if @thread_count > @batch_size
-          raise Fluent::ConfigError, "Violation detail url thread count exceeds batch size."
         end
 
         if @wait_interval < 1
