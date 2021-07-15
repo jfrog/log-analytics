@@ -50,7 +50,6 @@ RSpec.describe Xray do
   end
 
   describe "#processed?" do
-    
     let(:violation){ { "created": Date.parse(Date.today.to_s).strftime("%Y-%m-%dT%H:%M:%SZ"), "watch_name": "watch1", "issue_id": "55444"} }
 
     it "returns false when a violation has not been processed" do
@@ -71,6 +70,23 @@ RSpec.describe Xray do
       expect(xray.processed?(JSON.parse(violation.to_json))).to be_truthy
     end
 
+  end
+
+  describe "#write_to_pos_file" do
+    let(:violation){ { "created": Date.parse(Date.today.to_s).strftime("%Y-%m-%dT%H:%M:%SZ"), "watch_name": "watch1", "issue_id": "55444"} }
+
+    it "returns false when a violation has not been processed" do
+      allow(File).to receive(:open).and_yield []
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
+
+      result = []
+      allow(File).to receive(:open).and_yield result
+
+      xray.write_to_pos_file(JSON.parse(violation.to_json))
+
+      matching_violation = [violation[:created], violation[:watch_name], violation[:issue_id]].join(',')
+      expect(result.include? matching_violation).to be_truthy
+    end
   end
 
 end

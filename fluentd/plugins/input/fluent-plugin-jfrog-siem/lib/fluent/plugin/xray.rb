@@ -74,9 +74,10 @@ class Xray
   end
 
   def write_to_pos_file(v)
-    open(@pos_file, 'a') do |f|
+    File.open(@pos_file, 'a') do |f|
+      puts v
       created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
-      f.puts [created_date, v['watch_name'], v['issue_id']].join(',')
+      f << [created_date, v['watch_name'], v['issue_id']].join(',')
     end
   end
 
