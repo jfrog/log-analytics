@@ -49,38 +49,26 @@ RSpec.describe Xray do
     end
   end
 
-  describe "#violations_by_page" do
-    it "gets violations for for_date" do
-      xray = Xray.new("@jpd_url", @username, @apikey, @wait_interval, 5, @pos_file)
+  describe "#processed?" do
+    
+    let(:violation){ { "created": Date.parse(Date.today.to_s).strftime("%Y-%m-%dT%H:%M:%SZ"), "watch_name": "watch1", "issue_id": "55444"} }
 
-      rest_client = double("A Rest Client")
-      expect(RestClient::Request).to receive(:new).and_return rest_client
-      expect(rest_client).to receive(:execute).and_return('{"violations": [1, 2, 3, 4, 5]}')
+    it "returns false when a violation has not been processed" do
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
+      
+      allow(File).to receive(:open).and_yield []
 
-      expect(JSON).to receive(:parse).and_return({'violations': [1, 2, 3, 4, 5]})
-
-      violations = xray.violations_by_page(Date.today, 1)
-      expect(violations).to eq ([1, 2, 3, 4, 5])
-    end
-  end
-
-  describe "#page_count" do
-    it "calculates page_count based on batch_size to account for last page smaller than batch_size" do
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, 5, @pos_file)
-
-      expect(xray.page_count(24)).to be(5)
+      expect(xray.processed?(JSON.parse(violation.to_json))).to be_falsey
     end
 
-    it "calculates page_count based on batch_size to account for last page same as batch_size" do
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, 5, @pos_file)
+    it "returns true when a violation was found in the pos file" do
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
+      
+      matching_violation = [violation[:created], violation[:watch_name], violation[:issue_id]].join(',')
+      another_violation = [violation[:created], "watch2", "12345"].join(',')
+      allow(File).to receive(:open).and_yield [matching_violation, another_violation]
 
-      expect(xray.page_count(20)).to be(4)
-    end
-
-    it "returns elegantly when violations_count is 0" do
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, 5, @pos_file)
-
-      expect(xray.page_count(0)).to be(0)
+      expect(xray.processed?(JSON.parse(violation.to_json))).to be_truthy
     end
 
   end

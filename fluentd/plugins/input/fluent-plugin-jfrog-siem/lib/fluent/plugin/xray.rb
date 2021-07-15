@@ -57,15 +57,10 @@ class Xray
     created_date = DateTime.parse(violation['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
     violation_entry = [created_date, violation['watch_name'], violation['issue_id']].join(',')
     processed = File.open "jfrog_siem_log_#{created_date}.pos" do |f|
-      f.find { |line| line =~ violation_entry }
+      f.find { |line| line.include? violation_entry }
     end
     return processed
   end
-
-  # def get_last_limit_lines_from_pos_file(page_violation_count)
-  #   last_limit_lines = IO.readlines(@pos_file)[-page_violation_count..-1]
-  #   return last_limit_lines
-  # end
 
   def violation_details(violations_channel)
     # emit only violation details and not all
