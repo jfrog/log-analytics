@@ -63,11 +63,6 @@ class Xray
     return false
   end
 
-  # def get_last_limit_lines_from_pos_file(page_violation_count)
-  #   last_limit_lines = IO.readlines(@pos_file)[-page_violation_count..-1]
-  #   return last_limit_lines
-  # end
-
   def violation_details(violations_channel)
     # emit only violation details and not all
     puts "violations details"
