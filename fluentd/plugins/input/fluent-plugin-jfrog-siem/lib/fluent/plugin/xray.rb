@@ -3,13 +3,12 @@ require 'concurrent-edge'
 require 'json'
 
 class Xray
-  def initialize(jpd_url, username, api_key, wait_interval, batch_size, pos_file)
+  def initialize(jpd_url, username, api_key, wait_interval, batch_size)
     @jpd_url = jpd_url
     @username = username
     @api_key = api_key
     @wait_interval = wait_interval
     @batch_size = batch_size
-    @pos_file = pos_file
   end
 
   def violations(date_since)
@@ -23,10 +22,14 @@ class Xray
       puts "Total violations count is #{total_violation_count}"
       if total_violation_count > 0
         puts "Number of Violations in page #{page_number} are #{page_violation_count}"
-        if File.zero?(@pos_file)
-          violations_channel = push_to_violations_channel(violations_channel, resp['violations'])
-        else
-          violations_channel = push_unique_violations_to_violations_channel(violations_channel, resp['violations'], page_violation_count)
+        resp['violations'].each do |violation|
+          pos_file_date = DateTime.parse(violation['created']).strftime("%Y-%m-%d")
+          temp_pos_file = "jfrog_siem_log_#{pos_file_date}.pos"
+          if(!(File.exist?(temp_pos_file)))
+            violations_channel = push_to_violations_channel(violations_channel, violation)
+          else
+            violations_channel = push_unique_violations_to_violations_channel(violations_channel, violation, temp_pos_file)
+          end
         end
         if page_violation_count == @batch_size
           page_number += 1
@@ -37,29 +40,27 @@ class Xray
     violations_channel
   end
 
-  def push_to_violations_channel(violations_channel, violations)
-    violations.each do |v|
-      violations_channel << v
+  def push_to_violations_channel(violations_channel, violation)
+    violations_channel << violation
+    violations_channel
+  end
+
+  def push_unique_violations_to_violations_channel(violations_channel, violation, temp_pos_file)
+    unless processed?(violation, temp_pos_file)
+      violations_channel << violation
     end
     violations_channel
   end
 
-  def push_unique_violations_to_violations_channel(violations_channel, violations, page_violation_count)
-    violations.each do |violation|
-      unless processed?(violation)
-        violations_channel << violation
-      end
-    end
-    violations_channel
-  end
-
-  def processed?(violation)
+  def processed?(violation, temp_pos_file)
     created_date = DateTime.parse(violation['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
     violation_entry = [created_date, violation['watch_name'], violation['issue_id']].join(',')
-    processed = File.open "jfrog_siem_log_#{created_date}.pos" do |f|
-      f.find { |line| line =~ violation_entry }
+    File.open(temp_pos_file).each_line do |line|
+      if (line.include?violation_entry)
+        return true
+      end
     end
-    return processed
+    return false
   end
 
   # def get_last_limit_lines_from_pos_file(page_violation_count)
@@ -79,8 +80,10 @@ class Xray
   end
 
   def write_to_pos_file(v)
-    open(@pos_file, 'a') do |f|
-      created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
+    created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
+    pos_file_date = DateTime.parse(v['created']).strftime("%Y-%m-%d")
+    current_pos_file = "jfrog_siem_log_#{pos_file_date}.pos"
+    open(current_pos_file, 'a') do |f|
       f.puts [created_date, v['watch_name'], v['issue_id']].join(',')
     end
   end

@@ -31,7 +31,6 @@ module Fluent
       config_param :jpd_url, :string, default: ""
       config_param :username, :string, default: ""
       config_param :apikey, :string, default: ""
-      config_param :pos_file, :string, default: "jfrog_siem.log.pos." + DateTime.now.strftime("%Y-%m-%d")
       config_param :batch_size, :integer, default: 25
       config_param :wait_interval, :integer, default: 60
       config_param :from_date, :string, default: ""
@@ -57,12 +56,12 @@ module Fluent
           raise Fluent::ConfigError, "Must define the API Key to use for authentication."
         end
 
-        if @pos_file == ""
-          raise Fluent::ConfigError, "Must define a position file to record last SIEM violation pulled."
-        end
-
         if @wait_interval < 1
           raise Fluent::ConfigError, "Wait interval must be greater than 1 to wait between pulling new events."
+        end
+
+        if @from_date == ""
+          puts "From date not specified, so getting violations from current date"
         end
 
       end
@@ -86,31 +85,31 @@ module Fluent
       def run
         call_home(@jpd_url)
 
-        last_created_date_string = get_last_item_create_date()
-        begin
-          last_created_date = DateTime.parse(last_created_date_string).strftime("%Y-%m-%dT%H:%M:%SZ")
-        rescue
-          last_created_date = DateTime.now.strftime("%Y-%m-%dT%H:%M:%SZ")
-        end
+        last_created_date = get_last_item_create_date()
 
         if (@from_date != "")
           last_created_date = DateTime.parse(@from_date).strftime("%Y-%m-%dT%H:%M:%SZ")
         end
         date_since = last_created_date
-        xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
+        xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size)
         violations_channel = xray.violations(date_since)
         xray.violation_details(violations_channel)
-
         sleep 100
-
       end
 
       # pull the last item create date from the pos_file return created_date_string
       def get_last_item_create_date()
-        if(!(File.exist?(@pos_file)))
-          @pos_file = File.new(@pos_file, "w")
+        recent_pos_file = get_recent_pos_file()
+        if recent_pos_file != nil
+          last_created_date_string = IO.readlines(recent_pos_file).last
+          return DateTime.parse(last_created_date_string).strftime("%Y-%m-%dT%H:%M:%SZ")
+        else
+          return DateTime.now.strftime("%Y-%m-%dT%H:%M:%SZ")
         end
-        return IO.readlines(@pos_file).last
+      end
+
+      def get_recent_pos_file()
+        return Dir.glob("*.pos").sort[-1]
       end
 
       #call home functionality
