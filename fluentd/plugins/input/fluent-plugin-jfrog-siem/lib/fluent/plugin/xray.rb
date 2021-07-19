@@ -78,8 +78,8 @@ class Xray
     created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
     pos_file_date = DateTime.parse(v['created']).strftime("%Y-%m-%d")
     current_pos_file = "jfrog_siem_log_#{pos_file_date}.pos"
-    open(current_pos_file, 'a') do |f|
-      f.puts [created_date, v['watch_name'], v['issue_id']].join(',')
+    File.open(current_pos_file, 'a') do |f|
+      f << [created_date, v['watch_name'], v['issue_id']].join(',')
     end
   end
 
