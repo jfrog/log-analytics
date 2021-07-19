@@ -55,7 +55,7 @@ RSpec.describe Xray do
     pos_file_date = DateTime.parse(Date.today.to_s).strftime("%Y-%m-%d")
     temp_pos_file = "jfrog_siem_log_#{pos_file_date}.pos"
 
-    xit "returns false when a violation has not been processed" do
+    it "returns false when a violation has not been processed" do
       xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size)
       
       allow(File).to receive(:open).and_yield []
@@ -63,7 +63,7 @@ RSpec.describe Xray do
       expect(xray.processed?(JSON.parse(violation.to_json), temp_pos_file)).to be_falsey
     end
 
-    xit "returns true when a violation was found in the pos file" do
+    it "returns true when a violation was found in the pos file" do
       xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size)
 
       matching_violation = [violation[:created], violation[:watch_name], violation[:issue_id]].join(',')

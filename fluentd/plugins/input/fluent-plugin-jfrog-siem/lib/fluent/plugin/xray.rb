@@ -55,12 +55,10 @@ class Xray
   def processed?(violation, temp_pos_file)
     created_date = DateTime.parse(violation['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
     violation_entry = [created_date, violation['watch_name'], violation['issue_id']].join(',')
-    File.open(temp_pos_file).each_line do |line|
-      if (line.include?violation_entry)
-        return true
-      end
+    processed = File.open(temp_pos_file) do |f|
+      f.find { |line| line.include? violation_entry }
     end
-    return false
+    return processed
   end
 
   def violation_details(violations_channel)
