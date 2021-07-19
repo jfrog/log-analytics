@@ -23,12 +23,10 @@ class Xray
       if total_violation_count > 0
         puts "Number of Violations in page #{page_number} are #{page_violation_count}"
         resp['violations'].each do |violation|
-          pos_file_date = DateTime.parse(violation['created']).strftime("%Y-%m-%d")
-          temp_pos_file = "jfrog_siem_log_#{pos_file_date}.pos"
           if(!(File.exist?(temp_pos_file)))
             violations_channel = push_to_violations_channel(violations_channel, violation)
           else
-            violations_channel = push_unique_violations_to_violations_channel(violations_channel, violation, temp_pos_file)
+            violations_channel = push_unique_violations_to_violations_channel(violations_channel, violation)
           end
         end
         if page_violation_count == @batch_size
@@ -45,39 +43,19 @@ class Xray
     violations_channel
   end
 
-  def push_unique_violations_to_violations_channel(violations_channel, violation, temp_pos_file)
-    unless processed?(violation, temp_pos_file)
+  def push_unique_violations_to_violations_channel(violations_channel, violation)
+    unless PositionFile.new.processed?(violation)
       violations_channel << violation
     end
     violations_channel
   end
 
-  def processed?(violation, temp_pos_file)
-    created_date = DateTime.parse(violation['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
-    violation_entry = [created_date, violation['watch_name'], violation['issue_id']].join(',')
-    processed = File.open(temp_pos_file) do |f|
-      f.find { |line| line.include? violation_entry }
-    end
-    return processed
-  end
-
   def violation_details(violations_channel)
-    # emit only violation details and not all
-    puts "violations details"
     violations_channel.each do |v|
       Concurrent::Promises.future(v) do |v7|
         pull_violation_details(v['violation_details_url'])
-        write_to_pos_file(v)
+        PositionFile.new.write(v)
       end
-    end
-  end
-
-  def write_to_pos_file(v)
-    created_date = DateTime.parse(v['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
-    pos_file_date = DateTime.parse(v['created']).strftime("%Y-%m-%d")
-    current_pos_file = "jfrog_siem_log_#{pos_file_date}.pos"
-    File.open(current_pos_file, 'a') do |f|
-      f << [created_date, v['watch_name'], v['issue_id']].join(',')
     end
   end
 
@@ -86,8 +64,7 @@ class Xray
       detailResp=get_xray_violations_detail(xray_violation_detail_url)
       time = Fluent::Engine.now
       detailResp_json = data_normalization(detailResp)
-        #puts detailResp_json
-        #router.emit(@tag, time, detailResp_json)
+      router.emit(@tag, time, detailResp_json)
     rescue => e
       puts "error: #{e}"
       raise Fluent::ConfigError, "Error pulling violation details url #{xray_violation_detail_url}: #{e}"
