@@ -14,7 +14,7 @@ require 'rspec'
 RSpec.describe Xray do
   describe "#violation_details" do
     it "creates a future for every violation" do
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size)
       violations = Concurrent::Array.new
       
       (1..5).each do |i|
@@ -52,22 +52,25 @@ RSpec.describe Xray do
   describe "#processed?" do
     let(:violation){ { "created": Date.parse(Date.today.to_s).strftime("%Y-%m-%dT%H:%M:%SZ"), "watch_name": "watch1", "issue_id": "55444"} }
 
+    pos_file_date = DateTime.parse(Date.today.to_s).strftime("%Y-%m-%d")
+    temp_pos_file = "jfrog_siem_log_#{pos_file_date}.pos"
+
     it "returns false when a violation has not been processed" do
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size)
       
       allow(File).to receive(:open).and_yield []
 
-      expect(xray.processed?(JSON.parse(violation.to_json))).to be_falsey
+      expect(xray.processed?(JSON.parse(violation.to_json), temp_pos_file)).to be_falsey
     end
 
     it "returns true when a violation was found in the pos file" do
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
-      
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size)
+
       matching_violation = [violation[:created], violation[:watch_name], violation[:issue_id]].join(',')
       another_violation = [violation[:created], "watch2", "12345"].join(',')
       allow(File).to receive(:open).and_yield [matching_violation, another_violation]
 
-      expect(xray.processed?(JSON.parse(violation.to_json))).to be_truthy
+      expect(xray.processed?(JSON.parse(violation.to_json), temp_pos_file)).to be_truthy
     end
 
   end
@@ -77,7 +80,7 @@ RSpec.describe Xray do
 
     it "returns false when a violation has not been processed" do
       allow(File).to receive(:open).and_yield []
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file)
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size)
 
       result = []
       allow(File).to receive(:open).and_yield result
