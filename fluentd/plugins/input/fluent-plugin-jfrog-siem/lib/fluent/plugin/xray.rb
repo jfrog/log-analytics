@@ -23,10 +23,12 @@ class Xray
       if total_violation_count > 0
         puts "Number of Violations in page #{page_number} are #{page_violation_count}"
         resp['violations'].each do |violation|
-          if(!(File.exist?(temp_pos_file)))
-            violations_channel = push_to_violations_channel(violations_channel, violation)
-          else
+          pos_file_date = DateTime.parse(violation['created']).strftime("%Y-%m-%d")
+          pos_file = "jfrog_siem_log_#{pos_file_date}.pos"
+          if File.exist?(pos_file)
             violations_channel = push_unique_violations_to_violations_channel(violations_channel, violation)
+          else
+            violations_channel = push_to_violations_channel(violations_channel, violation)
           end
         end
         if page_violation_count == @batch_size
