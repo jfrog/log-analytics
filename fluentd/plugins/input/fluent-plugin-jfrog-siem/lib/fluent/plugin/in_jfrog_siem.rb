@@ -93,8 +93,8 @@ module Fluent
           last_created_date = DateTime.parse(@from_date).strftime("%Y-%m-%dT%H:%M:%SZ")
         end
         date_since = last_created_date
-        puts date_since
-        xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size)
+        puts "Getting queries from #{date_since}"
+        xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path)
         violations_channel = xray.violations(date_since)
         violation_details(violations_channel)
         sleep 100
@@ -135,7 +135,7 @@ module Fluent
         violations_channel.each do |v|
           Concurrent::Promises.future(v) do |v7|
             pull_violation_details(v['violation_details_url'])
-            PositionFile.new.write(v)
+            PositionFile.new(@pos_file_path).write(v)
           end
         end
       end

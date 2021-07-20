@@ -4,12 +4,13 @@ require 'json'
 require "fluent/plugin/position_file.rb"
 
 class Xray
-  def initialize(jpd_url, username, api_key, wait_interval, batch_size)
+  def initialize(jpd_url, username, api_key, wait_interval, batch_size, pos_file_path)
     @jpd_url = jpd_url
     @username = username
     @api_key = api_key
     @wait_interval = wait_interval
     @batch_size = batch_size
+    @pos_file_path = pos_file_path
   end
 
   def violations(date_since)
@@ -25,7 +26,7 @@ class Xray
         puts "Number of Violations in page #{page_number} are #{page_violation_count}"
         resp['violations'].each do |violation|
           pos_file_date = DateTime.parse(violation['created']).strftime("%Y-%m-%d")
-          pos_file = "jfrog_siem_log_#{pos_file_date}.siem.pos"
+          pos_file = @pos_file_path + "jfrog_siem_log_#{pos_file_date}.siem.pos"
           if File.exist?(pos_file)
             violations_channel = push_unique_violations_to_violations_channel(violations_channel, violation)
           else
@@ -47,7 +48,7 @@ class Xray
   end
 
   def push_unique_violations_to_violations_channel(violations_channel, violation)
-    unless PositionFile.new.processed?(violation)
+    unless PositionFile.new(@pos_file_path).processed?(violation)
       violations_channel << violation
     end
     violations_channel
