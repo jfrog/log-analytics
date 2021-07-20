@@ -17,7 +17,7 @@ class PositionFile
     pos_file = "jfrog_siem_log_#{pos_file_date}.pos"
     File.open(pos_file, 'a') do |f|
       f << [created_date, v['watch_name'], v['issue_id']].join(',')
+      f << "\n"
     end
   end
-
 end
