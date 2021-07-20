@@ -35,6 +35,7 @@ module Fluent
       config_param :batch_size, :integer, default: 25
       config_param :wait_interval, :integer, default: 60
       config_param :from_date, :string, default: ""
+      config_param :pos_file_path, :string, default: ""
 
       # `configure` is called before `start`.
       # 'conf' is a `Hash` that includes the configuration parameters.
@@ -62,7 +63,7 @@ module Fluent
         end
 
         if @from_date == ""
-          puts "From date not specified, so getting violations from current date"
+          puts "From date not specified, so getting violations from current date if pos_file doesn't exist"
         end
 
       end
@@ -92,6 +93,7 @@ module Fluent
           last_created_date = DateTime.parse(@from_date).strftime("%Y-%m-%dT%H:%M:%SZ")
         end
         date_since = last_created_date
+        puts date_since
         xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size)
         violations_channel = xray.violations(date_since)
         violation_details(violations_channel)
@@ -125,7 +127,8 @@ module Fluent
       end
 
       def get_recent_pos_file()
-        return Dir.glob("*.pos").sort[-1]
+        pos_file = @pos_file_path + "*.siem.pos"
+        return Dir.glob(pos_file).sort[-1]
       end
 
       def violation_details(violations_channel)

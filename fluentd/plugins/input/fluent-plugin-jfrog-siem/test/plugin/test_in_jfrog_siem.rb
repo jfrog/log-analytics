@@ -21,13 +21,13 @@ class JfrogSiemInputTest < Test::Unit::TestCase
   # ]
 
   CONFIG = %[
-    tag "sudhindra-xray-rt.test_tag"
-    jpd_url "https://sudhindra-xray-rt.jfrog.tech/"
+    tag "jfrog.xray.siem.vulnerabilities"
+    jpd_url "JPDURL"
     username "admin"
-    apikey "AKCp8jQd1zP4oKv43SNgewrNwikd1iAQznfhSfx3T249eVMkGnJnSjCpNsuv8vtHWChKLfJ1w"
-    pos_file "test_pos.txt"
+    apikey "APIKEY"
+    pos_file_path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/"
     wait_interval 10
-    start_date "2021-06-15"
+    from_date "2016-01-01"
     batch_size 25
   ]
 

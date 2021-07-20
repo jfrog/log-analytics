@@ -25,7 +25,7 @@ class Xray
         puts "Number of Violations in page #{page_number} are #{page_violation_count}"
         resp['violations'].each do |violation|
           pos_file_date = DateTime.parse(violation['created']).strftime("%Y-%m-%d")
-          pos_file = "jfrog_siem_log_#{pos_file_date}.pos"
+          pos_file = "jfrog_siem_log_#{pos_file_date}.siem.pos"
           if File.exist?(pos_file)
             violations_channel = push_unique_violations_to_violations_channel(violations_channel, violation)
           else
