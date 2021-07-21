@@ -8,15 +8,16 @@ class PositionFile
     File.exist?(pos_file_name(violation)) && found?(violation)
   end
 
-  def found?(violation)
-    return File.open(pos_file_name(violation)) { |f| f.find { |line| line.include? violation_entry(violation) } }
-  end
-
   def write(violation)
     File.open(pos_file_name(violation), 'a') do |f|
       f << violation_entry(violation)
       f << "\n"
     end
+  end
+
+  private
+  def found?(violation)
+    return File.open(pos_file_name(violation)) { |f| f.find { |line| line.include? violation_entry(violation) } }
   end
 
   def violation_entry(violation)

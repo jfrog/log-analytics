@@ -20,7 +20,6 @@ class Xray
     page_number_channel << 1
     timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 30) do
       page_number = page_number_channel.take
-      puts page_number
       xray_json = {"filters": { "created_from": date_since }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": page_number } }
       resp = JSON.parse(get_xray_violations(xray_json))
       total_violation_count = resp['total_violations']
@@ -60,7 +59,7 @@ class Xray
       detailResp = get_xray_violations_detail(xray_violation_detail_url)
       time = Fluent::Engine.now
       detailResp_json = data_normalization(detailResp)
-      # @router.emit(@tag, time, detailResp_json)
+      @router.emit(@tag, time, detailResp_json)
     rescue => e
       puts "error: #{e}"
       raise Fluent::ConfigError, "Error pulling violation details url #{xray_violation_detail_url}: #{e}"
