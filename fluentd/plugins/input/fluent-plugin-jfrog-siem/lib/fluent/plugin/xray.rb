@@ -16,10 +16,8 @@ class Xray
 
   def violations(date_since)
     violations_channel = Concurrent::Channel.new(capacity: @batch_size)
-    page_number_channel = Concurrent::Channel.new(capacity: 1)
-    page_number_channel << 1
+    page_number = 1
     timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 30) do
-      page_number = page_number_channel.take
       xray_json = {"filters": { "created_from": date_since }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": page_number } }
       resp = JSON.parse(get_xray_violations(xray_json))
       total_violation_count = resp['total_violations']
@@ -35,7 +33,6 @@ class Xray
         end
         if page_violation_count == @batch_size
           page_number += 1
-          page_number_channel << page_number
         end
       end
     end
