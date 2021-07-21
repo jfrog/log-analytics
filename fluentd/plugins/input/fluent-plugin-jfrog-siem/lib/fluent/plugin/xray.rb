@@ -1,7 +1,7 @@
 require 'concurrent'
 require 'concurrent-edge'
 require 'json'
-require "fluent/plugin/position_file.rb"
+require "fluent/plugin/position_file"
 
 class Xray
   def initialize(jpd_url, username, api_key, wait_interval, batch_size, pos_file_path, router)
@@ -16,8 +16,11 @@ class Xray
 
   def violations(date_since)
     violations_channel = Concurrent::Channel.new(capacity: @batch_size)
-    page_number = 1
+    page_number_channel = Concurrent::Channel.new(capacity: 1)
+    page_number_channel << 1
     timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 30) do
+      page_number = page_number_channel.take
+      puts page_number
       xray_json = {"filters": { "created_from": date_since }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": page_number } }
       resp = JSON.parse(get_xray_violations(xray_json))
       total_violation_count = resp['total_violations']
@@ -26,40 +29,28 @@ class Xray
       if total_violation_count > 0
         puts "Number of Violations in page #{page_number} are #{page_violation_count}"
         resp['violations'].each do |violation|
-          pos_file_date = DateTime.parse(violation['created']).strftime("%Y-%m-%d")
-          pos_file = @pos_file_path + "jfrog_siem_log_#{pos_file_date}.siem.pos"
-          if File.exist?(pos_file)
-            violations_channel = push_unique_violations_to_violations_channel(violations_channel, violation)
-          else
-            violations_channel = push_to_violations_channel(violations_channel, violation)
+          pos_file = PositionFile.new(@pos_file_path)
+          unless pos_file.processed?(violation)
+            violations_channel << violation
           end
         end
         if page_violation_count == @batch_size
           page_number += 1
+          page_number_channel << page_number
         end
       end
     end
     timer_task.execute
-    violations_channel
-  end
 
-  def push_to_violations_channel(violations_channel, violation)
-    violations_channel << violation
-    violations_channel
-  end
-
-  def push_unique_violations_to_violations_channel(violations_channel, violation)
-    unless PositionFile.new(@pos_file_path).processed?(violation)
-      violations_channel << violation
-    end
     violations_channel
   end
 
   def violation_details(violations_channel)
     violations_channel.each do |v|
-      Concurrent::Promises.future(v) do |v7|
+      Concurrent::Promises.future(v) do |v|
         pull_violation_details(v['violation_details_url'])
-        PositionFile.new.write(v)
+        pos_file = PositionFile.new(@pos_file_path)
+        pos_file.write(v)
       end
     end
   end
@@ -69,7 +60,7 @@ class Xray
       detailResp = get_xray_violations_detail(xray_violation_detail_url)
       time = Fluent::Engine.now
       detailResp_json = data_normalization(detailResp)
-      router.emit(@tag, time, detailResp_json)
+      # @router.emit(@tag, time, detailResp_json)
     rescue => e
       puts "error: #{e}"
       raise Fluent::ConfigError, "Error pulling violation details url #{xray_violation_detail_url}: #{e}"
@@ -81,7 +72,7 @@ class Xray
         :method => :get,
         :url => xray_violation_detail_url,
         :user => @username,
-        :password => @apikey
+        :password => @api_key
     ).execute do |response, request, result|
       case response.code
       when 200

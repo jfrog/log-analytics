@@ -19,17 +19,18 @@ RSpec.describe PositionFile do
     temp_pos_file = "jfrog_siem_log_#{pos_file_date}.pos"
 
     it "returns false when a violation has not been processed" do
-      pos_file = PositionFile.new
+      pos_file = PositionFile.new(`pwd`)
       allow(File).to receive(:open).and_yield []
 
       expect(pos_file.processed?(JSON.parse(violation.to_json))).to be_falsey
     end
 
     it "returns true when a violation was found in the pos file" do
-      pos_file = PositionFile.new
+      pos_file = PositionFile.new(`pwd`)
 
       matching_violation = [violation[:created], violation[:watch_name], violation[:issue_id]].join(',')
       another_violation = [violation[:created], "watch2", "12345"].join(',')
+      allow(File).to receive(:exist?).and_return true
       allow(File).to receive(:open).and_yield [matching_violation, another_violation]
 
       expect(pos_file.processed?(JSON.parse(violation.to_json))).to be_truthy
@@ -41,7 +42,7 @@ RSpec.describe PositionFile do
     let(:violation){ { "created": Date.parse(Date.today.to_s).strftime("%Y-%m-%dT%H:%M:%SZ"), "watch_name": "watch1", "issue_id": "55444"} }
 
     it "returns false when a violation has not been processed" do
-      pos_file = PositionFile.new
+      pos_file = PositionFile.new(`pwd`)
 
       result = []
       allow(File).to receive(:open).and_yield result

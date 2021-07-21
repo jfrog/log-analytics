@@ -128,7 +128,7 @@ module Fluent
 
       def get_recent_pos_file()
         pos_file = @pos_file_path + "*.siem.pos"
-        return Dir.glob(pos_file).sort[-1]
+        return Dir.glob(pos_file).sort.last
       end
 
     end

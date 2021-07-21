@@ -18,7 +18,7 @@ RSpec.describe Xray do
     let(:violation2){ { "created": Date.parse(Date.today.to_s).strftime("%Y-%m-%dT%H:%M:%SZ"), "watch_name": "watch2", "issue_id": "55443"} }
 
     it "creates a future for every violation" do
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @router)
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path, @router)
       violations = Concurrent::Array.new
       
       (1..5).each do |i|
