@@ -19,7 +19,7 @@ class Xray
     page_number = 1
     timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 30) do
       xray_json = {"filters": { "created_from": date_since }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": page_number } }
-      resp = JSON.parse(get_xray_violations(xray_json))
+      resp = get_violations(xray_json)
       total_violation_count = resp['total_violations']
       page_violation_count = resp['violations'].length
       puts "Total violations count is #{total_violation_count}"
@@ -53,9 +53,8 @@ class Xray
 
   def pull_violation_details(xray_violation_detail_url)
     begin
-      detailResp = get_xray_violations_detail(xray_violation_detail_url)
+      detailResp_json = data_normalization(get_violations_detail(xray_violation_detail_url))
       time = Fluent::Engine.now
-      detailResp_json = data_normalization(detailResp)
       @router.emit(@tag, time, detailResp_json)
     rescue => e
       puts "error: #{e}"
@@ -63,7 +62,7 @@ class Xray
     end
   end
 
-  def get_xray_violations_detail(xray_violation_detail_url)
+  def get_violations_detail(xray_violation_detail_url)
     response = RestClient::Request.new(
         :method => :get,
         :url => xray_violation_detail_url,
@@ -72,7 +71,7 @@ class Xray
     ).execute do |response, request, result|
       case response.code
       when 200
-        return response.to_str
+        return JSON.parse(response.to_s)
       else
         puts "error: #{response.to_json}"
         raise Fluent::ConfigError, "Cannot reach Artifactory URL to pull Xray SIEM violations."
@@ -80,8 +79,7 @@ class Xray
     end
   end
 
-  def data_normalization(detailResp)
-    detailResp_json = JSON.parse(detailResp)
+  def data_normalization(detailResp_json)
     cve = []
     cvss_v2_list = []
     cvss_v3_list = []
@@ -130,8 +128,7 @@ class Xray
       detailResp_json['rules'] = rule_list
     end
 
-    impacted_artifacts = detailResp_json['impacted_artifacts']
-    for impacted_artifact in impacted_artifacts do
+    detailResp_json['impacted_artifacts'].each do |impacted_artifact|
       matchdata = impacted_artifact.match /default\/(?<repo_name>[^\/]*)\/(?<path>.*)/
       impacted_artifact_url = matchdata['repo_name'] + ":" + matchdata['path'] + " "
       impacted_artifact_url_list.append(impacted_artifact_url)
@@ -141,7 +138,7 @@ class Xray
   end
 
   private
-  def get_xray_violations(xray_json)
+  def get_violations(xray_json)
     response = RestClient::Request.new(
         :method => :post,
         :url => @jpd_url + "/xray/api/v1/violations",
@@ -152,7 +149,7 @@ class Xray
     ).execute do |response, request, result|
       case response.code
       when 200
-        return response.to_str
+        return JSON.parse(response.to_str)
       else
         puts "error: #{response.to_json}"
         raise Fluent::ConfigError, "Cannot reach Artifactory URL to pull Xray SIEM violations. #{response.to_json}"
