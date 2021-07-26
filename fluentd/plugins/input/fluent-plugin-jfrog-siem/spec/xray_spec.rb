@@ -69,6 +69,21 @@ RSpec.describe Xray do
   end
 
   describe "#violations" do
+    it "runs a timer task to process violations periodically" do
+      batch_size = 25
+      pos_file_path = `pwd`
+      router = double('router')
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, batch_size, pos_file_path, router)
+
+      channel = double(Concurrent::Channel)
+      expect(Concurrent::Channel).to receive(:new).with(capacity: batch_size).and_return(channel)
+
+      timer_task = double(Concurrent::TimerTask)
+      expect(Concurrent::TimerTask).to receive(:new).and_return timer_task
+
+      expect(timer_task).to receive(:execute)
+      xray.violations(Date.today)
+    end
 
   end
 
