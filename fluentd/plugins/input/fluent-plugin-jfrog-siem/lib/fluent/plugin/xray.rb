@@ -20,20 +20,12 @@ class Xray
     timer_task = Concurrent::TimerTask.new(execution_interval: @wait_interval, timeout_interval: 30) do
       xray_json = {"filters": { "created_from": date_since }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": page_number } }
       resp = get_violations(xray_json)
-      total_violation_count = resp['total_violations']
       page_violation_count = resp['violations'].length
       puts "Total violations count is #{total_violation_count}"
-      if total_violation_count > 0
+      if resp['total_violations'] > 0
         puts "Number of Violations in page #{page_number} are #{page_violation_count}"
-        resp['violations'].each do |violation|
-          pos_file = PositionFile.new(@pos_file_path)
-          unless pos_file.processed?(violation)
-            violations_channel << violation
-          end
-        end
-        if page_violation_count == @batch_size
-          page_number += 1
-        end
+        resp['violations'].each {|v| violations_channel = process(v, violations_channel) }
+        page_number += 1 if next_page?(page_violation_count)
       end
     end
     timer_task.execute
@@ -137,6 +129,12 @@ class Xray
     return detailResp_json
   end
 
+  def process(violation, violations_channel)
+    pos_file = PositionFile.new(@pos_file_path)
+    violations_channel << violation unless pos_file.processed?(violation)
+    violations_channel
+  end
+
   private
   def get_violations(xray_json)
     response = RestClient::Request.new(
@@ -156,5 +154,10 @@ class Xray
       end
     end
   end
+
+  def next_page?(count)
+    count == @batch_size
+  end
+
 end
 

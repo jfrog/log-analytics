@@ -15,26 +15,26 @@ require 'rest-client'
 RSpec.describe Xray do
   describe "#violation_details" do
 
-    let(:violation1){ { "created": Date.parse(Date.today.to_s).strftime("%Y-%m-%dT%H:%M:%SZ"), 
-                        "watch_name": "watch1", 
-                        "issue_id": "55444", 
-                        "violation_details_url": "http://www.com"} 
+    let(:violation1){ { "created": Date.parse(Date.today.to_s).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        "watch_name": "watch1",
+                        "issue_id": "55444",
+                        "violation_details_url": "http://www.com"}
                     }
-    let(:violation2){ { "created": Date.parse(Date.today.to_s).strftime("%Y-%m-%dT%H:%M:%SZ"), 
-                        "watch_name": "watch2", 
-                        "issue_id": "55443", 
-                        "violation_details_url": "http://www.com"} 
+    let(:violation2){ { "created": Date.parse(Date.today.to_s).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        "watch_name": "watch2",
+                        "issue_id": "55443",
+                        "violation_details_url": "http://www.com"}
                     }
 
     let(:violations) { Concurrent::Array.new }
 
     it "creates a future for every violation" do
       xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path, @router)
-      
+
       (1..5).each do |i|
         violations << i
       end
-      
+
       promises = class_double("Concurrent::Promises").as_stubbed_const(:transfer_nested_constants => true)
       expect(promises).to receive(:future).exactly(5).times
 
@@ -45,7 +45,7 @@ RSpec.describe Xray do
       router = double('router')
       pos_file_path = `pwd`
       xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, pos_file_path, router)
-      
+
       violations << JSON.parse(violation1.to_json)
       violations << JSON.parse(violation2.to_json)
 
@@ -68,5 +68,53 @@ RSpec.describe Xray do
     end
   end
 
+  describe "#violations" do
+
+  end
+
+  describe "#process" do
+    let(:violation1){ { "created": Date.parse(Date.today.to_s).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        "watch_name": "watch1",
+                        "issue_id": "55444",
+                        "violation_details_url": "http://www.com"}
+                    }
+    let(:violation2){ { "created": Date.parse(Date.today.to_s).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        "watch_name": "watch2",
+                        "issue_id": "55443",
+                        "violation_details_url": "http://www.com"}
+                    }
+
+    let(:violations_channel) { Concurrent::Array.new }
+
+    it "skips processed violation" do
+      pos_file_path = `pwd`
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path, @router)
+
+      violations_channel << violation1
+
+      pos_file = double(PositionFile)
+      allow(PositionFile).to receive(:new).and_return pos_file
+      allow(pos_file).to receive(:processed?).and_return true
+
+      xray.process(violation1, violations_channel)
+
+      expect(violations_channel.size).to eq 1
+    end
+
+    it "adds unprocessed violation to the channel" do
+      pos_file_path = `pwd`
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path, @router)
+
+      violations_channel << violation1
+
+      pos_file = double(PositionFile)
+      allow(PositionFile).to receive(:new).and_return pos_file
+      allow(pos_file).to receive(:processed?).and_return false
+
+      xray.process(violation2, violations_channel)
+
+      expect(violations_channel.size).to eq 2
+    end
+  end
 
 end
