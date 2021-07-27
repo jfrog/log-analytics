@@ -29,7 +29,7 @@ RSpec.describe Xray do
     let(:violations) { Concurrent::Array.new }
 
     it "creates a future for every violation" do
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path, @router)
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path, @router, @tag)
 
       (1..5).each do |i|
         violations << i
@@ -44,7 +44,7 @@ RSpec.describe Xray do
     it "updates pos file for every violation (cannot do exactly tests since stubs with Concurrent ruby are broken)" do
       router = double('router')
       pos_file_path = `pwd`
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, pos_file_path, router)
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, pos_file_path, router, @tag)
 
       violations << JSON.parse(violation1.to_json)
       violations << JSON.parse(violation2.to_json)
@@ -73,7 +73,7 @@ RSpec.describe Xray do
       batch_size = 25
       pos_file_path = `pwd`
       router = double('router')
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, batch_size, pos_file_path, router)
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, batch_size, pos_file_path, router, @tag)
 
       channel = double(Concurrent::Channel)
       expect(Concurrent::Channel).to receive(:new).with(capacity: batch_size).and_return(channel)
@@ -103,7 +103,7 @@ RSpec.describe Xray do
 
     it "skips processed violation" do
       pos_file_path = `pwd`
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path, @router)
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path, @router, @tag)
 
       violations_channel << violation1
 
@@ -118,7 +118,7 @@ RSpec.describe Xray do
 
     it "adds unprocessed violation to the channel" do
       pos_file_path = `pwd`
-      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path, @router)
+      xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path, @router, @tag)
 
       violations_channel << violation1
 
