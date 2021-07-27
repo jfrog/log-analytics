@@ -94,7 +94,7 @@ module Fluent
         end
         date_since = last_created_date
         puts "Getting queries from #{date_since}"
-        xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path, router)
+        xray = Xray.new(@jpd_url, @username, @apikey, @wait_interval, @batch_size, @pos_file_path, router, @tag)
         violations_channel = xray.violations(date_since)
         xray.violation_details(violations_channel)
         sleep 100

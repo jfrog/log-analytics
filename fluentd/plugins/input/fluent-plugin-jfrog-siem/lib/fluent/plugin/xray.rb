@@ -4,7 +4,7 @@ require 'json'
 require "fluent/plugin/position_file"
 
 class Xray
-  def initialize(jpd_url, username, api_key, wait_interval, batch_size, pos_file_path, router)
+  def initialize(jpd_url, username, api_key, wait_interval, batch_size, pos_file_path, router, tag)
     @jpd_url = jpd_url
     @username = username
     @api_key = api_key
@@ -12,6 +12,7 @@ class Xray
     @batch_size = batch_size
     @pos_file_path = pos_file_path
     @router = router
+    @tag = tag
   end
 
   def violations(date_since)
