@@ -22,7 +22,7 @@ class Xray
       xray_json = {"filters": { "created_from": date_since }, "pagination": {"order_by": "created","limit": @batch_size ,"offset": page_number } }
       resp = get_violations(xray_json)
       page_violation_count = resp['violations'].length
-      puts "Total violations count is #{resp['violations']}"
+      puts "Total violations count is #{resp['total_violations']}"
       if resp['total_violations'] > 0
         puts "Number of Violations in page #{page_number} are #{page_violation_count}"
         resp['violations'].each {|v| violations_channel = process(v, violations_channel) }
