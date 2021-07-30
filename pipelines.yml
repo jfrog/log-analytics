@@ -5,7 +5,7 @@ resources:
       gitProvider: github_integration
       path: jfrog/log-analytics
       branches:
-        include: harrison_pipelines
+        include: concurrent_ruby
 
 
 pipelines:
@@ -27,7 +27,6 @@ pipelines:
         execution:
           onExecute:
             - cd $res_source_repo_resourcePath/fluentd/plugins/input/fluent-plugin-jfrog-siem
-            - ls
             - bundle --version
             - bundle install
             - rspec
