@@ -2,7 +2,7 @@ resources:
   - name: source_repo
     type: GitRepo
     configuration:
-      gitProvider: git_integration
+      gitProvider: github_integration
       path: jfrog/log-analytics
       branches:
         include: harrison_pipelines
