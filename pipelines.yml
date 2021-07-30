@@ -26,13 +26,8 @@ pipelines:
                 autoPull: true
         execution:
           onExecute:
-            - cd $res_source_repo_resourcePath/fluentd/plugins
+            - cd $res_source_repo_resourcePath/fluentd/plugins/input/fluentd-plugin-jfrog-siem
             - ls
             - bundle --version
             - bundle install
             - rspec
-
-            # - cd fluentd/plugins
-            # - ls
-            # - bundle install
-            # - rspec
