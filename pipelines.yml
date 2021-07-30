@@ -16,7 +16,7 @@ pipelines:
         configuration:
           inputResources:
             - name: source_repo
-              trigger: false
+              trigger: true
           runtime:
             type: image
             image:
@@ -26,8 +26,11 @@ pipelines:
                 autoPull: true
         execution:
           onExecute:
-            - ls
-            - cd fluentd/plugins
-            - ls
-            - bundle install
-            - rspec
+            - find . -print
+            - printenv
+            - bundle --version
+
+            # - cd fluentd/plugins
+            # - ls
+            # - bundle install
+            # - rspec
