@@ -26,9 +26,11 @@ pipelines:
                 autoPull: true
         execution:
           onExecute:
-            - find . -print
-            - printenv
+            - cd $res_source_repo_resourcePath/fluentd/plugins
+            - ls
             - bundle --version
+            - bundle install
+            - rspec
 
             # - cd fluentd/plugins
             # - ls
