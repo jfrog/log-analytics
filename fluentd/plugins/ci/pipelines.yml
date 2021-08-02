@@ -1,0 +1,32 @@
+resources:
+  - name: source_repo
+    type: GitRepo
+    configuration:
+      gitProvider: github_integration
+      path: jfrog/log-analytics
+      branches:
+        include: concurrent_ruby
+
+
+pipelines:
+  - name: siem_plugin_test
+    steps:
+      - name: siem_plugin_test_step
+        type: Bash
+        configuration:
+          inputResources:
+            - name: source_repo
+              trigger: true
+          runtime:
+            type: image
+            image:
+              custom:
+                name: ruby
+                tag: '3.0.2'
+                autoPull: true
+        execution:
+          onExecute:
+            - cd $res_source_repo_resourcePath/fluentd/plugins/input/fluent-plugin-jfrog-siem
+            - bundle --version
+            - bundle install
+            - rspec
