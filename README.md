@@ -34,6 +34,8 @@ git submodule foreach git pull origin master
      * [Elasticsearch - Kibana](https://github.com/jfrog/log-analytics-elastic/blob/master/README.md)
      * [Prometheus-Grafana](https://github.com/jfrog/log-analytics-prometheus/blob/master/README.md)
      * [Datadog](https://github.com/jfrog/log-analytics-datadog/blob/master/README.md)
+   * [Plugins](#plugins)
+     * [SIEM Plugin](#siem-plugin)
    * [Tools](#tools)
    * [Contributing](#contributing)
    * [Versioning](#versioning)
@@ -407,6 +409,10 @@ We currently support Splunk, Datadog, Elastic, and Prometheus as log vendors. Th
 * [Prometheus-Grafana](https://github.com/jfrog/log-analytics-prometheus/blob/master/README.md)
 * [Datadog](https://github.com/jfrog/log-analytics-datadog/blob/master/README.md)
 
+## Plugins
+We currently use JFrog's Xray SIEM plugin to observe vulnerabilities associated with artifacts
+* [SIEM Plugin](https://github.com/jfrog/fluent-plugin-jfrog-siem)
+
 ## Tools
 * [Fluentd](https://www.fluentd.org) - Fluentd Logging Aggregator/Agent
 * [Splunk](https://www.splunk.com/) - Splunk Logging Platform
@@ -414,6 +420,7 @@ We currently support Splunk, Datadog, Elastic, and Prometheus as log vendors. Th
 * [Elasticsearch](https://www.elastic.co/) - Elastic search log data platform
 * [Kibana](https://www.elastic.co/kibana) - Elastic search visualization layer
 * [Prometheus](https://prometheus.io/) - Prometheus metrics and monitoring
+
 ## Contributing
 Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull requests to us.
 
