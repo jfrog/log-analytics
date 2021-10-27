@@ -254,6 +254,7 @@ if [ "$install_plugins" == true ]; then
       echo Installing fluent-plugin-datadog...
       $gem_command install fluent-plugin-datadog
       help_link=https://github.com/jfrog/log-analytics-datadog
+      source ./fluentd-datadog-installer.sh
       break
       ;;
     [elastic]*)
