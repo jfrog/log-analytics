@@ -1,5 +1,37 @@
 #!/bin/bash
 
+# TODO Proof of concept JFrog fluentd (observability), EXPERIMENTAL!
+# TODO Only one scenario is fully supported:
+#  1) stand alone fluentd (service and user install)
+#  1) Datadog + fluentd, fluentd as service ONLY (td-agent)
+# TODO Any other scenario requires additional work and manual configuration!
+
+intro() {
+  logo=`cat ./jfrog_asci_logo.txt`
+  help_link=https://github.com/jfrog/log-analytics
+  green_color='\033[0;32m'
+  no_color='\033[0m'
+  echo
+  echo ============================================================================================
+  echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
+  echo ============================================================================================
+  echo
+  echo -e "$green_color$logo$no_color"
+  echo
+  echo 'The script performs the following tasks:'
+  echo '- Downloads the github repo and all dependencies [optional].'
+  echo '- Checks if the Fluentd requirements are met and updates the OS if needed [optional].'
+  echo '- Installs/Updates Fluentd as a service depending on Linux distro (Centos and Amazon is supported, more to come).'
+  echo '- Updates the log files/folders permissions [optional].'
+  echo '- Installs Fluentd plugins (Splunk, Datadog, Elastic, Prometheus) [optional].'
+  echo '- Starts and enables the Fluentd service [optional].'
+  echo '- Provides additional info related to the installed plugins.'
+  echo More information: $help_link
+  echo ============================================================================================
+  echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
+  echo ============================================================================================
+  echo
+}
 ## Util functions
 # Yes/No Input
 question() {
@@ -39,7 +71,6 @@ modify_conf_file() {
 update_permissions() {
   group=$1
   default_path=$2
-  echo ----------------------------------------
   update_perm=$(question "Would you like to update the $group log permissions? [y/n]: ")
   if [ "$update_perm" == true ]; then
     {
@@ -70,22 +101,9 @@ download_install_td_4() {
 }
 
 ## Fluentd Install Script
-help_link=https://github.com/jfrog/log-analytics
-echo ==================================================================
-echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
-echo ==================================================================
-echo 'The script performs the following tasks:'
-echo '- Downloads the github repo and all dependencies [optional].'
-echo '- Checks if the Fluentd requirements are met and updates the OS if needed [optional].'
-echo '- Installs/Updates Fluentd as a service depending on Linux distro (Centos and Amazon is supported, more to come).'
-echo '- Updates the log files/folders permissions [optional].'
-echo '- Installs Fluentd plugins (Splunk, Datadog, Elastic, Prometheus) [optional].'
-echo '- Starts and enables the Fluentd service [optional].'
-echo '- Provides additional info related to the installed plugins.'
-echo More information: $help_link
-echo ==================================================================
-echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
-echo ==================================================================
+
+#Init info
+intro
 
 # const
 supported_distros=("centos" "amazon")
@@ -134,8 +152,7 @@ fi
 ulimit_output=$(ulimit -n)
 if [ $ulimit_output -lt 65536 ]; then
   # Update the file descriptors limit per process and 'high load environments' if needed
-  echo ----------------------------------------
-  update_limit=$(question "Fluentd requires higher limit of the file descriptors per process and the network kernel parameters adjustment (more info: https://docs.fluentd.org/installation/before-install). Would you like to update the mentioned configuration (sudo rights required)? [y/n]: ")
+  update_limit=$(question "Fluentd requires higher limit of the file descriptors per process and the network kernel parameters adjustment (more info: https://docs.fluentd.org/installation/before-install). Would you like to update the mentioned configuration (optional and sudo rights required)? [y/n]: ")
   if [ $update_limit == true ]; then
     limit_conf_file_path=/etc/security/limits.conf
     limit_config="
@@ -163,7 +180,6 @@ net.ipv4.ip_local_port_range = 10240 65535"
 fi
 
 # We support two ways of installing td-agent4 and user/zip.
-echo -----------------------------------------------------
 install_as_service=$(question "Would you like to install Fluentd as service?
 Yes - Fluentd will be installed as service (sudo rights required).
 No  - Fluentd will be installed in a folder specified in the next step (read/write permissions required).
@@ -229,7 +245,7 @@ fi
 
 # Install additional plugins (splunk, datadog, elastic)
 config_link=$help_link
-install_plugins=$(question "Would you like to install additional Fluentd plugins: e.g. Splunk, Datadog, Elastic, etc? [y/n]: ")
+install_plugins=$(question "Would you like to install additional Fluentd plugins (optional)? [y/n]: ")
 # check if gem/td-agent-gem is installed
 if [ -x "$(command -v td-agent-gem)" ]; then
   gem_command="sudo td-agent-gem"
@@ -269,7 +285,7 @@ if [ "$install_plugins" == true ]; then
       help_link=https://github.com/jfrog/log-analytics-prometheus
       break
       ;;
-    *) echo "Please answer Splunk, Datadog or Elastic." ;;
+    *) echo "Please answer: Splunk, Datadog, Prometheus or Elastic." ;
     esac
   done
 fi
@@ -277,27 +293,26 @@ fi
 # Start/enable/status td-agent service
 if [ "$install_as_service" == true ]; then
   # enable and start fluentd service, this part is only available if Fluentd was installed as service in the previous steps
-  start_enable_serviceservice=$(question "Would you like to start and enable Fluentd service (td-agent4)? [y/n]: ")
+  start_enable_service=$(question "Would you like to start and enable Fluentd service (td-agent4, optional)? [y/n]: ")
   fluentd_service_name="td-agent"
-  if [ "$start_enable_serviceservice" == true ]; then
-    echo ----------------------------------------
+  if [ "$start_enable_service" == true ]; then
     echo Starting and enabling td-agent service...
     if [[ $(systemctl) =~ -\.mount ]]; then
+      sudo systemctl daemon-reload
       sudo systemctl enable ${fluentd_service_name}.service
-      sudo systemctl start ${fluentd_service_name}.service
+      sudo systemctl restart ${fluentd_service_name}.service
       sudo systemctl status ${fluentd_service_name}.service
     else
       sudo chkconfig ${fluentd_service_name} on
-      sudo /etc/init.d/${fluentd_service_name} start
+      sudo /etc/init.d/${fluentd_service_name} restart
       sudo /etc/init.d/${fluentd_service_name} status
     fi
   fi
 else
-  start_enable_tar_install=$(question "Would you like to start and enable Fluentd as service (systemctl required)? [y/n]: ")
+  start_enable_tar_install=$(question "Would you like to start and enable Fluentd as service (systemctl required, optional)? [y/n]: ")
   if ! [[ $(systemctl) =~ -\.mount ]]; then
     echo "WARNING: The 'systemctl' command not found, the files needed to start Fluentd as service won't be created."
   elif [ "$start_enable_tar_install" == true ]; then
-    echo ----------------------------------------
     echo Creating files needed for the Fluentd service...
     mkdir -p "$HOME"/.config/systemd/user/
     fluentd_service_name=jfrogfluentd
@@ -314,8 +329,9 @@ Restart=always
 [Install]
 WantedBy=graphical.target" >"$user_install_fluentd_service_conf_file"
     echo Starting and enabling td-agent service...
+    sudo systemctl daemon-reload
     systemctl --user enable "${user_install_fluentd_service_conf_file}"
-    systemctl --user start ${fluentd_service_name}
+    systemctl --user restart ${fluentd_service_name}
   fi
 fi
 
@@ -332,8 +348,11 @@ fi
 
 # Fin!
 # TODO Better error handling needed so we're 100% sure that it's actually successful.
-echo ===============================================================
+echo ==============================================================================================
+echo
 echo Fluentd was successfully installed!
+echo
 echo "${fluentd_service_msg}"
+echo
 echo The Fluentd configuration might require addition steps, more info: $config_link
-echo ===============================================================
+echo ==============================================================================================

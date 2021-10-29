@@ -1,10 +1,24 @@
 #!/bin/bash
 
+# TODO Proof of concept (datadog/plugin installer) EXPERIMENTAL!
+# TODO ONLY fluentd as service installation is supported and ONLY for artifactory (no Xray, etc support)!
+
 init() {
   ## Datadog - Fluentd Install Script
   help_link=https://github.com/jfrog/log-analytics-datadog
-  echo 'Installation Datadog plugin for fluentd...'
+  echo ============================================================================================
+  echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
+  echo ============================================================================================
+  echo
+  echo 'Installing Datadog plugin for fluentd...'
+  echo
+  echo 'The script performs the following tasks:'
+  echo '- Configure Datadog for JFrog artifactory (no Xray, etc support).'
+  echo
   echo "More information: $help_link"
+  echo ============================================================================================
+  echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
+  echo ============================================================================================
   echo
 }
 
@@ -33,19 +47,29 @@ jfrog_env_variables() {
   # default product path
   JF_PRODUCT_DATA_INTERNAL=$1
   read -p "Please provide the product path, eg. artifactory path, xray, etc. [default: $JF_PRODUCT_DATA_INTERNAL]: " user_product_path
-   # check if the path is empty, if empty then use default
+  # check if the path is empty, if empty then use default
   if [ ! -z "$user_product_path" -a "$user_product_path" ]; then
     if [ ! -d "$user_product_path" ]; then
       terminate "Incorrect product path $user_product_path"
     fi
-    # update the product path if needed
-    if [ "${user_product_path: -1}" != "/" ]; then
-      user_product_path="$user_product_path/"
-    fi
-    JF_PRODUCT_DATA_INTERNAL=$user_product_path
+    JF_PRODUCT_DATA_INTERNAL=user_product_path
   fi
-  export JF_PRODUCT_DATA_INTERNAL
-  echo "Setting the product path to JF_PRODUCT_DATA_INTERNAL=$JF_PRODUCT_DATA_INTERNAL"
+  # update the product path if needed (remove / if needed)
+  if [ "${JF_PRODUCT_DATA_INTERNAL: -1}" == "/" ]; then
+    JF_PRODUCT_DATA_INTERNAL=${JF_PRODUCT_DATA_INTERNAL::-1}
+  fi
+  service_conf_file='/usr/lib/systemd/system/td-agent.service'
+  # TODO this step should be optional depending if this is the service or user based install, at this point we do both
+  jf_product_string="JF_PRODUCT_DATA_INTERNAL=$JF_PRODUCT_DATA_INTERNAL"
+  env_service_jf_product_string="Environment=$jf_product_string"
+  echo "Setting the product path to JF_PRODUCT_DATA_INTERNAL=$JF_PRODUCT_DATA_INTERNAL..."
+  if grep -q $env_service_jf_product_string $service_conf_file; then
+    # TODO Replace the existing vars if needed
+    sudo echo "File $service_conf_file already contains the variables: $jf_product_string."
+  else
+    sudo sed -i "/^\[Service\]/a $env_service_jf_product_string" $service_conf_file
+    echo "Variable: $env_service_jf_product_string added to $service_conf_file"
+  fi
   echo
 }
 
@@ -78,25 +102,21 @@ configure_fluentd_datadog() {
   if [ -f "$fluentd_service_conf_path" ]; then
     sudo mv $fluentd_service_conf_path "${fluentd_service_conf_path}_backup_${backup_timestamp}"
   fi
-  echo "cp $fluentd_conf_path $fluentd_service_conf_path"
   sudo cp $fluentd_conf_path $fluentd_service_conf_path
   echo 'Fluentd configuration created for Datadog'
 }
 
-#script
+#init script
 init
 
 # init check
 fluentd_agent_check
 
 # select product and set envs
-jfrog_env_variables "/var/opt/jfrog/artifactory/"
+jfrog_env_variables '/var/opt/jfrog/artifactory/' #TODO make this one interactive
 
 # configure fluentd
 configure_fluentd
 
 # configure datadog
 configure_fluentd_datadog
-
-# TODO REMOVE
-echo FINISH
