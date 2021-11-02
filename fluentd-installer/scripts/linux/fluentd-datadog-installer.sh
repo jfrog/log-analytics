@@ -49,21 +49,21 @@ jfrog_env_variables() {
   jf_product_data_default_name=$2
   read -p "Please provide the product path, eg. artifactory path, xray, etc. [default $jf_product_data_default_name: $JF_PRODUCT_DATA_INTERNAL]: " user_product_path
   # check if the path is empty, if empty then use default
+  echo ">>>>>>>>>>>>>>>>>>>>> $user_product_path"
   if [ ! -z "$user_product_path" -a "$user_product_path" ]; then
     if [ ! -d "$user_product_path" ]; then
       terminate "Incorrect product path $user_product_path"
     fi
-    JF_PRODUCT_DATA_INTERNAL=$user_product_path
   fi
   # update the product path if needed (remove / if needed)
-  if [ "${JF_PRODUCT_DATA_INTERNAL: -1}" == "/" ]; then
-    JF_PRODUCT_DATA_INTERNAL=${JF_PRODUCT_DATA_INTERNAL::-1}
+  if [ "${user_product_path: -1}" == "/" ]; then
+    $user_product_path=${$user_product_path::-1}
   fi
   service_conf_file='/usr/lib/systemd/system/td-agent.service'
   # TODO this step should be optional depending if this is the service or user based install, at this point we do both
-  jf_product_string="JF_PRODUCT_DATA_INTERNAL=$JF_PRODUCT_DATA_INTERNAL"
+  jf_product_string="JF_PRODUCT_DATA_INTERNAL=$user_product_path"
   env_service_jf_product_string="Environment=$jf_product_string"
-  echo "Setting the product path to JF_PRODUCT_DATA_INTERNAL=$JF_PRODUCT_DATA_INTERNAL..."
+  echo "Setting the product path to JF_PRODUCT_DATA_INTERNAL=$user_product_path..."
   if grep -q $env_service_jf_product_string $service_conf_file; then
     # TODO Replace the existing vars if needed
     sudo echo "File $service_conf_file already contains the variables: $jf_product_string."
@@ -84,7 +84,7 @@ configure_fluentd() {
   # Downloading the fluentd config for Datadog based on the user input
   config_download_path_base="https://raw.githubusercontent.com/jfrog/log-analytics-datadog/master/"
   while true; do
-    read -p 'Type name of of the Datadog configuration: [Artifactory, Xray, Missioncontrol, Distribution or Pipelines]: ' product_name
+    read -p 'Type of Datadog configuration: [Artifactory, Xray, Missioncontrol, Distribution or Pipelines]: ' product_name
     case $product_name in
     [artifactory]*)
       fluentd_conf_name='fluent.conf.rt'
@@ -95,11 +95,11 @@ configure_fluentd() {
       fluentd_conf_name='fluent.conf.xray'
       download_configuration_file $fluentd_conf_name
       # required: JPD_URL is the Artifactory JPD URL of the format http://<ip_address> with is used to pull Xray Violations
-      configure_fluentd_datadog 'Provide JFrog URL (JPD_URL): ' 'JPD_URL'
+      configure_fluentd_datadog "Provide JFrog URL (more info: https://www.jfrog.com/confluence/display/JFROG/General+System+Settings): " 'JPD_URL'
       # required: USER is the Artifactory username for authentication
-      configure_fluentd_datadog 'Provide the Artifactory username for authentication (USER): ' 'USER'
+      configure_fluentd_datadog 'Provide the Artifactory username for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups): ' 'USER'
       # required: JFROG_API_KEY is the Artifactory API Key for authentication
-      configure_fluentd_datadog 'Provide the Artifactory API Key for authentication (JFROG_API_KEY): ' 'JFROG_API_KEY'
+      configure_fluentd_datadog 'Provide the Artifactory API Key for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/User+Profile#UserProfile-APIKey): ' 'JFROG_API_KEY'
       break
       ;;
     [nginx]*)
@@ -127,9 +127,11 @@ configure_fluentd() {
   done
 
   # Update API key datadog
-  configure_fluentd_datadog 'Please provide Datadog API KEY (API_KEY). More information (https://docs.datadoghq.com/account_management/api-app-keys): ' 'API_KEY'
+  configure_fluentd_datadog 'Please provide Datadog API KEY (more info: https://docs.datadoghq.com/account_management/api-app-keys): ' 'API_KEY'
 
   # copy and save the changes
+  # TODO it should be interactive in case that the user doesn't use the td-agent service
+  fluentd_service_conf_path=/etc/td-agent/td-agent.conf
   backup_timestamp=$(date +%s)
   # if config exists than back-up the old fluentd conf file
   if [ -f "$fluentd_service_conf_path" ]; then
@@ -143,18 +145,18 @@ configure_fluentd() {
 configure_fluentd_datadog() {
   datadog_conf_question=$1
   datadog_conf_property=$2
-  read -p $datadog_conf_question $datagod_value
+  read -p "$datadog_conf_question" datagod_value
   # check if the datadog value is empty, if empty then ask again
   if [ -z "$datagod_value" -a "$datagod_value" ]; then
     echo "Incorrect value '$datagod_value', please try again."
     echo
-    configure_fluentd_datadog $datadog_conf_question
+    configure_fluentd_datadog "$datadog_conf_question" "$datadog_conf_property"
   fi
-  echo "Updating fluentd conf file for Datadog - variable $datadog_conf_property"
-  sudo sed -i -e "s/$datadog_conf_property/$datagod_value/g" $fluentd_conf_path
-  echo "Fluentd conf file updated: ${fluentd_conf_path}"
-  echo "Modifying fluentd service (td-agent)..."
-  fluentd_service_conf_path=/etc/td-agent/td-agent.conf
+  echo "Updating fluentd conf file - variable $datadog_conf_property"
+  sudo sed -i -e "s,$datadog_conf_property,$datagod_value,g" $fluentd_conf_path
+  #echo "Fluentd conf file updated: ${fluentd_conf_path}"
+  #echo "Modifying fluentd service (td-agent)..."
+  #fluentd_service_conf_path=/etc/td-agent/td-agent.conf
 }
 
 #init script

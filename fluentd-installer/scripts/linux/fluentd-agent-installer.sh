@@ -191,8 +191,8 @@ if [ "$install_as_service" == true ]; then
     error_message="ERROR: td-agent 4 installation failed. Fluentd was NOT installed. Exiting..."
     echo "Centos detected. Installing td-agent 4..."
     {
-      # download_install_td_4 "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh"
-      echo 'DOWNLOAD Fluentd DISABLED'
+      download_install_td_4 "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh"
+      # echo 'DOWNLOAD Fluentd DISABLED'
     } || {
       echo "$error_message"
       exit 1
