@@ -191,7 +191,8 @@ if [ "$install_as_service" == true ]; then
     error_message="ERROR: td-agent 4 installation failed. Fluentd was NOT installed. Exiting..."
     echo "Centos detected. Installing td-agent 4..."
     {
-      download_install_td_4 "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh"
+      # download_install_td_4 "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh"
+      echo 'DOWNLOAD Fluentd DISABLED'
     } || {
       echo "$error_message"
       exit 1
@@ -219,7 +220,7 @@ if [ "$install_as_service" == true ]; then
 else
   fluentd_file_name="fluentd-1.11.0-linux-x86_64.tar.gz"
   zip_install_default_path="/var/opt/jfrog/artifactory"
-  read -p "Please provide a path where Fluentd will be installed, eg. artifactory path, xray, etc. [artifactory default: $zip_install_default_path]: " user_install_path
+  read -p "Please provide a path where Fluentd will be installed, eg. artifactory path, Xray, etc. [artifactory default: $zip_install_default_path]: " user_install_path
   # check if the path is empty, if empty then use zip_install_default_path
   if [ -z "$user_install_path" ]; then
     user_install_path=$zip_install_default_path
@@ -243,23 +244,24 @@ else
   user_install_fluentd_path="$user_install_path/${fluentd_file_name%.*.*}"
 fi
 
-# Install additional plugins (splunk, datadog, elastic)
+# Install log vendors (splunk, datadog, elastic)
 config_link=$help_link
-install_plugins=$(question "Would you like to install additional Fluentd plugins (optional)? [y/n]: ")
+install_log_vendors=$(question "Would you like to install Fluentd log vendors (optional)? [y/n]: ")
 # check if gem/td-agent-gem is installed
 if [ -x "$(command -v td-agent-gem)" ]; then
   gem_command="sudo td-agent-gem"
 elif [ -x "$(command -v ${user_install_fluentd_path}/lib/ruby/bin/gem -v)" ]; then
   gem_command="${user_install_fluentd_path}/lib/ruby/bin/gem"
 else
-  echo "WARNING: Ruby 'gem' or 'td-agent-gem' is required and was not found, please make sure that at least one of the mentioned frameworks is installed. Fluentd plugin installation aborted."
-  install_plugins=false
+  echo "WARNING: Ruby 'gem' or 'td-agent-gem' is required and was not found, please make sure that at least one of the mentioned frameworks is installed. Fluentd log vendors installation aborted."
+  install_log_vendors=false
 fi
-if [ "$install_plugins" == true ]; then
+if [ "$install_log_vendors" == true ]; then
   while true; do
-    read -p "What plugin would you like to install [Splunk, Datadog, Prometheus or Elastic]: " plugin_name
-    plugin_name=${plugin_name,,}
-    case $plugin_name in
+    echo
+    read -p "What log vendor would you like to install [Splunk, Datadog, Prometheus or Elastic]: " log_vendor_name
+    log_vendor_name=${log_vendor_name,,}
+    case $log_vendor_name in
     [splunk]*)
       echo Installing fluent-plugin-splunk-enterprise...
       $gem_command install fluent-plugin-splunk-enterprise
@@ -285,7 +287,36 @@ if [ "$install_plugins" == true ]; then
       help_link=https://github.com/jfrog/log-analytics-prometheus
       break
       ;;
-    *) echo "Please answer: Splunk, Datadog, Prometheus or Elastic." ;
+    *) echo "Please answer: Splunk, Datadog, Prometheus, or Elastic." ;
+    esac
+  done
+fi
+
+# Install additions plugin (splunk, datadog, elastic)
+install_plugins=$(question "Would you like to install additional plugins (optional)? [y/n]: ")
+# check if gem/td-agent-gem is installed
+# TODO Code duplication fix it
+if [ -x "$(command -v td-agent-gem)" ]; then
+  gem_command="sudo td-agent-gem"
+elif [ -x "$(command -v ${user_install_fluentd_path}/lib/ruby/bin/gem -v)" ]; then
+  gem_command="${user_install_fluentd_path}/lib/ruby/bin/gem"
+else
+  echo "WARNING: Ruby 'gem' or 'td-agent-gem' is required and was not found, please make sure that at least one of the mentioned frameworks is installed. Fluentd plugin installation aborted."
+  install_plugins=false
+fi
+if [ "$install_plugins" == true ]; then
+  while true; do
+    echo
+    read -p "What plugins would you like to install [SIEM]: " plugin_name
+    plugin_name=${plugin_name,,}
+    case $plugin_name in
+    [siem]*)
+      echo Installing fluent-plugin-jfrog-siem...
+      $gem_command install fluent-plugin-jfrog-siem
+      help_link=https://github.com/jfrog/fluent-plugin-jfrog-siem
+      break
+      ;;
+    *) echo "Please answer: SIEM" ;
     esac
   done
 fi
