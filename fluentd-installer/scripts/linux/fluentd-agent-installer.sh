@@ -6,8 +6,11 @@
 #  1) Datadog + fluentd, fluentd as service ONLY (td-agent)
 # TODO Any other scenario requires additional work and manual configuration!
 
+# load common functions
+source ./utils/common.sh # TODO Update the path (git raw)
+
 intro() {
-  logo=`cat ./jfrog_asci_logo.txt`
+  logo=`cat ./other/jfrog_asci_logo.txt`
   help_link=https://github.com/jfrog/log-analytics
   green_color='\033[0;32m'
   no_color='\033[0m'
@@ -132,21 +135,21 @@ if [ "$experiments_warning" == false ]; then
 fi
 
 # Clone github repository?
-clone_repo=$(question "Would you like to clone JFrog log analytics GitHub repository (optional and not required)? [y/n]: ")
-if [ "$clone_repo" == true ]; then
-  {
-    repo_url="https://github.com/jfrog/log-analytics.git"
-    echo Cloning repository ${repo_url}
-    git clone $repo_url --recursive
-    echo Cloning dependencies...
-    cd log-analytics
-    git submodule foreach git checkout master
-    git submodule foreach git pull origin master
-  } || {
-    echo ERROR: Error while cloning the repository. Fluentd was NOT installed. Exiting...
-    exit 1
-  }
-fi
+#clone_repo=$(question "Would you like to clone JFrog log analytics GitHub repository (optional and not required)? [y/n]: ")
+#if [ "$clone_repo" == true ]; then
+#  {
+#    repo_url="https://github.com/jfrog/log-analytics.git"
+#    echo Cloning repository ${repo_url}
+#    git clone $repo_url --recursive
+#    echo Cloning dependencies...
+#    cd log-analytics
+#    git submodule foreach git checkout master
+#    git submodule foreach git pull origin master
+#  } || {
+#    echo ERROR: Error while cloning the repository. Fluentd was NOT installed. Exiting...
+#    exit 1
+#  }
+#fi
 
 # Check the Fluentd requirements (file descriptors, etc)
 ulimit_output=$(ulimit -n)
@@ -184,7 +187,6 @@ install_as_service=$(question "Would you like to install Fluentd as service?
 Yes - Fluentd will be installed as service (sudo rights required).
 No  - Fluentd will be installed in a folder specified in the next step (read/write permissions required).
 [y/n]: ")
-
 if [ "$install_as_service" == true ]; then
   # Fetches and installs td-agent4 (for now only Centos and Amazon distros supported)
   if [ "$detected_distro" == "centos" ]; then
@@ -272,7 +274,7 @@ if [ "$install_log_vendors" == true ]; then
       echo Installing fluent-plugin-datadog...
       $gem_command install fluent-plugin-datadog
       help_link=https://github.com/jfrog/log-analytics-datadog
-      source ./fluentd-datadog-installer.sh
+      source ./plugins/fluentd-datadog-installer.sh # TODO Update the path (git raw)
       break
       ;;
     [elastic]*)
@@ -312,7 +314,7 @@ if [ "$install_plugins" == true ]; then
     case $plugin_name in
     [siem]*)
       echo Installing fluent-plugin-jfrog-siem...
-      $gem_command install fluent-plugin-jfrog-siem
+      $gem_command install fluent-plugin-jfrog-siem || terminate "Please review the errors."
       help_link=https://github.com/jfrog/fluent-plugin-jfrog-siem
       break
       ;;
