@@ -6,7 +6,7 @@ temp_folder='/tmp'
 # TODO ONLY fluentd as service installation is supported and ONLY for artifactory (no Xray, etc support)!
 
 # load common functions
-source ../utils/common.sh # TODO Update the path (git raw)
+source ./utils/common.sh # TODO Update the path (git raw)
 
 init() {
   ## Datadog - Fluentd Install Script
@@ -21,16 +21,6 @@ init() {
   echo "More information: $help_link"
   echo ============================================================================================
   echo
-}
-
-# Check if fluentd installed
-fluentd_agent_check() {
-  # td-agent check
-  TD_AGENT_SERVICE_NAME="td-agent.service"
-  td_agent_present=$(systemctl list-units --full -all | grep "$TD_AGENT_SERVICE_NAME")
-  if [ -z "$td_agent_present" -a "$td_agent_present" != " " ]; then
-    terminate "No $TD_AGENT_SERVICE_NAME service detected."
-  fi
 }
 
 jfrog_env_variables() {
@@ -165,11 +155,16 @@ configure_fluentd_datadog() {
   #fluentd_service_conf_path=/etc/td-agent/td-agent.conf
 }
 
-#init script
-init
+configure_datadog() {
+  fluentd_as_service=$1
+  user_install_fluentd_file_path=$2
 
-# init check
-fluentd_agent_check
+  #init script
+  init
 
-# configure fluentd
-configure_fluentd
+  # init check
+  fluentd_check $fluentd_as_service $user_install_fluentd_file_path
+
+  # configure fluentd
+  configure_fluentd
+}

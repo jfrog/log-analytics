@@ -220,6 +220,7 @@ if [ "$install_as_service" == true ]; then
     update_permissions "xray" "/var/opt/jfrog/xray"
   fi
 else
+  current_path=$(pwd)
   fluentd_file_name="fluentd-1.11.0-linux-x86_64.tar.gz"
   zip_install_default_path="/var/opt/jfrog/artifactory"
   read -p "Please provide a path where Fluentd will be installed, eg. artifactory path, Xray, etc. [artifactory default: $zip_install_default_path]: " user_install_path
@@ -244,6 +245,7 @@ else
   rm $fluentd_file_name
   # This folder/file name extraction is far from perfect, fix it!
   user_install_fluentd_path="$user_install_path/${fluentd_file_name%.*.*}"
+  cd $current_path
 fi
 
 # Install log vendors (splunk, datadog, elastic)
@@ -275,6 +277,7 @@ if [ "$install_log_vendors" == true ]; then
       $gem_command install fluent-plugin-datadog
       help_link=https://github.com/jfrog/log-analytics-datadog
       source ./plugins/fluentd-datadog-installer.sh # TODO Update the path (git raw)
+      configure_datadog $install_as_service $gem_command
       break
       ;;
     [elastic]*)
@@ -348,7 +351,7 @@ else
   elif [ "$start_enable_tar_install" == true ]; then
     echo Creating files needed for the Fluentd service...
     mkdir -p "$HOME"/.config/systemd/user/
-    fluentd_service_name=jfrogfluentd
+    fluentd_service_name='jfrogfluentd'
     user_install_fluentd_service_conf_file="$HOME"/.config/systemd/user/${fluentd_service_name}.service
     touch "$user_install_fluentd_service_conf_file"
     echo "# Added by JFrog log-analytics install script
@@ -362,9 +365,13 @@ Restart=always
 [Install]
 WantedBy=graphical.target" >"$user_install_fluentd_service_conf_file"
     echo Starting and enabling td-agent service...
-    sudo systemctl daemon-reload
-    systemctl --user enable "${user_install_fluentd_service_conf_file}"
+    # sudo systemctl daemon-reload || terminate 'The service was not enabled/restarted, please check the errors above for more information.'
+    {
+    systemctl --user enable ${user_install_fluentd_service_conf_file}
     systemctl --user restart ${fluentd_service_name}
+    } || {
+      terminate 'Starting and enabling fluentd service failed, please check the logs above for more information.'
+    }
   fi
 fi
 
