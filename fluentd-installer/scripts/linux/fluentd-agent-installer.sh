@@ -19,7 +19,7 @@ intro() {
   echo
   echo -e "$GREEN_COLOR$logo$NO_COLOR"
   echo
-  echo 'The script performs the following tasks:'
+  echo 'The script installs fluentd and performs the following tasks:'
   echo '- Downloads the github repo and all dependencies [optional].'
   echo '- Checks if the Fluentd requirements are met and updates the OS if needed [optional].'
   echo '- Installs/Updates Fluentd as a service depending on Linux distro (Centos and Amazon is supported, more to come).'
@@ -27,6 +27,7 @@ intro() {
   echo '- Installs Fluentd plugins (Splunk, Datadog, Elastic, Prometheus) [optional].'
   echo '- Starts and enables the Fluentd service [optional].'
   echo '- Provides additional info related to the installed plugins.'
+  echo
   echo More information: $help_link
   echo ============================================================================================
   echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*

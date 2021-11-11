@@ -12,6 +12,7 @@ init() {
   echo ============================================================================================
   echo 'Installing and configuring Datadog plugin for fluentd.The installation script performs the following tasks:'
   echo '- Configure Datadog for JFrog artifactory, xray, etc'
+  echo
   echo "More information: $help_link"
   echo ============================================================================================
   echo
@@ -50,6 +51,7 @@ jfrog_env_variables() {
     else
       sudo sed -i "/^\[Service\]/a $jf_product_path_string" $env_conf_file
     fi
+    update_permissions $user_product_path "td-agent" true
   else
     # update the user profile with the envs (fluentd as user install)
     env_conf_file="$HOME/.bashrc"
@@ -59,6 +61,7 @@ jfrog_env_variables() {
     else
       echo "$jf_product_path_string # Added by the Jfrog Datadog install script" >> $env_conf_file
     fi
+    update_permissions $user_product_path $USER true
   fi
   echo "Variable: $jf_product_path_string added to $env_conf_file"
   echo
@@ -140,7 +143,7 @@ configure_fluentd() {
   else # if fluentd is installed as "user installation"
    while true; do
      echo
-    read -p "Fluentd conf file location (default: $user_install_fluentd_install_path):" fluentd_conf_file_path_base
+    read -p "Please provide location where fluentd conf file will be stored (default: $user_install_fluentd_install_path):" fluentd_conf_file_path_base
     # TODO "Trim" the string to make sure that no empty spaces string is passed
     if [ -z "$fluentd_conf_file_path_base" ]; then # empty string use the default value
       fluentd_conf_file_path="$user_install_fluentd_install_path/$fluentd_conf_name"
@@ -153,7 +156,7 @@ configure_fluentd() {
   fi
   # copy the conf file to the td-agent folder/conf
   run_command $fluentd_as_service "cp "$temp_folder/$fluentd_conf_name" $fluentd_conf_file_path"
-  echo "Fluentd Datadog configuration file location for $product_name: fluentd_conf_file_path"
+  echo "Fluentd Datadog conf file was saved in $fluentd_conf_file_path"
   # clean up
   rm -rf $temp_folder/$fluentd_conf_name
 }
@@ -165,6 +168,7 @@ configure_fluentd_datadog() {
   run_as_sudo=$4
 
   # check if we hide the user input
+  echo
   if [ "$datadog_conf_is_password" = true ]; then # hide user input
     echo -n $datadog_conf_question
     read -s datagod_value
@@ -197,8 +201,10 @@ configure_datadog() {
   configure_fluentd $fluentd_as_service $user_install_fluentd_install_path
 
   echo
-  print_error ">> Please make sure fluentd has read/write access to the log folder: '$user_product_path/log'. <<"
-  echo
-  echo "Datadog installation completed."
-  echo
+  if [ $fluentd_as_service = true ]; then
+    echo "Location of fluentd Datadog conf file $fluentd_conf_file_path"
+  else
+    echo "To manually start fluentd with the Datadog conf run the following command: $user_install_fluentd_install_path/fluentd $fluentd_conf_file_path"
+    print_error "Datadog installation completed. Please make sure fluentd has read/write access to the log folder: '$user_product_path/log'. In some cases it's necessary to reload the environment or logout $USER user before starting fluentd."
+  fi
 }
