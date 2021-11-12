@@ -1,15 +1,13 @@
 #!/bin/bash
 
 #common vars
-GREEN_COLOR='\033[0;32m'
-NO_COLOR='\033[0m'
-ERROR_COLOR='\033[0;31m'
+declare NO_COLOR='\033[0m'
 
 # Common functions
 
 # Terminate installation message
 terminate() {
-  termination_reason=$1
+  declare termination_reason=$1
   echo
   print_error 'Installation was unsuccessful!'
   print_error "Reason(s): $termination_reason"
@@ -21,20 +19,19 @@ terminate() {
 
 # Check if fluentd installed
 fluentd_check() {
-  fluentd_as_service=$1
-  user_install_fluentd_file_test_path=$2
-  no_service_detected_message="No fluentd detected. Please install fluentd before continue (more info: https://github.com/jfrog/log-analytics)"
+  declare fluentd_as_service=$1
+  declare user_install_fluentd_file_test_path=$2
+  declare no_service_detected_message="No fluentd detected. Please install fluentd before continue (more info: https://github.com/jfrog/log-analytics)"
 
   # td-agent check
-  if [ $fluentd_as_service == true  ]; then
+  if [ $fluentd_as_service = true  ]; then
     TD_AGENT_SERVICE_NAME="td-agent.service"
     td_agent_present=$(systemctl list-units --full -all | grep "$TD_AGENT_SERVICE_NAME")
     if [ -z "$td_agent_present" -a "$td_agent_present" != " " ]; then
-      echo 'Error! No td-agent found!'
       terminate "$no_service_detected_message"
     fi
   # user installed fluentd check - check if fluentd file is in the bin folder
-  elif [ ! -f "$user_install_fluentd_file_test_path" ]; then
+  elif [ ! -f "$user_install_fluentd_file_test_path/fluentd" ]; then
     echo $user_install_fluentd_file_test_path
     terminate "$no_service_detected_message"
   fi
@@ -56,9 +53,10 @@ run_command() {
 }
 
 update_permissions() {
-  product_path=$1
-  user_name=$2
-  run_as_sudo=$3
+  declare product_path=$1
+  declare user_name=$2
+  declare run_as_sudo=$3
+
   echo
   update_perm=$(question "Would you like to add '$user_name' user to the product group and update the log folder permissions? (sudo required)? [y/n]: ")
   if [ "$update_perm" == true ]; then
@@ -79,7 +77,146 @@ update_permissions() {
 }
 
 print_error() {
-  error_message=$1
+  declare error_message=$1
+
   echo ""
-  echo -e "$ERROR_COLOR$error_message$NO_COLOR"
+  echo -e "\033[0;31m$error_message$NO_COLOR"
+}
+
+print_green() {
+  declare message=$1
+
+  echo ""
+  echo -e "\033[0;32m$message$NO_COLOR"
+}
+
+# setup the fluentd environment
+jfrog_env_variables() {
+  declare jf_default_path_value=$1
+  declare jf_product_data_default_name=$2
+  declare fluentd_as_service=$3
+  declare group=$4
+
+  echo
+  read -p "Please provide path for $jf_product_data_default_name. (default: $jf_default_path_value): " user_product_path
+  # check if the path is empty, if empty then use default
+  if [ -z "$user_product_path"]; then
+    echo "Using the default value $jf_default_path_value"
+    user_product_path=$jf_default_path_value
+  fi
+  if [ ! -d "$user_product_path" ]; then
+    echo "Incorrect product path $user_product_path"
+    echo "Please try again."
+    jfrog_env_variables $jf_default_path_value $jf_product_data_default_name $fluentd_as_service
+  fi
+  # update the product path if needed (remove / if needed)
+  if [ "${user_product_path: -1}" == "/" ]; then
+    user_product_path=${user_product_path::-1}
+  fi
+  jf_product_var_path_string="JF_PRODUCT_DATA_INTERNAL=$user_product_path"
+  echo "Setting the product path for JF_PRODUCT_DATA_INTERNAL=$user_product_path"
+  if [ $fluentd_as_service = true ]; then # fluentd as service
+    # update the service with the envs
+    env_conf_file='/usr/lib/systemd/system/td-agent.service'
+    jf_product_path_string="Environment=$jf_product_var_path_string"
+    if grep -q "$jf_product_path_string" $env_conf_file; then
+      echo "File $env_conf_file already contains the variables: $jf_product_var_path_string."
+    else
+      sudo sed -i "/^\[Service\]/a $jf_product_path_string" $env_conf_file
+    fi
+    update_permissions $user_product_path "td-agent" true
+  else
+    # update the user profile with the envs (fluentd as user install)
+    env_conf_file="$HOME/.bashrc"
+    jf_product_path_string="export $jf_product_var_path_string"
+    if grep -q "'$jf_product_path_string'" $env_conf_file; then
+      echo "File $env_conf_file already contains the variables: $jf_product_var_path_string."
+    else
+      echo "$jf_product_path_string # Added by the Jfrog Datadog install script" >> $env_conf_file
+    fi
+    update_permissions $user_product_path $USER true
+  fi
+  echo "Variable: $jf_product_path_string added to $env_conf_file"
+  echo
+}
+
+download_fluentd_conf_file() {
+  declare fluentd_conf_base_url=$1
+  declare fluentd_conf_name=$2
+  declare temp_folder=$3
+  declare fluentd_conf_file_path="$temp_folder/$fluentd_datadog_conf_name"
+
+  wget -O $fluentd_conf_file_path "$fluentd_conf_base_url/$fluentd_datadog_conf_name"
+}
+
+update_fluentd_config_file() {
+  declare fluentd_conf_file_path=$1
+  declare conf_question=$2
+  declare conf_property=$3
+  declare value_is_secret=$4
+  declare run_as_sudo=$5
+
+  # check if we hide the user input
+  echo
+  if [ "$value_is_secret" = true ]; then # hide user input
+    echo -n $conf_question
+    read -s fluentd_conf_value
+  else
+    read -p "$conf_question" fluentd_conf_value # don't hide user input
+  fi
+  # check if the value is empty, if empty then ask again
+  if [ -z "$fluentd_conf_value" -a "$fluentd_conf_value" ]; then
+    echo "Incorrect value '$fluentd_conf_value', please try again."
+    update_fluentd_config_file "$conf_question" "$conf_property" "$value_is_secret" "$run_as_sudo"
+  fi
+
+  # update the config file
+  {
+    run_command $run_as_sudo "sed -i -e "s,$conf_property,$fluentd_conf_value,g" $fluentd_conf_file_path"
+    echo "The value was added to fluentd conf file $fluentd_conf_file_path"
+  } || {
+    print_error "The value was not added to fluentd conf file $fluentd_conf_file_path. Please check the logs for more info."
+  }
+}
+
+copy_fluentd_conf() {
+  declare fluentd_conf_path_base=$1
+  declare fluentd_conf_file_name=$2
+  declare fluentd_as_service=$3
+  declare temp_folder=$4
+
+  # copy and save the changes
+  # if fluentd is installed as service
+  if [ $fluentd_as_service = true ]; then
+    fluentd_conf_file_path="$fluentd_conf_path_base/td-agent.conf"
+    backup_timestamp=$(date +%s)
+    # if config exists than back-up the old fluentd conf file
+    if [ -f "$fluentd_conf_file_path" ]; then
+      sudo mv $fluentd_conf_file_path "${fluentd_conf_file_path}_backup_${backup_timestamp}"
+    fi
+  else # if fluentd is installed as "user installation"
+   while true; do
+    echo
+    read -p "Please provide location where fluentd conf file will be stored (default: $fluentd_conf_path_base):" user_fluentd_conf_path
+    # TODO "Trim" the string to make sure that no empty spaces string is passed
+    if [ -z "$user_fluentd_conf_path" ]; then # empty string use the default value
+      fluentd_conf_file_path="$fluentd_conf_path_base/$fluentd_conf_file_name"
+      break
+    elif [ -h "$user_fluentd_conf_path" ]; then # user typed the conf path
+      fluentd_conf_file_path="$user_fluentd_conf_path/$fluentd_conf_file_name"
+      break
+    fi
+    echo  $user_fluentd_conf_path
+    done
+  fi
+
+  # copy the conf file to the td-agent folder/conf
+  {
+    run_command $fluentd_as_service "cp $TEMP_FOLDER/$fluentd_conf_file_name $fluentd_conf_file_path"
+    echo "Fluentd Datadog conf file was saved in $fluentd_conf_file_path"
+    # clean up
+    rm -rf $temp_folder/$fluentd_conf_file_name
+  } || {
+    terminate 'Please review the errors.'
+  }
 }

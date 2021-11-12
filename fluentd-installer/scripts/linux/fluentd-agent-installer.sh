@@ -17,7 +17,7 @@ intro() {
   echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
   echo ============================================================================================
   echo
-  echo -e "$GREEN_COLOR$logo$NO_COLOR"
+  print_green "$logo"
   echo
   echo 'The script installs fluentd and performs the following tasks:'
   echo '- Downloads the github repo and all dependencies [optional].'
@@ -252,8 +252,8 @@ if [ "$install_log_vendors" == true ]; then
       echo Installing fluent-plugin-datadog...
       $gem_command install fluent-plugin-datadog
       help_link=https://github.com/jfrog/log-analytics-datadog
-      source ./plugins/fluentd-datadog-installer.sh # TODO Update the path (git raw)
-      configure_datadog $install_as_service $gem_command $user_install_fluentd_path
+      source ./log-vendors/fluentd-datadog-installer.sh # TODO Update the path (git raw)
+      configure_datadog $install_as_service $user_install_fluentd_path
       break
       ;;
     [elastic]*)
@@ -294,7 +294,7 @@ if [ "$install_plugins" == true ]; then
     case $plugin_name in
     [siem]*)
       echo Installing fluent-plugin-jfrog-siem...
-      $gem_command install fluent-plugin-jfrog-siem || terminate "Please review the errors."
+      $gem_command install fluent-plugin-jfrog-siem || terminate 'Please review the errors.'
       help_link=https://github.com/jfrog/fluent-plugin-jfrog-siem
       break
       ;;
