@@ -5,6 +5,27 @@ declare NO_COLOR='\033[0m'
 
 # Common functions
 
+# Yes/No Input
+question() {
+  question_text=$1
+  answer=null
+  while true; do
+    read -p "$question_text" yesno
+    case $yesno in
+    [Yy]*)
+      answer=true
+      break
+      ;;
+    [Nn]*)
+      answer=false
+      break
+      ;;
+    *) echo "Please answer yes or no." ;;
+    esac
+  done
+  echo $answer
+}
+
 # Terminate installation message
 terminate() {
   declare termination_reason=$1
@@ -38,11 +59,12 @@ fluentd_check() {
 }
 
 run_command() {
-  run_as_sudo=$1
-  command_string=$2
+  declare run_as_sudo=$1
+  declare command_string=$2
+
   # check if run the command as sudo
   if [ $run_as_sudo = true ]; then
-    sudo_cmd="sudo"
+    declare sudo_cmd="sudo"
   fi
   # run the command
   {
@@ -58,7 +80,7 @@ update_permissions() {
   declare run_as_sudo=$3
 
   echo
-  update_perm=$(question "Would you like to add '$user_name' user to the product group and update the log folder permissions? (sudo required)? [y/n]: ")
+  declare update_perm=$(question "Would you like to add '$user_name' user to the product group and update the log folder permissions? (sudo required)? [y/n]: ")
   if [ "$update_perm" == true ]; then
     {
       echo
@@ -71,22 +93,17 @@ update_permissions() {
       print_error "The permissions update for $group was unsuccessful. Please try to update the log folder permissions manually. The log folder path: $product_path/log."
     }
   else
-    echo
-    print_error "Please make sure fluentd has read/write permissions to $product_path folder before continue."
+    print_green "You chose not to update the logs folder permissions. Please make sure fluentd has read/write permissions to $product_path folder before continue."
   fi
 }
 
 print_error() {
   declare error_message=$1
-
-  echo ""
   echo -e "\033[0;31m$error_message$NO_COLOR"
 }
 
 print_green() {
   declare message=$1
-
-  echo ""
   echo -e "\033[0;32m$message$NO_COLOR"
 }
 
@@ -98,7 +115,7 @@ jfrog_env_variables() {
   declare group=$4
 
   echo
-  read -p "Please provide path for $jf_product_data_default_name. (default: $jf_default_path_value): " user_product_path
+  read -p "Please provide $jf_product_data_default_name location. (default: $jf_default_path_value): " user_product_path
   # check if the path is empty, if empty then use default
   if [ -z "$user_product_path"]; then
     echo "Using the default value $jf_default_path_value"
@@ -132,11 +149,10 @@ jfrog_env_variables() {
     if grep -q "'$jf_product_path_string'" $env_conf_file; then
       echo "File $env_conf_file already contains the variables: $jf_product_var_path_string."
     else
-      echo "$jf_product_path_string # Added by the Jfrog Datadog install script" >> $env_conf_file
+      echo "$jf_product_path_string # Added by the fluentd JFrog install script" >> $env_conf_file
     fi
     update_permissions $user_product_path $USER true
   fi
-  echo "Variable: $jf_product_path_string added to $env_conf_file"
   echo
 }
 
@@ -219,4 +235,30 @@ copy_fluentd_conf() {
   } || {
     terminate 'Please review the errors.'
   }
+}
+
+install_custom_plugin() {
+  declare plugin_name=$1
+  declare gem_command=$2
+  declare run_as_sudo=$3
+
+  echo ">>>>>> plugin_name=$plugin_name"
+  echo ">>>>>> gem_command=$gem_command"
+  echo ">>>>>> run_as_sudo=$run_as_sudo"
+
+  # Install additions plugin (splunk, datadog, elastic)
+  echo
+  declare user_install_plugin=$(question "Would you like to install $plugin_name plugin [y/n]: ")
+  if [ "$user_install_plugin" = true ]; then
+    declare lower_case_plugin_name=echo "${plugin_name,,}"
+    case  $lower_case_plugin_name in
+    [siem]*)
+      echo Installing fluent-plugin-jfrog-siem...
+      run_command $run_as_sudo "$gem_command install fluent-plugin-jfrog-siem" || terminate 'Please review the errors.'
+      declare help_link=https://github.com/jfrog/fluent-plugin-jfrog-siem
+      break
+      ;;
+    *) print_error "Plugin $plugin_name not found. More info: $help_link" ;;
+    esac
+  fi
 }
