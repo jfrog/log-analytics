@@ -160,9 +160,9 @@ download_fluentd_conf_file() {
   declare fluentd_conf_base_url=$1
   declare fluentd_conf_name=$2
   declare temp_folder=$3
-  declare fluentd_conf_file_path="$temp_folder/$fluentd_datadog_conf_name"
+  declare fluentd_conf_file_path="$temp_folder/$fluentd_conf_name"
 
-  wget -O $fluentd_conf_file_path "$fluentd_conf_base_url/$fluentd_datadog_conf_name"
+  wget -O $fluentd_conf_file_path "$fluentd_conf_base_url/$fluentd_conf_name"
 }
 
 update_fluentd_config_file() {
@@ -228,8 +228,8 @@ copy_fluentd_conf() {
 
   # copy the conf file to the td-agent folder/conf
   {
-    run_command $fluentd_as_service "cp $TEMP_FOLDER/$fluentd_conf_file_name $fluentd_conf_file_path"
-    echo "Fluentd Datadog conf file was saved in $fluentd_conf_file_path"
+    run_command $fluentd_as_service "cp $temp_folder/$fluentd_conf_file_name $fluentd_conf_file_path"
+    echo "Fluentd conf file was saved in $fluentd_conf_file_path"
     # clean up
     rm -rf $temp_folder/$fluentd_conf_file_name
   } || {
@@ -241,10 +241,6 @@ install_custom_plugin() {
   declare plugin_name=$1
   declare gem_command=$2
   declare run_as_sudo=$3
-
-  echo ">>>>>> plugin_name=$plugin_name"
-  echo ">>>>>> gem_command=$gem_command"
-  echo ">>>>>> run_as_sudo=$run_as_sudo"
 
   # Install additions plugin (splunk, datadog, elastic)
   echo
@@ -258,7 +254,24 @@ install_custom_plugin() {
       declare help_link=https://github.com/jfrog/fluent-plugin-jfrog-siem
       break
       ;;
-    *) print_error "Plugin $plugin_name not found. More info: $help_link" ;;
+    *) print_error "Plugin $plugin_name not found" ;;
     esac
   fi
+}
+
+xray_shared_questions() {
+  temp_folder=$1
+  fluentd_datadog_conf_name=$2
+  gem_command=$3
+  fluentd_as_service=$4
+
+  # required: JPD_URL is the Artifactory JPD URL of the format http://<ip_address> with is used to pull Xray Violations
+  update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" "Provide JFrog URL (more info: https://www.jfrog.com/confluence/display/JFROG/General+System+Settings): " 'JPD_URL' false $fluentd_as_service
+  # required: USER is the Artifactory username for authentication
+  update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" 'Provide the Artifactory username for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups): ' 'USER' false $fluentd_as_service
+  # required: JFROG_API_KEY is the Artifactory API Key for authentication
+  update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" 'Provide the Artifactory API Key for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/User+Profile#UserProfile-APIKey): ' 'JFROG_API_KEY' true $fluentd_as_service
+  # install SIEM plugin
+  echo
+  install_custom_plugin 'SIEM' "$gem_command" "$fluentd_as_service"
 }

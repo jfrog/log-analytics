@@ -222,9 +222,8 @@ if [ "$install_log_vendors" == true ]; then
     log_vendor_name=${log_vendor_name,,}
     case $log_vendor_name in
     [splunk]*)
-      echo Installing fluent-plugin-splunk-enterprise...
-      $gem_command install fluent-plugin-splunk-enterprise
-      help_link=https://github.com/jfrog/log-analytics-splunk
+      source ./log-vendors/fluentd-splunk-installer.sh # TODO Update the path (git raw)
+      install_plugin "$install_as_service" "$user_install_fluentd_path" "$gem_command" || terminate "Error while installing Splunk plugin."
       break
       ;;
     [datadog]*)
