@@ -7,31 +7,36 @@ declare TEMP_FOLDER='/tmp'
 # load common functions
 source ./utils/common.sh # TODO Update the path (git raw)
 
-init() {
+intro() {
   ## Splunk - Fluentd Install Script
-  help_link=https://github.com/jfrog/log-analytics-splunk
+  declare logo=`cat ./other/spl_ascii_logo.txt`
   echo
-  print_green "============================================================================================================"
-  print_green 'Installing and configuring Splunk plugin for fluentd.'
-  print_green 'The installation script performs the following tasks:'
+  print_green "$logo"
+  echo
+  print_green "================================================================================================================="
+  print_green 'The installation script for the Splunk plugin performs the following tasks:'
   print_green '- Configure Splunk for JFrog artifactory, xray, etc'
   echo
-  print_green "More information: $help_link"
-  echo
-  print_green "ALERT! Before continuing please complete the following manual steps:
--------------------------------------------------------------------
-Splunkbase App (more info: https://github.com/jfrog/log-analytics-splunk#splunkbase-app)
+  print_error "ALERT! Before continuing please complete the following manual steps:"
+  print_green "1) Splunkbase App (more info: https://github.com/jfrog/log-analytics-splunk#splunkbase-app)
   - Install the JFrog Log Analytics Platform app from Splunkbase - https://splunkbase.splunk.com/app/5023.
   - Restart Splunk post installation of App.
   - Login to Splunk after the restart completes.
   - Confirm the version is the latest version available in Splunkbase.
 
-Configure Splunk (more info: https://github.com/jfrog/log-analytics-splunk#configure-splunk)
+2) Configure Splunk (more info: https://github.com/jfrog/log-analytics-splunk#configure-splunk)
   - Create new index 'jfrog_splunk'.
   - Configure new HEC token to receive Logs (use 'jfrog_splunk' index to store the JFrog platform log data into)."
-  print_green "============================================================================================================"
+  echo
+  print_green 'More info: https://github.com/jfrog/log-analytics-splunk'
+  print_green "================================================================================================================="
 
-  init_steps=$(question "Are you ready to continue? [y/n]: ")
+  declare continue_with_steps=$(question "Are you ready to continue? [y/n]: ")
+  if [ "$continue_with_steps" = false ]; then
+    echo 'Please complete the Splunk pre installation steps before continue.'
+    echo 'Have a nice day! Good Bye!'
+    exit 1
+  fi
   echo
 }
 
@@ -119,8 +124,6 @@ configure_fluentd() {
     configuration_file="$user_install_fluentd_install_path/$fluentd_splunk_conf_name"
   fi
   echo
-  echo "WARNING: To enable SSL please update 'use_ssl' and 'ca_file' in the splunk fluentd configuration file: $configuration_file. More information: https://github.com/jfrog/log-analytics-splunk#fluentd-configuration-for-splunk"
-  echo
 }
 
 install_plugin() {
@@ -129,14 +132,12 @@ install_plugin() {
   declare gem_command=$3
 
   #init script
-  init
+  intro
 
   # install splunk fluentd plugin
   declare install_splunk_command="$gem_command install fluent-plugin-splunk-enterprise"
 
   run_command $fluentd_as_service "$install_splunk_command" || terminate "Error while installing Splunk plugin."
-
-  declare help_link=https://github.com/jfrog/log-analytics-splunk
 
   # init check
   fluentd_check $fluentd_as_service $user_install_fluentd_install_path
@@ -146,14 +147,13 @@ install_plugin() {
 
   echo
   print_green '=============================================================================='
-  if [ $fluentd_as_service = true ]; then
-    print_green "Location of the fluentd conf file for Splunk conf file: $fluentd_conf_file_path"
-  else
-    print_green "To manually start fluentd with the Splunk conf run the following command: $user_install_fluentd_install_path/fluentd $fluentd_conf_file_path"
-    print_green "Please make sure fluentd has read/write access to the log folder: '$user_product_path/log'. In some cases it's necessary to reload the environment or logout $USER user before starting fluentd."
-    print_green "Location of the fluentd conf file for Splunk conf file: $fluentd_conf_file_path"
-  fi
-  print_green "JFrog Splunk log analytics help: $help_link"
-  print_green 'WARNING: To enable SSL please update 'use_ssl' and 'ca_file' in the splunk fluentd configuration file: /etc/td-agent/fluent.conf.xray. More information: https://github.com/jfrog/log-analytics-splunk#fluentd-configuration-for-splunk'
+  print_green "Fluentd Splunk plugin configured!"
+  echo
+  print_green "Location of the fluentd conf file for Splunk conf file: $fluentd_conf_file_path"
+  echo
+  print_green "ALERT! To enable SSL please update 'use_ssl' and 'ca_file' in the
+Fluentd Splunk configuration file: /etc/td-agent/fluent.conf.xray.
+
+More information: https://github.com/jfrog/log-analytics-splunk"
   print_green '=============================================================================='
 }

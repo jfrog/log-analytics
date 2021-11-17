@@ -7,17 +7,18 @@ declare TEMP_FOLDER='/tmp'
 # load common functions
 source ./utils/common.sh # TODO Update the path (git raw)
 
-init() {
+intro() {
   ## Datadog - Fluentd Install Script
-  help_link=https://github.com/jfrog/log-analytics-datadog
+  declare logo=`cat ./other/dd_ascii_logo.txt`
   echo
-  print_green "============================================================================================================"
+  print_green "$logo"
+  echo
+  print_green "================================================================================================================="
   print_green 'Installing and configuring Datadog plugin for fluentd.'
   print_green 'The installation script performs the following tasks:'
   print_green '- Configure Datadog for JFrog artifactory, xray, etc'
-  echo
-  print_green "More information: $help_link"
-  print_green "============================================================================================================"
+  print_green 'More info: https://github.com/jfrog/log-analytics-datadog'
+  print_green "================================================================================================================="
   echo
 }
 
@@ -91,7 +92,7 @@ install_plugin() {
   declare gem_command=$3
 
   #init script
-  init
+  intro
 
   # install datadog fluentd plugin
   declare install_datadog_command="$gem_command install fluent-plugin-datadog"
@@ -108,13 +109,20 @@ install_plugin() {
 
   echo
   print_green '=============================================================================='
-  if [ $fluentd_as_service = true ]; then
+  print_green "Fluentd Datadog plugin configured."
+  echo
+  print_green "Location of the fluentd conf file for Splunk conf file: $fluentd_conf_file_path"
+  echo
+  if [ $fluentd_as_service = false ]; then
+    print_green "To manually start fluentd with the Datadog conf run the following command:
+$user_install_fluentd_install_path/fluentd $fluentd_conf_file_path"
+  echo
+    print_green "Please make sure fluentd has read/write access to the log folder: '$user_product_path/log'.
+In some cases it's necessary to reload the environment or logout $USER user before starting fluentd."
+    echo
     print_green "Location of the fluentd conf file for Datadog conf file: $fluentd_conf_file_path"
-  else
-    print_green "To manually start fluentd with the Datadog conf run the following command: $user_install_fluentd_install_path/fluentd $fluentd_conf_file_path"
-    print_green "Please make sure fluentd has read/write access to the log folder: '$user_product_path/log'. In some cases it's necessary to reload the environment or logout $USER user before starting fluentd."
-    print_green "Location of the fluentd conf file for Datadog conf file: $fluentd_conf_file_path"
-    print_green "JFrog Datadog log analytics help: $help_link"
   fi
+  echo
+  print_green "More information: https://github.com/jfrog/log-analytics-datadog"
   print_green '=============================================================================='
 }

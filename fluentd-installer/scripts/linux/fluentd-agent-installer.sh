@@ -10,28 +10,25 @@
 source ./utils/common.sh # TODO Update the path (git raw)
 
 intro() {
-  logo=`cat ./other/jfrog_asci_logo.txt`
+  declare logo=`cat ./other/jfrog_ascii_logo.txt`
   help_link=https://github.com/jfrog/log-analytics
-  echo
-  echo ============================================================================================
-  echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
-  echo ============================================================================================
   echo
   print_green "$logo"
   echo
-  echo 'The script installs fluentd and performs the following tasks:'
-  echo '- Downloads the github repo and all dependencies [optional].'
-  echo '- Checks if the Fluentd requirements are met and updates the OS if needed [optional].'
-  echo '- Installs/Updates Fluentd as a service depending on Linux distro (Centos and Amazon is supported, more to come).'
-  echo '- Updates the log files/folders permissions [optional].'
-  echo '- Installs Fluentd plugins (Splunk, Datadog, Elastic, Prometheus) [optional].'
-  echo '- Starts and enables the Fluentd service [optional].'
-  echo '- Provides additional info related to the installed plugins.'
+  print_green "====================================================================================================================="
   echo
-  echo More information: $help_link
-  echo ============================================================================================
-  echo *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
-  echo ============================================================================================
+  print_green 'The script installs fluentd and performs the following tasks:'
+  print_green '- Checks if the Fluentd requirements are met and updates the OS if needed [optional].'
+  print_green '- Installs/Updates Fluentd as a service or in user space depending on Linux distro (Centos and Amazon is supported, more to come).'
+  print_green '- Updates the log files/folders permissions [optional].'
+  print_green '- Installs Fluentd plugins (Splunk, Datadog) [optional].'
+  print_green '- Starts and enables the Fluentd service [optional].'
+  print_green '- Provides additional info related to the installed plugins.'
+  echo
+  print_green "More information: $help_link"
+  print_green "====================================================================================================================="
+  print_green *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
+  print_green "====================================================================================================================="
   echo
 }
 
@@ -203,7 +200,7 @@ else
   echo
 fi
 
-# Install log vendors (splunk, datadog, elastic, etc)
+# Install log vendors (splunk, datadog etc)
 config_link=$help_link
 declare install_log_vendors=$(question "Would you like to install Fluentd log vendors (optional)? [y/n]: ")
 # check if gem/td-agent-gem is installed
@@ -276,7 +273,7 @@ else
     echo Creating files needed for the Fluentd service...
     mkdir -p "$HOME"/.config/systemd/user/
     fluentd_service_name='jfrogfluentd'
-    user_install_fluentd_service_conf_file="$HOME"/.config/systemd/user/${fluentd_service_name}.service
+    declare user_install_fluentd_service_conf_file="$HOME"/.config/systemd/user/${fluentd_service_name}.service
     touch "$user_install_fluentd_service_conf_file"
     echo "# Added by JFrog log-analytics install script
 [Unit]
@@ -289,12 +286,13 @@ Restart=always
 [Install]
 WantedBy=graphical.target" >"$user_install_fluentd_service_conf_file"
     echo Starting and enabling td-agent service...
-    # sudo systemctl daemon-reload || terminate 'The service was not enabled/restarted, please check the errors above for more information.'
     {
     systemctl --user enable ${user_install_fluentd_service_conf_file}
     systemctl --user restart ${fluentd_service_name}
     } || {
-      terminate 'Starting and enabling fluentd service failed, please check the logs above for more information.'
+      echo
+      print_error "ALERT! Enabling the fluentd service wasn't successful, for additional info please check the errors above."
+      print_error "You can still start Fluentd manually with the following command: '$user_install_path/fluentd $fluentd_conf_file_path'."
     }
   fi
 fi
@@ -303,11 +301,12 @@ if [[ -z $(ps aux | grep fluentd | grep -v "grep") ]]; then
   fluentd_service_msg="WARNING: Service ${fluentd_service_name} not found. Fluentd is not available as service."
 else
   if [ "$install_as_service" == true ]; then
-    fluentd_conf_file_name="/etc/td-agent/td-agent.conf"
+    service_based_message="/etc/td-agent/td-agent.conf.
+To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' command."
   else
-    fluentd_conf_file_name=${user_install_fluentd_service_conf_file}.
+    service_based_message="$fluentd_conf_file_path. To manually start Fluentd use the following command: '$user_install_path/fluentd $fluentd_conf_file_path'."
   fi
-  fluentd_service_msg="To change loaded Fluentd configuration please update: $fluentd_conf_file_name."
+  fluentd_service_msg="To change the Fluentd configuration please update: $service_based_message"
 fi
 
 # Fin!
@@ -315,6 +314,8 @@ fi
 echo
 print_green ==============================================================================================
 print_green 'Fluentd installation completed!'
+echo
 print_green "$fluentd_service_msg"
-print_green "Please check the logs for potential problems, more info: $config_link"
+echo
+print_green "Additional information related to the JFrog analytics: https://github.com/jfrog/log-analytics"
 print_green ==============================================================================================
