@@ -30,8 +30,9 @@ question() {
 terminate() {
   declare termination_reason=$1
   echo
-  print_error 'Installation was unsuccessful!'
-  print_error "Reason(s): $termination_reason"
+  print_green 'Installation was unsuccessful!'
+  echo
+  print_green "Reason(s): $termination_reason"
   echo
   print_error 'Installation aborted!'
   echo

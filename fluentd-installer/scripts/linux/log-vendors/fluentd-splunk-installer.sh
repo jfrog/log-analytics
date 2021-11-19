@@ -17,7 +17,7 @@ intro() {
   print_green 'The installation script for the Splunk plugin performs the following tasks:'
   print_green '- Configure Splunk for JFrog artifactory, xray, etc'
   echo
-  print_error "ALERT! Before continuing please complete the following manual steps:"
+  print_error "ALERT: Before continuing please complete the following manual steps:"
   print_green "1) Splunkbase App (more info: https://github.com/jfrog/log-analytics-splunk#splunkbase-app)
   - Install the JFrog Log Analytics Platform app from Splunkbase - https://splunkbase.splunk.com/app/5023.
   - Restart Splunk post installation of App.
@@ -151,7 +151,7 @@ install_plugin() {
   echo
   print_green "Location of the fluentd conf file for Splunk conf file: $fluentd_conf_file_path"
   echo
-  print_green "ALERT! To enable SSL please update 'use_ssl' and 'ca_file' in the
+  print_green "ALERT: To enable SSL please update 'use_ssl' and 'ca_file' in the
 Fluentd Splunk configuration file: /etc/td-agent/fluent.conf.xray.
 
 More information: https://github.com/jfrog/log-analytics-splunk"

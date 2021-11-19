@@ -1,11 +1,6 @@
 #!/bin/bash
-
-# TODO Proof of concept JFrog fluentd (observability), EXPERIMENTAL!
-# TODO Only one scenario is fully supported:
-#  1) stand alone fluentd (service and user install)
-#  1) Datadog + fluentd, fluentd as service ONLY (td-agent)
-# TODO Any other scenario requires additional work and manual configuration!
-
+# load conf file
+declare SCRIPT_PROPERTIES_FILE_PATH="./properties.conf"
 # load common functions
 source ./utils/common.sh # TODO Update the path (git raw)
 
@@ -16,6 +11,8 @@ intro() {
   print_green "$logo"
   echo
   print_green "====================================================================================================================="
+  echo
+  print_green 'JFrog fluentd installation script (Splunk, Datadog, Prometheus, Elastic).'
   echo
   print_green 'The script installs fluentd and performs the following tasks:'
   print_green '- Checks if the Fluentd requirements are met and updates the OS if needed [optional].'
@@ -30,6 +27,17 @@ intro() {
   print_green *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
   print_green "====================================================================================================================="
   echo
+  # in case that the properties script exists don't interact with the user, use the properties from the file
+  echo "SCRIPT_PROPERTIES_FILE_PATH=$SCRIPT_PROPERTIES_FILE_PATH"
+  interactive=true
+  if test -f "$SCRIPT_PROPERTIES_FILE_PATH"; then
+    if [ "$EUID" -ne 0 ]; then
+      terminate "In the headless mode (non interactive) this script has to be executed as sudo."
+    fi
+    interactive=false
+    echo "interactive=$interactive"
+    source "$SCRIPT_PROPERTIES_FILE_PATH"
+  fi
 }
 
 # Modify conf file
@@ -83,36 +91,23 @@ if [ "$is_supported_distro" == false ]; then
 fi
 
 # Experimental warning
-declare experiments_warning=$(question "The installer is still in the EXPERIMENTAL phase (might be unstable). Would you like to continue? [y/n]: ")
-if [ "$experiments_warning" == false ]; then
-  echo Have a nice day! Good Bye!
-  exit 0
+if [ "$interactive" == true ]; then
+  declare experiments_warning=$(question "The installer is still in the EXPERIMENTAL phase (might be unstable). Would you like to continue? [y/n]: ")
+  if [ "$experiments_warning" == false ]; then
+    echo Have a nice day! Good Bye!
+    exit 0
+  fi
 fi
-
-# Clone github repository?
-#clone_repo=$(question "Would you like to clone JFrog log analytics GitHub repository (optional and not required)? [y/n]: ")
-#if [ "$clone_repo" == true ]; then
-#  {
-#    repo_url="https://github.com/jfrog/log-analytics.git"
-#    echo Cloning repository ${repo_url}
-#    git clone $repo_url --recursive
-#    echo Cloning dependencies...
-#    cd log-analytics
-#    git submodule foreach git checkout master
-#    git submodule foreach git pull origin master
-#  } || {
-#    echo ERROR: Error while cloning the repository. Fluentd was NOT installed. Exiting...
-#    exit 1
-#  }
-#fi
 
 # Check the Fluentd requirements (file descriptors, etc)
 ulimit_output=$(ulimit -n)
 if [ $ulimit_output -lt 65536 ]; then
   # Update the file descriptors limit per process and 'high load environments' if needed
   echo
-  declare update_limit=$(question "Fluentd requires higher limit of the file descriptors per process and the network kernel parameters adjustment (more info: https://docs.fluentd.org/installation/before-install). Would you like to update the mentioned configuration (optional and sudo rights required)? [y/n]: ")
-  if [ $update_limit == true ]; then
+  if [ "$interactive" == true ];then
+    declare update_limit=$(question "Fluentd requires higher limit of the file descriptors per process and the network kernel parameters adjustment (more info: https://docs.fluentd.org/installation/before-install). Would you like to update the mentioned configuration (optional and sudo rights required)? [y/n]: ")
+  fi
+  if [ "$update_limit" == true ] || [ "$UPDATE_LIMIT" == true ]; then
     limit_conf_file_path=/etc/security/limits.conf
     limit_config="
 # Added by JFrog log-analytics install script
@@ -140,10 +135,17 @@ fi
 
 # We support two ways of installing td-agent4 and user/zip.
 echo
-install_as_service=$(question "Would you like to install Fluentd as service? [y/n]
+if [ "$interactive" == true ]; then
+  install_as_service=$(question "Would you like to install Fluentd as service? [y/n]
 Yes - Fluentd will be installed as service (sudo rights required).
 No  - Fluentd will be installed in a folder specified in the next step (read/write permissions required).
 [y/n]: ")
+else
+  install_as_service="$INSTALL_AS_SERVICE"
+fi
+
+echo "$install_as_service INSTALL_AS_SERVICE=$INSTALL_AS_SERVICE"
+
 if [ "$install_as_service" == true ]; then
   # Fetches and installs td-agent4 (for now only Centos and Amazon distros supported)
   if [ "$detected_distro" == "centos" ]; then
@@ -152,41 +154,42 @@ if [ "$install_as_service" == true ]; then
     {
       download_install_td_4 "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh"
     } || {
-      echo "$error_message"
-      exit 1
+      terminate "$error_message"
     }
   elif [ "$detected_distro" == "amazon" ]; then
     echo "Amazon Linux detected. Installing td-agent 4..."
     {
       download_install_td_4 "https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh"
     } || {
-      echo "$error_message"
-      exit 1
+      terminate "$error_message"
     }
   else
-    echo "Unsupported (${detected_distro}) Linux distro."
     terminate "Unsupported linux distro: $detected_distro"
   fi
 else
   current_path=$(pwd)
   fluentd_file_name="fluentd-1.11.0-linux-x86_64.tar.gz"
   fluentd_zip_install_default_path="$HOME/fluentd"
-  echo
-  read -p "Please provide a path where Fluentd will be installed, (default: $fluentd_zip_install_default_path): " user_install_path
+  if [ "$interactive" == true ]; then
+    echo
+    read -p "Please provide a path where Fluentd will be installed, (default: $fluentd_zip_install_default_path): " user_fluentd_install_path
+  else
+    user_fluentd_install_path="$USER_FLUENTD_INSTALL_PATH"
+  fi
   # check if the path is empty, if empty then use fluentd_zip_install_default_path
-  if [ -z "$user_install_path" ]; then
-    user_install_path=$fluentd_zip_install_default_path
+  if [ -z "$user_fluentd_install_path" ]; then
+    user_fluentd_install_path=$fluentd_zip_install_default_path
   fi
   # create folder if not present
-  echo Create $user_install_path
-  mkdir -p "$user_install_path"
+  echo Create $user_fluentd_install_path
+  mkdir -p "$user_fluentd_install_path"
   # check if user has write permissions in the specified path
-  if ! [ -w "$user_install_path" ]; then
-    echo "ERROR: Write permission denied in ${user_install_path}. Please make sure that you have read/write permissions in ${user_install_path}. Fluentd was NOT installed. Exiting..."
+  if ! [ -w "$user_fluentd_install_path" ]; then
+    echo "ERROR: Write permission denied in ${user_fluentd_install_path}. Please make sure that you have read/write permissions in ${user_fluentd_install_path}. Fluentd was NOT installed. Exiting..."
     exit 0
   fi
   # cd to the specified folder
-  cd "$user_install_path"
+  cd "$user_fluentd_install_path"
   # download and extract
   wget https://github.com/jfrog/log-analytics/raw/master/fluentd-installer/${fluentd_file_name}
   echo "Please wait, extracting $fluentd_file_name..."
@@ -194,7 +197,7 @@ else
   # clean up
   rm $fluentd_file_name
   # This folder/file name extraction is far from perfect, fix it!
-  user_install_fluentd_path="$user_install_path/${fluentd_file_name%.*.*}"
+  user_install_fluentd_path="$user_fluentd_install_path/${fluentd_file_name%.*.*}"
   cd $current_path
   echo "Fluentd files extracted to: $user_install_fluentd_path"
   echo
@@ -202,7 +205,9 @@ fi
 
 # Install log vendors (splunk, datadog etc)
 config_link=$help_link
-declare install_log_vendors=$(question "Would you like to install Fluentd log vendors (optional)? [y/n]: ")
+if [ "$interactive" == true ]; then
+  declare install_log_vendors=$(question "Would you like to install Fluentd log vendors (optional)? [y/n]: ")
+fi
 # check if gem/td-agent-gem is installed
 if [ -x "$(command -v td-agent-gem)" ]; then
   gem_command="sudo td-agent-gem"
@@ -212,11 +217,17 @@ else
   echo "WARNING: Ruby 'gem' or 'td-agent-gem' is required and was not found, please make sure that at least one of the mentioned frameworks is installed. Fluentd log vendors installation aborted."
   install_log_vendors=false
 fi
-if [ "$install_log_vendors" == true ]; then
+
+if [ "$install_log_vendors" == true ] || [ ! -z "$LOG_VENDOR_NAME" ]; then
   while true; do
     echo
-    read -p "What log vendor would you like to install [Splunk, Datadog, Prometheus or Elastic]: " log_vendor_name
-    log_vendor_name=${log_vendor_name,,}
+    if [ "$interactive" == true ]; then
+      read -p "What log vendor would you like to install [Splunk, Datadog, Prometheus (plugin only) or Elastic (plugin only)]: " log_vendor_name
+      log_vendor_name=${log_vendor_name,,}
+    else
+      log_vendor_name=${LOG_VENDOR_NAME,,}
+    fi
+
     case $log_vendor_name in
     [splunk]*)
       source ./log-vendors/fluentd-splunk-installer.sh # TODO Update the path (git raw)
@@ -240,18 +251,27 @@ if [ "$install_log_vendors" == true ]; then
       help_link=https://github.com/jfrog/log-analytics-prometheus
       break
       ;;
-    *) echo "Please answer: Splunk, Datadog, Prometheus, or Elastic." ;
+    *)
+      if [ "$interactive" == true ]; then
+        echo "Please answer: Splunk, Datadog, Prometheus, or Elastic." ;
+      else
+        terminate "The properties conf file $SCRIPT_PROPERTIES_FILE_PATH is missing property LOG_VENDOR_NAME"
+      fi
     esac
   done
+else
+  echo "Skipping the log vendor installation."
 fi
 
 # Start/enable/status td-agent service
 if [ "$install_as_service" == true ]; then
   # enable and start fluentd service, this part is only available if Fluentd was installed as service in the previous steps
   echo
-  declare start_enable_service=$(question "Would you like to start and enable Fluentd service (td-agent4, optional)? [y/n]: ")
+  if [ "$interactive" == true ]; then
+    declare start_enable_service=$(question "Would you like to start and enable Fluentd service (td-agent4, optional)? [y/n]: ")
+  fi
   fluentd_service_name="td-agent"
-  if [ "$start_enable_service" == true ]; then
+  if [ "$start_enable_service" == true ] || [ "$START_ENABLE_SERVICE" == true ]; then
     echo Starting and enabling td-agent service...
     if [[ $(systemctl) =~ -\.mount ]]; then
       sudo systemctl daemon-reload
@@ -266,7 +286,9 @@ if [ "$install_as_service" == true ]; then
   fi
 else
   echo
-  declare start_enable_tar_install=$(question "Would you like to start and enable Fluentd as service (systemctl required, optional)? [y/n]: ")
+  if [ "$start_enable_service" == true ] || [ "$START_ENABLE_SERVICE" == true ]; then
+    declare start_enable_tar_install=$(question "Would you like to start and enable Fluentd as service (systemctl required, optional)? [y/n]: ")
+  fi
   if ! [[ $(systemctl) =~ -\.mount ]]; then
     echo "WARNING: The 'systemctl' command not found, the files needed to start Fluentd as service won't be created."
   elif [ "$start_enable_tar_install" == true ]; then
@@ -291,20 +313,20 @@ WantedBy=graphical.target" >"$user_install_fluentd_service_conf_file"
     systemctl --user restart ${fluentd_service_name}
     } || {
       echo
-      print_error "ALERT! Enabling the fluentd service wasn't successful, for additional info please check the errors above."
-      print_error "You can still start Fluentd manually with the following command: '$user_install_path/fluentd $fluentd_conf_file_path'."
+      print_error "ALERT: Enabling the fluentd service wasn't successful, for additional info please check the errors above."
+      print_error "You can still start Fluentd manually with the following command: '$user_fluentd_install_path/fluentd $fluentd_conf_file_path'."
     }
   fi
 fi
 
 if [[ -z $(ps aux | grep fluentd | grep -v "grep") ]]; then
-  fluentd_service_msg="WARNING: Service ${fluentd_service_name} not found. Fluentd is not available as service."
+  fluentd_service_msg="ALERT: Service ${fluentd_service_name} not found. Fluentd is not available as service."
 else
   if [ "$install_as_service" == true ]; then
     service_based_message="/etc/td-agent/td-agent.conf.
 To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' command."
   else
-    service_based_message="$fluentd_conf_file_path. To manually start Fluentd use the following command: '$user_install_path/fluentd $fluentd_conf_file_path'."
+    service_based_message="$fluentd_conf_file_path. To manually start Fluentd use the following command: '$user_fluentd_install_path/fluentd $fluentd_conf_file_path'."
   fi
   fluentd_service_msg="To change the Fluentd configuration please update: $service_based_message"
 fi
