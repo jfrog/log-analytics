@@ -1,8 +1,4 @@
 #!/bin/bash
-
-# branch
-GITHUB_BRANCH=master
-
 # load conf file
 declare SCRIPT_PROPERTIES_FILE_PATH="./properties.conf"
 # load common functions
@@ -58,15 +54,15 @@ modify_conf_file() {
   echo "File ${file_path} modified and the original content backed up to ${file_path_backup}"
 }
 
-load_remote_script() {
+download_install_td_4() {
   script_url=$1
   # check url
   curl -L -f "$script_url" || error_script=true
   if [ $error_script == true ]; then
-    echo "ERROR: Error while downloading ${script_url}. Exiting..."
+    echo "ERROR: Error while downloading ${script_url}. Fluentd was NOT installed. Exiting..."
     exit 1
   fi
-  # run script
+  # install td-agent script
   curl -L -f "$script_url" | sh
 }
 
@@ -156,14 +152,14 @@ if [ "$install_as_service" == true ]; then
     error_message="ERROR: td-agent 4 installation failed. Fluentd was NOT installed. Exiting..."
     echo "Centos detected. Installing td-agent 4..."
     {
-      load_remote_script "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh"
+      download_install_td_4 "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh"
     } || {
       terminate "$error_message"
     }
   elif [ "$detected_distro" == "amazon" ]; then
     echo "Amazon Linux detected. Installing td-agent 4..."
     {
-      load_remote_script "https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh"
+      download_install_td_4 "https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh"
     } || {
       terminate "$error_message"
     }
@@ -195,7 +191,7 @@ else
   # cd to the specified folder
   cd "$user_fluentd_install_path"
   # download and extract
-  wget https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/${fluentd_file_name}
+  wget https://github.com/jfrog/log-analytics/raw/master/fluentd-installer/${fluentd_file_name}
   echo "Please wait, extracting $fluentd_file_name..."
   tar -xf $fluentd_file_name
   # clean up

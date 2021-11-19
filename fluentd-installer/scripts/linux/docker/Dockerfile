@@ -7,7 +7,7 @@ FROM releases-docker.jfrog.io/jfrog/artifactory-pro AS BUILD_IMAGE
 WORKDIR /usr/observability/
 
 COPY ./fluentd-agent-installer.sh ./
-COPY ./*.properties ./
+COPY ./*.conf ./
 
 EXPOSE 8082
 
