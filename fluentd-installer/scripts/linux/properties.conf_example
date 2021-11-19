@@ -10,7 +10,7 @@ INSTALL_AS_SERVICE=true
 USER_FLUENTD_INSTALL_PATH=$USER/fluentd
 
 # Log vendor name (optional, e.g. Splunk, Datadog, Prometheus, Elastic). If not provided this step will be skipped.
-LOG_VENDOR_NAME=datadog
+# LOG_VENDOR_NAME=datadog
 
 # Enable and start the fluentd service (fluentd/td-service, optional)
 START_ENABLE_SERVICE=true
