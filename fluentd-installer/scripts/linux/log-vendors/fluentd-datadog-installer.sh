@@ -79,7 +79,7 @@ configure_fluentd() {
   update_fluentd_config_file "$TEMP_FOLDER/$fluentd_datadog_conf_name" 'Please provide Datadog API KEY (more info: https://docs.datadoghq.com/account_management/api-app-keys): ' 'API_KEY' true $fluentd_as_service
 
   # finalizing configuration
-  if [ $fluentd_as_service = true ]; then
+  if [ $fluentd_as_service == true ]; then
     copy_fluentd_conf '/etc/td-agent' "$fluentd_datadog_conf_name" true "$TEMP_FOLDER"
   else
     copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_datadog_conf_name" true "$TEMP_FOLDER"
@@ -108,12 +108,12 @@ install_plugin() {
   configure_fluentd "$fluentd_as_service" "$user_install_fluentd_install_path" "$gem_command"
 
   echo
-  print_green '=============================================================================='
+  print_green '================================================================================================================='
   print_green "Fluentd Datadog plugin configured."
   echo
   print_green "Location of the fluentd conf file for Splunk conf file: $fluentd_conf_file_path"
   echo
-  if [ $fluentd_as_service = false ]; then
+  if [ $fluentd_as_service == false ]; then
     print_green "To manually start fluentd with the Datadog conf run the following command:
 $user_install_fluentd_install_path/fluentd $fluentd_conf_file_path"
   echo

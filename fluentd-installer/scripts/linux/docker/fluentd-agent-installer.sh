@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# branch
+GITHUB_BRANCH=master
+
 # load conf file
 declare SCRIPT_PROPERTIES_FILE_PATH="./properties.conf"
 # load common functions
@@ -10,7 +14,7 @@ intro() {
   echo
   print_green "$logo"
   echo
-  print_green "====================================================================================================================="
+  print_green "================================================================================================================="
   echo
   print_green 'JFrog fluentd installation script (Splunk, Datadog, Prometheus, Elastic).'
   echo
@@ -23,9 +27,9 @@ intro() {
   print_green '- Provides additional info related to the installed plugins.'
   echo
   print_green "More information: $help_link"
-  print_green "====================================================================================================================="
+  print_green "================================================================================================================="
   print_green *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
-  print_green "====================================================================================================================="
+  print_green "================================================================================================================="
   echo
   # in case that the properties script exists don't interact with the user, use the properties from the file
   echo "SCRIPT_PROPERTIES_FILE_PATH=$SCRIPT_PROPERTIES_FILE_PATH"
@@ -54,15 +58,15 @@ modify_conf_file() {
   echo "File ${file_path} modified and the original content backed up to ${file_path_backup}"
 }
 
-download_install_td_4() {
+load_remote_script() {
   script_url=$1
   # check url
   curl -L -f "$script_url" || error_script=true
   if [ $error_script == true ]; then
-    echo "ERROR: Error while downloading ${script_url}. Fluentd was NOT installed. Exiting..."
+    echo "ERROR: Error while downloading ${script_url}. Exiting..."
     exit 1
   fi
-  # install td-agent script
+  # run script
   curl -L -f "$script_url" | sh
 }
 
@@ -144,22 +148,20 @@ else
   install_as_service="$INSTALL_AS_SERVICE"
 fi
 
-echo "$install_as_service INSTALL_AS_SERVICE=$INSTALL_AS_SERVICE"
-
 if [ "$install_as_service" == true ]; then
   # Fetches and installs td-agent4 (for now only Centos and Amazon distros supported)
   if [ "$detected_distro" == "centos" ]; then
     error_message="ERROR: td-agent 4 installation failed. Fluentd was NOT installed. Exiting..."
     echo "Centos detected. Installing td-agent 4..."
     {
-      download_install_td_4 "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh"
+      load_remote_script "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh"
     } || {
       terminate "$error_message"
     }
   elif [ "$detected_distro" == "amazon" ]; then
     echo "Amazon Linux detected. Installing td-agent 4..."
     {
-      download_install_td_4 "https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh"
+      load_remote_script "https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh"
     } || {
       terminate "$error_message"
     }
@@ -168,8 +170,8 @@ if [ "$install_as_service" == true ]; then
   fi
 else
   current_path=$(pwd)
-  fluentd_file_name="fluentd-1.11.0-linux-x86_64.tar.gz"
-  fluentd_zip_install_default_path="$HOME/fluentd"
+  declare fluentd_file_name="fluentd-1.11.0-linux-x86_64.tar.gz"
+  declare fluentd_zip_install_default_path="$HOME/fluentd"
   if [ "$interactive" == true ]; then
     echo
     read -p "Please provide a path where Fluentd will be installed, (default: $fluentd_zip_install_default_path): " user_fluentd_install_path
@@ -191,7 +193,7 @@ else
   # cd to the specified folder
   cd "$user_fluentd_install_path"
   # download and extract
-  wget https://github.com/jfrog/log-analytics/raw/master/fluentd-installer/${fluentd_file_name}
+  wget https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/${fluentd_file_name}
   echo "Please wait, extracting $fluentd_file_name..."
   tar -xf $fluentd_file_name
   # clean up
@@ -209,7 +211,7 @@ if [ "$interactive" == true ]; then
   declare install_log_vendors=$(question "Would you like to install Fluentd log vendors (optional)? [y/n]: ")
 fi
 # check if gem/td-agent-gem is installed
-if [ -x "$(command -v td-agent-gem)" ]; then
+if [ -x "$(command -v td-agent-gem)" ] && [ $install_as_service == true ]; then
   gem_command="sudo td-agent-gem"
 elif [ -x "$(command -v ${user_install_fluentd_path}/lib/ruby/bin/gem -v)" ]; then
   gem_command="${user_install_fluentd_path}/lib/ruby/bin/gem"

@@ -46,7 +46,7 @@ fluentd_check() {
   declare no_service_detected_message="No fluentd detected. Please install fluentd before continue (more info: https://github.com/jfrog/log-analytics)"
 
   # td-agent check
-  if [ $fluentd_as_service = true  ]; then
+  if [ $fluentd_as_service == true  ]; then
     TD_AGENT_SERVICE_NAME="td-agent.service"
     td_agent_present=$(systemctl list-units --full -all | grep "$TD_AGENT_SERVICE_NAME")
     if [ -z "$td_agent_present" -a "$td_agent_present" != " " ]; then
@@ -64,10 +64,16 @@ run_command() {
   declare command_string=$2
 
   # check if run the command as sudo
-  if [ $run_as_sudo = true ]; then
+  echo $run_as_sudo == true;
+  if [ $run_as_sudo == true ]; then
+    echo "Run $command_string as SUDO..."
     declare sudo_cmd="sudo"
+  else
+    echo "Run $command_string as user (non SUDO)..."
+    declare sudo_cmd=""
   fi
   # run the command
+  echo "Run command: ${sudo_cmd} ${command_string}"
   {
     ${sudo_cmd} ${command_string}
   } || {
@@ -118,7 +124,8 @@ jfrog_env_variables() {
   echo
   read -p "Please provide $jf_product_data_default_name location. (default: $jf_default_path_value): " user_product_path
   # check if the path is empty, if empty then use default
-  if [ -z "$user_product_path"]; then
+  echo "Provided path: $user_product_path"
+  if [ -z "$user_product_path" ]; then
     echo "Using the default value $jf_default_path_value"
     user_product_path=$jf_default_path_value
   fi

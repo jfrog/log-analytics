@@ -32,7 +32,7 @@ intro() {
   print_green "================================================================================================================="
 
   declare continue_with_steps=$(question "Are you ready to continue? [y/n]: ")
-  if [ "$continue_with_steps" = false ]; then
+  if [ "$continue_with_steps" == false ]; then
     echo 'Please complete the Splunk pre installation steps before continue.'
     echo 'Have a nice day! Good Bye!'
     exit 1
@@ -116,7 +116,7 @@ configure_fluentd() {
 
   # finalizing configuration
   local configuration_file
-  if [ $fluentd_as_service = true ]; then
+  if [ $fluentd_as_service == true ]; then
     copy_fluentd_conf '/etc/td-agent' "$fluentd_splunk_conf_name" true "$TEMP_FOLDER"
     configuration_file="/etc/td-agent/$fluentd_splunk_conf_name"
   else
@@ -146,7 +146,7 @@ install_plugin() {
   configure_fluentd "$fluentd_as_service" "$user_install_fluentd_install_path" "$gem_command"
 
   echo
-  print_green '=============================================================================='
+  print_green '================================================================================================================='
   print_green "Fluentd Splunk plugin configured!"
   echo
   print_green "Location of the fluentd conf file for Splunk conf file: $fluentd_conf_file_path"
@@ -155,5 +155,5 @@ install_plugin() {
 Fluentd Splunk configuration file: /etc/td-agent/fluent.conf.xray.
 
 More information: https://github.com/jfrog/log-analytics-splunk"
-  print_green '=============================================================================='
+  print_green '================================================================================================================='
 }

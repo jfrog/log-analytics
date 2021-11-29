@@ -14,7 +14,7 @@ intro() {
   echo
   print_green "$logo"
   echo
-  print_green "====================================================================================================================="
+  print_green "================================================================================================================="
   echo
   print_green 'JFrog fluentd installation script (Splunk, Datadog, Prometheus, Elastic).'
   echo
@@ -27,12 +27,11 @@ intro() {
   print_green '- Provides additional info related to the installed plugins.'
   echo
   print_green "More information: $help_link"
-  print_green "====================================================================================================================="
+  print_green "================================================================================================================="
   print_green *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
-  print_green "====================================================================================================================="
+  print_green "================================================================================================================="
   echo
   # in case that the properties script exists don't interact with the user, use the properties from the file
-  echo "SCRIPT_PROPERTIES_FILE_PATH=$SCRIPT_PROPERTIES_FILE_PATH"
   interactive=true
   if test -f "$SCRIPT_PROPERTIES_FILE_PATH"; then
     if [ "$EUID" -ne 0 ]; then
@@ -41,20 +40,23 @@ intro() {
     interactive=false
     echo "interactive=$interactive"
     source "$SCRIPT_PROPERTIES_FILE_PATH"
+  else
+    echo "The script properties file not found in $SCRIPT_PROPERTIES_FILE_PATH, the script will continue in the interactive mode (user input)."
   fi
 }
 
 # Modify conf file
 modify_conf_file() {
-  now_date=$(date +"%m_%d_%Y_%H_%M_%S")
-  backup_postfix="_la_backup_$now_date"
+  declare now_date=$(date +"%m_%d_%Y_%H_%M_%S")
+  declare backup_postfix="_la_backup_$now_date"
   # backup modifying file first
-  file_path=$1
-  file_path_backup="${file_path}${backup_postfix}"
-  conf_content=$2
-  sudo cp "${file_path}" "${file_path_backup}"
+  declare file_path=$1
+  declare file_path_backup="${file_path}${backup_postfix}"
+  declare conf_content=$2
+  declare run_as_sudo=$3
+  run_command "$run_as_sudo" "cp ${file_path} ${file_path_backup}" || terminate "Error while moving the fluentd conf file to the target dir."
   echo "Modifying ${file_path}..."
-  echo "$conf_content" | sudo tee -a "$file_path"
+  echo "$conf_content" | run_command "$run_as_sudo" "tee -a ${file_path}"
   echo "File ${file_path} modified and the original content backed up to ${file_path_backup}"
 }
 
@@ -119,7 +121,7 @@ root soft nofile 65536
 root hard nofile 65536
 * soft nofile 65536
 * hard nofile 65536"
-    modify_conf_file $limit_conf_file_path "$limit_config"
+    modify_conf_file $limit_conf_file_path "$limit_config" true
     nkp_path_file=/etc/sysctl.conf
     nkp_config="
 # Added by JFrog log-analytics install script
@@ -133,7 +135,7 @@ net.ipv4.tcp_max_syn_backlog = 8096
 net.ipv4.tcp_slow_start_after_idle = 0
 net.ipv4.tcp_tw_reuse = 1
 net.ipv4.ip_local_port_range = 10240 65535"
-    modify_conf_file $nkp_path_file "$nkp_config"
+    modify_conf_file $nkp_path_file "$nkp_config" true
   fi
 fi
 
@@ -147,8 +149,6 @@ No  - Fluentd will be installed in a folder specified in the next step (read/wri
 else
   install_as_service="$INSTALL_AS_SERVICE"
 fi
-
-echo "$install_as_service INSTALL_AS_SERVICE=$INSTALL_AS_SERVICE"
 
 if [ "$install_as_service" == true ]; then
   # Fetches and installs td-agent4 (for now only Centos and Amazon distros supported)
@@ -213,7 +213,7 @@ if [ "$interactive" == true ]; then
   declare install_log_vendors=$(question "Would you like to install Fluentd log vendors (optional)? [y/n]: ")
 fi
 # check if gem/td-agent-gem is installed
-if [ -x "$(command -v td-agent-gem)" ]; then
+if [ -x "$(command -v td-agent-gem)" ] && [ $install_as_service == true ]; then
   gem_command="sudo td-agent-gem"
 elif [ -x "$(command -v ${user_install_fluentd_path}/lib/ruby/bin/gem -v)" ]; then
   gem_command="${user_install_fluentd_path}/lib/ruby/bin/gem"

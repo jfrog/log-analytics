@@ -23,4 +23,6 @@ fi
 wget -O Dockerfile https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/docker/Dockerfile
 
 # download the script
-wget -O fluentd-agent-installer.sh https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/fluentd-agent-installer.sh
+#wget -O fluentd-agent-installer.sh https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/fluentd-agent-installer.sh
+declare fluentd_file_name="fluentd-1.11.0-linux-x86_64.tar.gz"
+wget https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/${fluentd_file_name}
