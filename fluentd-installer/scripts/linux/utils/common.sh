@@ -121,7 +121,7 @@ jfrog_env_variables() {
   declare group=$4
 
   echo
-  read -p "Please provide $jf_product_data_default_name location. (default: $jf_default_path_value): " user_product_path
+  read -p "Please provide $jf_product_data_default_name location (path where the log folder is located). (default: $jf_default_path_value): " user_product_path
   # check if the path is empty, if empty then use default
   echo "Provided path: $user_product_path"
   if [ -z "$user_product_path" ]; then

@@ -334,8 +334,6 @@ To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' 
   fluentd_service_msg="To change the Fluentd configuration please update: $service_based_message"
 fi
 
-# Fin!
-# TODO Better error handling needed so we're 100% sure that it's actually successful.
 echo
 print_green ==============================================================================================
 print_green 'Fluentd installation completed!'
@@ -344,3 +342,4 @@ print_green "$fluentd_service_msg"
 echo
 print_green "Additional information related to the JFrog analytics: https://github.com/jfrog/log-analytics"
 print_green ==============================================================================================
+# Fin!
