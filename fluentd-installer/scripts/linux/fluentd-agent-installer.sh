@@ -54,7 +54,7 @@ modify_conf_file() {
   declare file_path_backup="${file_path}${backup_postfix}"
   declare conf_content=$2
   declare run_as_sudo=$3
-  run_command "$run_as_sudo" "cp ${file_path} ${file_path_backup}" || terminate "Error while moving the fluentd conf file to the target dir."
+  run_command "$run_as_sudo" "cp ${file_path} ${file_path_backup}" || terminate "Error while creating backup copy, original file: ${file_path}, backup file: ${file_path_backup}."
   echo "Modifying ${file_path}..."
   echo "$conf_content" | run_command "$run_as_sudo" "tee -a ${file_path}"
   echo "File ${file_path} modified and the original content backed up to ${file_path_backup}"
@@ -172,7 +172,7 @@ if [ "$install_as_service" == true ]; then
   fi
 else
   current_path=$(pwd)
-  fluentd_file_name="fluentd-1.11.0-linux-x86_64.tar.gz"
+  declare fluentd_file_name="fluentd-1.11.0-linux-x86_64.tar.gz"
   fluentd_zip_install_default_path="$HOME/fluentd"
   if [ "$interactive" == true ]; then
     echo
@@ -182,28 +182,26 @@ else
   fi
   # check if the path is empty, if empty then use fluentd_zip_install_default_path
   if [ -z "$user_fluentd_install_path" ]; then
-    user_fluentd_install_path=$fluentd_zip_install_default_path
+    user_fluentd_install_path="$fluentd_zip_install_default_path"
   fi
   # create folder if not present
   echo Create $user_fluentd_install_path
   mkdir -p "$user_fluentd_install_path"
   # check if user has write permissions in the specified path
   if ! [ -w "$user_fluentd_install_path" ]; then
-    echo "ERROR: Write permission denied in ${user_fluentd_install_path}. Please make sure that you have read/write permissions in ${user_fluentd_install_path}. Fluentd was NOT installed. Exiting..."
-    exit 0
+    terminate "ERROR: Write permission denied in ${user_fluentd_install_path}. Please make sure that you have read/write permissions in ${user_fluentd_install_path}. Fluentd was NOT installed. Exiting..."
   fi
   # cd to the specified folder
-  cd "$user_fluentd_install_path"
+  # cd "$user_fluentd_install_path"
   # download and extract
-  wget https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/${fluentd_file_name}
-  echo "Please wait, extracting $fluentd_file_name..."
-  tar -xf $fluentd_file_name
+  declare zip_file="$user_fluentd_install_path/$fluentd_file_name"
+  wget -O "$zip_file" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/${fluentd_file_name}
+  echo "Please wait, extracting $fluentd_file_name to $user_fluentd_install_path"
+  tar -xf "$zip_file" -C "$user_fluentd_install_path" --strip-components 1
   # clean up
-  rm $fluentd_file_name
-  # This folder/file name extraction is far from perfect, fix it!
-  user_install_fluentd_path="$user_fluentd_install_path/${fluentd_file_name%.*.*}"
-  cd $current_path
-  echo "Fluentd files extracted to: $user_install_fluentd_path"
+  rm "$zip_file"
+  # cd $current_path
+  echo "Fluentd files extracted to: $user_fluentd_install_path"
   echo
 fi
 
@@ -215,8 +213,8 @@ fi
 # check if gem/td-agent-gem is installed
 if [ -x "$(command -v td-agent-gem)" ] && [ $install_as_service == true ]; then
   gem_command="sudo td-agent-gem"
-elif [ -x "$(command -v ${user_install_fluentd_path}/lib/ruby/bin/gem -v)" ]; then
-  gem_command="${user_install_fluentd_path}/lib/ruby/bin/gem"
+elif [ -x "$(command -v ${user_fluentd_install_path}/lib/ruby/bin/gem -v)" ]; then
+  gem_command="$user_fluentd_install_path/lib/ruby/bin/gem"
 else
   echo "WARNING: Ruby 'gem' or 'td-agent-gem' is required and was not found, please make sure that at least one of the mentioned frameworks is installed. Fluentd log vendors installation aborted."
   install_log_vendors=false
@@ -233,14 +231,15 @@ if [ "$install_log_vendors" == true ] || [ ! -z "$LOG_VENDOR_NAME" ]; then
     fi
 
     case $log_vendor_name in
-    [splunk]*)
+    [splunk]*)2
       source ./log-vendors/fluentd-splunk-installer.sh # TODO Update the path (git raw)
-      install_plugin "$install_as_service" "$user_install_fluentd_path" "$gem_command" || terminate "Error while installing Splunk plugin."
+      install_plugin $install_as_service "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Splunk plugin."
       break
       ;;
     [datadog]*)
       source ./log-vendors/fluentd-datadog-installer.sh # TODO Update the path (git raw)
-      install_plugin "$install_as_service" "$user_install_fluentd_path" "$gem_command" || terminate "Error while installing Datadog plugin."
+      echo "$install_as_service $user_install_fluentd_path $gem_command"
+      install_plugin $install_as_service "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Datadog plugin."
       break
       ;;
     [elastic]*)

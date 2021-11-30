@@ -64,7 +64,6 @@ run_command() {
   declare command_string=$2
 
   # check if run the command as sudo
-  echo $run_as_sudo == true;
   if [ $run_as_sudo == true ]; then
     echo "Run $command_string as SUDO..."
     declare sudo_cmd="sudo"
@@ -140,7 +139,7 @@ jfrog_env_variables() {
   fi
   jf_product_var_path_string="JF_PRODUCT_DATA_INTERNAL=$user_product_path"
   echo "Setting the product path for JF_PRODUCT_DATA_INTERNAL=$user_product_path"
-  if [ $fluentd_as_service = true ]; then # fluentd as service
+  if [ $fluentd_as_service == true ]; then # fluentd as service
     # update the service with the envs
     env_conf_file='/usr/lib/systemd/system/td-agent.service'
     jf_product_path_string="Environment=$jf_product_var_path_string"
@@ -182,7 +181,7 @@ update_fluentd_config_file() {
 
   # check if we hide the user input
   echo
-  if [ "$value_is_secret" = true ]; then # hide user input
+  if [ "$value_is_secret" == true ]; then # hide user input
     echo -n $conf_question
     read -s fluentd_conf_value
   else
@@ -211,7 +210,7 @@ copy_fluentd_conf() {
 
   # copy and save the changes
   # if fluentd is installed as service
-  if [ $fluentd_as_service = true ]; then
+  if [ $fluentd_as_service == true ]; then
     fluentd_conf_file_path="$fluentd_conf_path_base/td-agent.conf"
     backup_timestamp=$(date +%s)
     # if config exists than back-up the old fluentd conf file
@@ -236,6 +235,7 @@ copy_fluentd_conf() {
 
   # copy the conf file to the td-agent folder/conf
   {
+    echo "copy the conf file to the td-agent folder/conf, fluentd_as_service=$fluentd_as_service"
     run_command $fluentd_as_service "cp $temp_folder/$fluentd_conf_file_name $fluentd_conf_file_path"
     echo "Fluentd conf file was saved in $fluentd_conf_file_path"
     # clean up
@@ -253,7 +253,7 @@ install_custom_plugin() {
   # Install additions plugin (splunk, datadog, elastic)
   echo
   declare user_install_plugin=$(question "Would you like to install $plugin_name plugin [y/n]: ")
-  if [ "$user_install_plugin" = true ]; then
+  if [ "$user_install_plugin" == true ]; then
     declare lower_case_plugin_name=echo "${plugin_name,,}"
     case  $lower_case_plugin_name in
     [siem]*)

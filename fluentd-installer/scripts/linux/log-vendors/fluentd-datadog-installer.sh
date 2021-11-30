@@ -82,7 +82,7 @@ configure_fluentd() {
   if [ $fluentd_as_service == true ]; then
     copy_fluentd_conf '/etc/td-agent' "$fluentd_datadog_conf_name" true "$TEMP_FOLDER"
   else
-    copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_datadog_conf_name" true "$TEMP_FOLDER"
+    copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_datadog_conf_name" false "$TEMP_FOLDER"
   fi
 }
 
