@@ -128,8 +128,9 @@ configure_fluentd() {
 
 install_plugin() {
   declare fluentd_as_service=$1
-  declare user_install_fluentd_install_path=$2
-  declare gem_command=$3
+  declare install_as_docker=$2
+  declare user_install_fluentd_install_path=$3
+  declare gem_command=$4
 
   #init script
   intro
@@ -143,7 +144,7 @@ install_plugin() {
   fluentd_check $fluentd_as_service $user_install_fluentd_install_path
 
   # configure fluentd
-  configure_fluentd "$fluentd_as_service" "$user_install_fluentd_install_path" "$gem_command"
+  configure_fluentd $fluentd_as_service $install_as_docker "$user_install_fluentd_install_path" "$gem_command"
 
   echo
   print_green '================================================================================================================='

@@ -65,14 +65,14 @@ run_command() {
 
   # check if run the command as sudo
   if [ $run_as_sudo == true ]; then
-    echo "Run $command_string as SUDO..."
+    echo "Run '$command_string' as SUDO..."
     declare sudo_cmd="sudo"
   else
-    echo "Run $command_string as user (non SUDO)..."
+    echo "Run '$command_string' as user (non SUDO)..."
     declare sudo_cmd=""
   fi
   # run the command
-  echo "Run command: ${sudo_cmd} ${command_string}"
+  echo "Run command: '${sudo_cmd} ${command_string}'"
   {
     ${sudo_cmd} ${command_string}
   } || {
@@ -119,46 +119,53 @@ jfrog_env_variables() {
   declare jf_product_data_default_name=$2
   declare fluentd_as_service=$3
   declare group=$4
-
+  declare install_as_docker=$5
   echo
   read -p "Please provide $jf_product_data_default_name location (path where the log folder is located). (default: $jf_default_path_value): " user_product_path
   # check if the path is empty, if empty then use default
-  echo "Provided path: $user_product_path"
+  echo "Provided location: $user_product_path"
   if [ -z "$user_product_path" ]; then
     echo "Using the default value $jf_default_path_value"
     user_product_path=$jf_default_path_value
   fi
-  if [ ! -d "$user_product_path" ]; then
+  if [ ! -d "$user_product_path" ] && [ "$install_as_docker" == false ]; then
     echo "Incorrect product path $user_product_path"
     echo "Please try again."
-    jfrog_env_variables $jf_default_path_value $jf_product_data_default_name $fluentd_as_service
+    jfrog_env_variables $jf_default_path_value $jf_product_data_default_name $fluentd_as_service $group $install_as_docker
   fi
   # update the product path if needed (remove / if needed)
   if [ "${user_product_path: -1}" == "/" ]; then
     user_product_path=${user_product_path::-1}
   fi
-  jf_product_var_path_string="JF_PRODUCT_DATA_INTERNAL=$user_product_path"
-  echo "Setting the product path for JF_PRODUCT_DATA_INTERNAL=$user_product_path"
-  if [ $fluentd_as_service == true ]; then # fluentd as service
-    # update the service with the envs
-    env_conf_file='/usr/lib/systemd/system/td-agent.service'
-    jf_product_path_string="Environment=$jf_product_var_path_string"
-    if grep -q "$jf_product_path_string" $env_conf_file; then
-      echo "File $env_conf_file already contains the variables: $jf_product_var_path_string."
+
+  if [ "$install_as_docker" == false ]; then
+    declare jf_product_var_path_string="JF_PRODUCT_DATA_INTERNAL=$user_product_path"
+    echo "Setting the product path for JF_PRODUCT_DATA_INTERNAL=$user_product_path"
+    if [ $fluentd_as_service == true ]; then # fluentd as service
+      # update the service with the envs
+      declare env_conf_file='/usr/lib/systemd/system/td-agent.service'
+      jf_product_path_string="Environment=$jf_product_var_path_string"
+      if grep -q "$jf_product_path_string" $env_conf_file; then
+        echo "File $env_conf_file already contains the variables: $jf_product_var_path_string."
+      else
+        sudo sed -i "/^\[Service\]/a $jf_product_path_string" $env_conf_file
+      fi
+      update_permissions $user_product_path "td-agent" true
     else
-      sudo sed -i "/^\[Service\]/a $jf_product_path_string" $env_conf_file
+      # update the user profile with the envs (fluentd as user install)
+      declare env_conf_file="$HOME/.bashrc"
+      jf_product_path_string="export $jf_product_var_path_string"
+      if grep -q "'$jf_product_path_string'" $env_conf_file; then
+        echo "File $env_conf_file already contains the variables: $jf_product_var_path_string."
+      else
+        echo "$jf_product_path_string # Added by the fluentd JFrog install script" >> $env_conf_file
+      fi
+      update_permissions $user_product_path $USER true
     fi
-    update_permissions $user_product_path "td-agent" true
   else
-    # update the user profile with the envs (fluentd as user install)
-    env_conf_file="$HOME/.bashrc"
-    jf_product_path_string="export $jf_product_var_path_string"
-    if grep -q "'$jf_product_path_string'" $env_conf_file; then
-      echo "File $env_conf_file already contains the variables: $jf_product_var_path_string."
-    else
-      echo "$jf_product_path_string # Added by the fluentd JFrog install script" >> $env_conf_file
-    fi
-    update_permissions $user_product_path $USER true
+    # update dockerfile
+    declare dockerfile_path="$DOCKERFILE_TEMPLATE_PATH/Dockerfile"
+    run_command $run_as_sudo "sed -i -e "s,JF_PRODUCT_DATA_INTERNAL_VALUE,TESTI,g" $dockerfile_path"
   fi
   echo
 }
@@ -206,31 +213,36 @@ copy_fluentd_conf() {
   declare fluentd_conf_path_base=$1
   declare fluentd_conf_file_name=$2
   declare fluentd_as_service=$3
-  declare temp_folder=$4
+  declare install_as_docker=$4
+  declare temp_folder=$5
 
   # copy and save the changes
   # if fluentd is installed as service
-  if [ $fluentd_as_service == true ]; then
-    fluentd_conf_file_path="$fluentd_conf_path_base/td-agent.conf"
-    backup_timestamp=$(date +%s)
-    # if config exists than back-up the old fluentd conf file
-    if [ -f "$fluentd_conf_file_path" ]; then
-      sudo mv $fluentd_conf_file_path "${fluentd_conf_file_path}_backup_${backup_timestamp}"
+  if [ "$install_as_docker" == false ]; then
+    if [ $fluentd_as_service == true ]; then
+      declare fluentd_conf_file_path="$fluentd_conf_path_base/td-agent.conf"
+      declare backup_timestamp=$(date +%s)
+      # if config exists than back-up the old fluentd conf file
+      if [ -f "$fluentd_conf_file_path" ]; then
+        sudo mv $fluentd_conf_file_path "${fluentd_conf_file_path}_backup_${backup_timestamp}"
+      fi
+    else # if fluentd is installed as "user installation"
+     while true; do
+      echo
+      read -p "Please provide location where fluentd conf file will be stored (default: $fluentd_conf_path_base):" user_fluentd_conf_path
+      # TODO "Trim" the string to make sure that no empty spaces string is passed
+      if [ -z "$user_fluentd_conf_path" ]; then # empty string use the default value
+        fluentd_conf_file_path="$fluentd_conf_path_base/$fluentd_conf_file_name"
+        break
+      elif [ -h "$user_fluentd_conf_path" ]; then # user typed the conf path
+        fluentd_conf_file_path="$user_fluentd_conf_path/$fluentd_conf_file_name"
+        break
+      fi
+      done
     fi
-  else # if fluentd is installed as "user installation"
-   while true; do
-    echo
-    read -p "Please provide location where fluentd conf file will be stored (default: $fluentd_conf_path_base):" user_fluentd_conf_path
-    # TODO "Trim" the string to make sure that no empty spaces string is passed
-    if [ -z "$user_fluentd_conf_path" ]; then # empty string use the default value
-      fluentd_conf_file_path="$fluentd_conf_path_base/$fluentd_conf_file_name"
-      break
-    elif [ -h "$user_fluentd_conf_path" ]; then # user typed the conf path
-      fluentd_conf_file_path="$user_fluentd_conf_path/$fluentd_conf_file_name"
-      break
-    fi
-    echo  $user_fluentd_conf_path
-    done
+  else
+    # in case of docker copy the fluentd file to the current folder where Dockerfile is
+    fluentd_conf_file_path="./"
   fi
 
   # copy the conf file to the td-agent folder/conf
@@ -272,6 +284,7 @@ xray_shared_questions() {
   fluentd_datadog_conf_name=$2
   gem_command=$3
   fluentd_as_service=$4
+  install_as_docker=$5
 
   # required: JPD_URL is the Artifactory JPD URL of the format http://<ip_address> with is used to pull Xray Violations
   update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" "Provide JFrog URL (more info: https://www.jfrog.com/confluence/display/JFROG/General+System+Settings): " 'JPD_URL' false $fluentd_as_service
@@ -281,5 +294,12 @@ xray_shared_questions() {
   update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" 'Provide the Artifactory API Key for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/User+Profile#UserProfile-APIKey): ' 'JFROG_API_KEY' true $fluentd_as_service
   # install SIEM plugin
   echo
-  install_custom_plugin 'SIEM' "$gem_command" "$fluentd_as_service"
+  if [ "$install_as_docker" == false ]; then
+    install_custom_plugin 'SIEM' "$gem_command" "$fluentd_as_service"
+  fi
+}
+
+download_dockerfile_template() {
+  # downloads Dockerfile template to the current dir
+  wget -O "$DOCKERFILE_TEMPLATE_PATH/Dockerfile" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/Dockerfile.fluentd
 }

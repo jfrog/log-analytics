@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # branch
-GITHUB_BRANCH=master
-
+GITHUB_BRANCH="karolh2000/plugin-installers"
+DOCKERFILE_TEMPLATE_PATH="."
 # load conf file
 declare SCRIPT_PROPERTIES_FILE_PATH="./properties.conf"
 # load common functions
@@ -67,7 +67,7 @@ load_remote_script() {
   curl -L -f "$script_url" | sh
 }
 
-install_fluentd {
+install_fluentd() {
   declare install_as_service=$1
   # supported linux distros
   declare supported_distros=("centos" "amazon")
@@ -89,12 +89,12 @@ install_fluentd {
   fi
 
   # Check the Fluentd requirements (file descriptors, etc)
-  decalre ulimit_output=$(ulimit -n)
+  declare ulimit_output=$(ulimit -n)
   if [ $ulimit_output -lt 65536 ]; then
     # Update the file descriptors limit per process and 'high load environments' if needed
     echo
     declare update_limit=$(question "Fluentd requires higher limit of the file descriptors per process and the network kernel parameters adjustment (more info: https://docs.fluentd.org/installation/before-install). Would you like to update the mentioned configuration (optional and sudo rights required)? [y/n]: ")
-    if [ "$update_limit" == true ] || [ "$UPDATE_LIMIT" == true ]; then
+    if [ "$update_limit" == true ]; then
       limit_conf_file_path=/etc/security/limits.conf
       limit_config="
   # Added by JFrog log-analytics install script
@@ -145,7 +145,7 @@ install_fluentd {
   else
     current_path=$(pwd)
     declare fluentd_file_name="fluentd-1.11.0-linux-x86_64.tar.gz"
-    fluentd_zip_install_default_path="$HOME/fluentd"
+    declare fluentd_zip_install_default_path="$HOME/fluentd"
     echo
     read -p "Please provide a path where Fluentd will be installed, (default: $fluentd_zip_install_default_path): " user_fluentd_install_path
 
@@ -175,37 +175,38 @@ install_fluentd {
   fi
 }
 
-install_log_vendor {
+install_log_vendor() {
+  declare install_as_service=$1
   # Install log vendors (splunk, datadog etc)
   declare config_link=$help_link
   declare install_log_vendors=$(question "Would you like to install Fluentd log vendors (optional)? [y/n]: ")
 
   # check if gem/td-agent-gem is installed
-  if [ -x "$(command -v td-agent-gem)" ] && [ $install_as_service == true ]; then
-    gem_command="sudo td-agent-gem"
-  elif [ -x "$(command -v ${user_fluentd_install_path}/lib/ruby/bin/gem -v)" ]; then
-    gem_command="$user_fluentd_install_path/lib/ruby/bin/gem"
-  else
-    echo "WARNING: Ruby 'gem' or 'td-agent-gem' is required and was not found, please make sure that at least one of the mentioned frameworks is installed. Fluentd log vendors installation aborted."
-    install_log_vendors=false
+  if [ "$install_as_docker" == false ]; then
+    if [ -x "$(command -v td-agent-gem)" ] && [ $install_as_service == true ]; then
+      gem_command="sudo td-agent-gem"
+    elif [ -x "$(command -v ${user_fluentd_install_path}/lib/ruby/bin/gem -v)" ]; then
+      gem_command="$user_fluentd_install_path/lib/ruby/bin/gem"
+    else
+      terminate "WARNING: Ruby 'gem' or 'td-agent-gem' is required and was not found, please make sure that at least one of the mentioned frameworks is installed. Fluentd log vendors installation aborted."
+    fi
   fi
 
-  if [ "$install_log_vendors" == true ] || [ ! -z "$LOG_VENDOR_NAME" ]; then
+  if [ "$install_log_vendors" == true ]; then
     while true; do
       echo
       read -p "What log vendor would you like to install [Splunk, Datadog, Prometheus (plugin only) or Elastic (plugin only)]: " log_vendor_name
       log_vendor_name=${log_vendor_name,,}
 
       case $log_vendor_name in
-      [splunk]*)2
+      [splunk]*)
         source ./log-vendors/fluentd-splunk-installer.sh # TODO Update the path (git raw)
-        install_plugin $install_as_service "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Splunk plugin."
+        install_plugin $install_as_service $install_as_docker "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Splunk plugin."
         break
         ;;
       [datadog]*)
         source ./log-vendors/fluentd-datadog-installer.sh # TODO Update the path (git raw)
-        echo "$install_as_service $user_install_fluentd_path $gem_command"
-        install_plugin $install_as_service "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Datadog plugin."
+        install_plugin $install_as_service $install_as_docker "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Datadog plugin."
         break
         ;;
       [elastic]*)
@@ -229,38 +230,109 @@ install_log_vendor {
   fi
 }
 
+start_enable_fluentd() {
+  declare install_as_service=$1
+
+  # Start/enable/status td-agent service
+  if [ "$install_as_service" == true ]; then
+    # enable and start fluentd service, this part is only available if Fluentd was installed as service in the previous steps
+    echo
+    declare start_enable_service=$(question "Would you like to start and enable Fluentd service (td-agent4, optional)? [y/n]: ")
+    declare fluentd_service_name="td-agent"
+    if [ "$start_enable_service" == true ]; then
+      echo Starting and enabling td-agent service...
+      if [[ $(systemctl) =~ -\.mount ]]; then
+        sudo systemctl daemon-reload
+        sudo systemctl enable ${fluentd_service_name}.service
+        sudo systemctl restart ${fluentd_service_name}.service
+        sudo systemctl status ${fluentd_service_name}.service
+      else
+        sudo chkconfig ${fluentd_service_name} on
+        sudo /etc/init.d/${fluentd_service_name} restart
+        sudo /etc/init.d/${fluentd_service_name} status
+      fi
+    fi
+  else
+    echo
+    if [ "$start_enable_service" == true ]; then
+      declare start_enable_tar_install=$(question "Would you like to start and enable Fluentd as service (systemctl required, optional)? [y/n]: ")
+    fi
+    if ! [[ $(systemctl) =~ -\.mount ]]; then
+      echo "WARNING: The 'systemctl' command not found, the files needed to start Fluentd as service won't be created."
+    elif [ "$start_enable_tar_install" == true ]; then
+      echo Creating files needed for the Fluentd service...
+      mkdir -p "$HOME"/.config/systemd/user/
+      fluentd_service_name='jfrogfluentd'
+      declare user_install_fluentd_service_conf_file="$HOME"/.config/systemd/user/${fluentd_service_name}.service
+      touch "$user_install_fluentd_service_conf_file"
+      echo "# Added by JFrog log-analytics install script
+  [Unit]
+  Description=JFrog_Fluentd
+
+  [Service]
+  ExecStart=${user_install_fluentd_path}/fluentd ${user_install_fluentd_path}/test.conf
+  Restart=always
+
+  [Install]
+  WantedBy=graphical.target" >"$user_install_fluentd_service_conf_file"
+      echo Starting and enabling td-agent service...
+      {
+      systemctl --user enable ${user_install_fluentd_service_conf_file}
+      systemctl --user restart ${fluentd_service_name}
+      } || {
+        echo
+        print_error "ALERT: Enabling the fluentd service wasn't successful, for additional info please check the errors above."
+        print_error "You can still start Fluentd manually with the following command: '$user_fluentd_install_path/fluentd $fluentd_conf_file_path'."
+      }
+    fi
+  fi
+
+  if [[ -z $(ps aux | grep fluentd | grep -v "grep") ]]; then
+    fluentd_service_msg="ALERT: Service ${fluentd_service_name} not found. Fluentd is not available as service."
+  else
+    if [ "$install_as_service" == true ]; then
+      service_based_message="/etc/td-agent/td-agent.conf.
+  To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' command."
+    else
+      service_based_message="$fluentd_conf_file_path.
+To manually start Fluentd use the following command: '$user_fluentd_install_path/fluentd $fluentd_conf_file_path'."
+    fi
+    fluentd_service_msg="To change the Fluentd configuration please update: $service_based_message"
+  fi
+}
+
 ## Fluentd Install Script
 #Init info
 intro
 
 while true; do
   echo
-  read -p "Would you like to install Fluentd as service, in the user space or build docker image? [service/user/docker]
-          service - Fluentd will be installed as service on this machine (sudo rights required).
-          user    - Fluentd will be installed in a folder specified in the next step on this machine (read/write permissions required).
-          docker  - Custom Docker image will built based on the latest fluentd image and user input.
-          [service/user/docker]: " install_type
+  read -p "Would you like to install Fluentd as SERVICE, in the USER space or build DOCKER image? [service/user/docker]
+          [service] - Fluentd will be installed as service on this machine (sudo rights required).
+          [user]    - Fluentd will be installed in a folder specified in the next step on this machine (read/write permissions required).
+          [docker]  - Custom Docker image will built based on the latest fluentd image and user input.
+[service/user/docker]: " install_type
   install_type=${install_type,,}
 
-  case install_type in
-  [service]*)2
-    declare install_as_service=true
-    declare install_as_docker=false
-    echo "Installation type: SERVICE, Fluentd will be installed as service."
-    break
-    ;;
-  [user]*)
-    declare install_as_service=false
-    declare install_as_docker=false
-    echo "Installation type: USER, Fluentd will be installed in a folder specified in the next step."
-    break
-    ;;
-  [docker]*)
-    declare install_as_service=false
-    declare install_as_docker=true
-    echo "Installation type: DOCKER, Custom Docker image will be built based on the latest fluentd image and user input"
-    break
-    ;;
+  case $install_type in
+    [service]*)
+      declare install_as_service=true
+      declare install_as_docker=false
+      echo "Installation type: SERVICE, Fluentd will be installed as service."
+      break
+      ;;
+    [user]*)
+      declare install_as_service=false
+      declare install_as_docker=false
+      echo "Installation type: USER, Fluentd will be installed in a folder specified in the next step."
+      break
+      ;;
+    [docker]*)
+      declare install_as_service=false
+      declare install_as_docker=true
+      echo "Installation type: DOCKER, Custom Docker image will be built based on the latest fluentd image and user input"
+      break
+      ;;
   *)
   echo "Please answer: service, user or docker."
   esac
@@ -273,78 +345,23 @@ if [ "$install_as_docker" == false ]; then
 else
   # check if docker is running/present
   {
-    docker ps -q
+    echo "Checking if docker is installed..."
+    echo
+    docker -v
+    docker ps --all
+    echo
+    echo "Docker is present and running!"
+    echo
   } || {
     terminate "Docker is not running or not installed, please fix the problem before running the script again."
   }
 fi
 
-install_log_vendor
+install_log_vendor $install_as_service
 
-# Start/enable/status td-agent service
-if [ "$install_as_service" == true ]; then
-  # enable and start fluentd service, this part is only available if Fluentd was installed as service in the previous steps
-  echo
-  declare start_enable_service=$(question "Would you like to start and enable Fluentd service (td-agent4, optional)? [y/n]: ")
-  fluentd_service_name="td-agent"
-  if [ "$start_enable_service" == true ] || [ "$START_ENABLE_SERVICE" == true ]; then
-    echo Starting and enabling td-agent service...
-    if [[ $(systemctl) =~ -\.mount ]]; then
-      sudo systemctl daemon-reload
-      sudo systemctl enable ${fluentd_service_name}.service
-      sudo systemctl restart ${fluentd_service_name}.service
-      sudo systemctl status ${fluentd_service_name}.service
-    else
-      sudo chkconfig ${fluentd_service_name} on
-      sudo /etc/init.d/${fluentd_service_name} restart
-      sudo /etc/init.d/${fluentd_service_name} status
-    fi
-  fi
-else
-  echo
-  if [ "$start_enable_service" == true ] || [ "$START_ENABLE_SERVICE" == true ]; then
-    declare start_enable_tar_install=$(question "Would you like to start and enable Fluentd as service (systemctl required, optional)? [y/n]: ")
-  fi
-  if ! [[ $(systemctl) =~ -\.mount ]]; then
-    echo "WARNING: The 'systemctl' command not found, the files needed to start Fluentd as service won't be created."
-  elif [ "$start_enable_tar_install" == true ]; then
-    echo Creating files needed for the Fluentd service...
-    mkdir -p "$HOME"/.config/systemd/user/
-    fluentd_service_name='jfrogfluentd'
-    declare user_install_fluentd_service_conf_file="$HOME"/.config/systemd/user/${fluentd_service_name}.service
-    touch "$user_install_fluentd_service_conf_file"
-    echo "# Added by JFrog log-analytics install script
-[Unit]
-Description=JFrog_Fluentd
-
-[Service]
-ExecStart=${user_install_fluentd_path}/fluentd ${user_install_fluentd_path}/test.conf
-Restart=always
-
-[Install]
-WantedBy=graphical.target" >"$user_install_fluentd_service_conf_file"
-    echo Starting and enabling td-agent service...
-    {
-    systemctl --user enable ${user_install_fluentd_service_conf_file}
-    systemctl --user restart ${fluentd_service_name}
-    } || {
-      echo
-      print_error "ALERT: Enabling the fluentd service wasn't successful, for additional info please check the errors above."
-      print_error "You can still start Fluentd manually with the following command: '$user_fluentd_install_path/fluentd $fluentd_conf_file_path'."
-    }
-  fi
-fi
-
-if [[ -z $(ps aux | grep fluentd | grep -v "grep") ]]; then
-  fluentd_service_msg="ALERT: Service ${fluentd_service_name} not found. Fluentd is not available as service."
-else
-  if [ "$install_as_service" == true ]; then
-    service_based_message="/etc/td-agent/td-agent.conf.
-To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' command."
-  else
-    service_based_message="$fluentd_conf_file_path. To manually start Fluentd use the following command: '$user_fluentd_install_path/fluentd $fluentd_conf_file_path'."
-  fi
-  fluentd_service_msg="To change the Fluentd configuration please update: $service_based_message"
+# Enable/start Fluentd, only for non docker options.
+if [ "$install_as_docker" == false ]; then
+  start_enable_fluentd $install_as_service
 fi
 
 echo

@@ -24,27 +24,28 @@ intro() {
 
 configure_fluentd() {
   declare fluentd_as_service=$1
-  declare user_install_fluentd_install_path=$2
-  declare gem_command=$3
+  declare install_as_docker=$2
+  declare user_install_fluentd_install_path=$3
+  declare gem_command=$4
 
   # Downloading the fluentd config for Datadog based on the user input
   config_download_path_base="https://raw.githubusercontent.com/jfrog/log-analytics-datadog/master/"
   while true; do
     echo
-    read -p 'Type of Datadog configuration: [Artifactory, Xray, Missioncontrol, Distribution or Pipelines]: ' product_name
+    read -p 'Type of Datadog configuration: [Artifactory or Xray]: ' product_name
     case $product_name in
     [artifactory]*)
-      jfrog_env_variables '/var/opt/jfrog/artifactory/' 'artifactory' $fluentd_as_service 'artifactory'
+      jfrog_env_variables '/var/opt/jfrog/artifactory/' 'artifactory' $fluentd_as_service 'artifactory' $install_as_docker
       declare fluentd_datadog_conf_name='fluent.conf.rt'
       download_fluentd_conf_file  $FLUENTD_DATADOG_CONF_BASE_URL $fluentd_datadog_conf_name $TEMP_FOLDER
       break
       ;;
     [xray]*)
-      jfrog_env_variables '/var/opt/jfrog/xray/' 'xray' $fluentd_as_service 'xray'
+      jfrog_env_variables '/var/opt/jfrog/xray/' 'xray' $fluentd_as_service 'xray' $install_as_docker
       declare fluentd_datadog_conf_name='fluent.conf.xray'
       download_fluentd_conf_file $FLUENTD_DATADOG_CONF_BASE_URL $fluentd_datadog_conf_name $TEMP_FOLDER
       # Xray related config questions
-      xray_shared_questions "$TEMP_FOLDER" "$fluentd_datadog_conf_name" "$gem_command" "$fluentd_as_service"
+      xray_shared_questions "$TEMP_FOLDER" "$fluentd_datadog_conf_name" "$gem_command" $fluentd_as_service $install_as_docker
       break
       ;;
     #[nginx]*)
@@ -53,24 +54,24 @@ configure_fluentd() {
     #  download_fluentd_conf_file $fluentd_datadog_conf_name
     #  break
     #  ;;
-    [missioncontrol]*)
-      jfrog_env_variables '/var/opt/jfrog/xray/' 'mission Control' $fluentd_as_service
-      declare fluentd_datadog_conf_name='fluent.conf.missioncontrol'
-      download_fluentd_conf_file $FLUENTD_DATADOG_CONF_BASE_URL $fluentd_datadog_conf_name $TEMP_FOLDER
-      break
-      ;;
-    [distribution]*)
-      jfrog_env_variables '/var/opt/jfrog/distribution/' 'distribution' $fluentd_as_service
-      declare fluentd_datadog_conf_name='fluent.conf.distribution'
-      download_fluentd_conf_file $FLUENTD_DATADOG_CONF_BASE_URL $fluentd_datadog_conf_name $TEMP_FOLDER
-      break
-      ;;
-   [pipelines]*)
-     jfrog_env_variables '/opt/jfrog/pipelines/var/' 'pipelines' $fluentd_as_service
-      declare fluentd_datadog_conf_name='fluent.conf.pipelines'
-      download_fluentd_conf_file $FLUENTD_DATADOG_CONF_BASE_URL $fluentd_datadog_conf_name $TEMP_FOLDER
-      break
-      ;;
+    #[missioncontrol]*)
+    #  jfrog_env_variables '/var/opt/jfrog/xray/' 'mission Control' $fluentd_as_service $install_as_docker
+    #  declare fluentd_datadog_conf_name='fluent.conf.missioncontrol'
+    #  download_fluentd_conf_file $FLUENTD_DATADOG_CONF_BASE_URL $fluentd_datadog_conf_name $TEMP_FOLDER
+    #  break
+    #  ;;
+    #[distribution]*)
+    #  jfrog_env_variables '/var/opt/jfrog/distribution/' 'distribution' $fluentd_as_service $install_as_docker
+    #  declare fluentd_datadog_conf_name='fluent.conf.distribution'
+    #  download_fluentd_conf_file $FLUENTD_DATADOG_CONF_BASE_URL $fluentd_datadog_conf_name $TEMP_FOLDER
+    #  break
+    #  ;;
+    #[pipelines]*)
+    # jfrog_env_variables '/opt/jfrog/pipelines/var/' 'pipelines' $fluentd_as_service
+    #  declare fluentd_datadog_conf_name='fluent.conf.pipelines'
+    #  download_fluentd_conf_file $FLUENTD_DATADOG_CONF_BASE_URL $fluentd_datadog_conf_name $TEMP_FOLDER
+    #  break
+    #  ;;
     *) echo 'Incorrect value, please try again. ' ;
     esac
   done
@@ -79,33 +80,41 @@ configure_fluentd() {
   update_fluentd_config_file "$TEMP_FOLDER/$fluentd_datadog_conf_name" 'Please provide Datadog API KEY (more info: https://docs.datadoghq.com/account_management/api-app-keys): ' 'API_KEY' true $fluentd_as_service
 
   # finalizing configuration
-  if [ $fluentd_as_service == true ]; then
-    copy_fluentd_conf '/etc/td-agent' "$fluentd_datadog_conf_name" true "$TEMP_FOLDER"
+  if [ "$install_as_docker" == false ]; then
+    if [ $fluentd_as_service == true ]; then
+      copy_fluentd_conf '/etc/td-agent' "$fluentd_datadog_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
+    else
+      copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_datadog_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
+    fi
   else
-    copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_datadog_conf_name" false "$TEMP_FOLDER"
+    copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_datadog_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
   fi
 }
 
 install_plugin() {
   declare fluentd_as_service=$1
-  declare user_install_fluentd_install_path=$2
-  declare gem_command=$3
+  declare install_as_docker=$2
+  declare user_install_fluentd_install_path=$3
+  declare gem_command=$4
 
   #init script
   intro
 
-  # install datadog fluentd plugin
-  declare install_datadog_command="$gem_command install fluent-plugin-datadog"
-
-  run_command $fluentd_as_service "$install_datadog_command" || terminate "Error while installing Datadog plugin."
+  # install datadog fluentd plugin or modify Dockerfile
+  if [ "$install_as_docker" == false ]; then
+    declare install_datadog_command="$gem_command install fluent-plugin-datadog"
+    # fluentd check
+    fluentd_check $fluentd_as_service $user_install_fluentd_install_path
+    # install fluentd datadog plugin
+    run_command $fluentd_as_service "$install_datadog_command" || terminate "Error while installing Datadog plugin."
+  else
+    download_dockerfile_template
+  fi
 
   declare help_link=https://github.com/jfrog/log-analytics-datadog
 
-  # init check
-  fluentd_check $fluentd_as_service $user_install_fluentd_install_path
-
   # configure fluentd
-  configure_fluentd "$fluentd_as_service" "$user_install_fluentd_install_path" "$gem_command"
+  configure_fluentd $fluentd_as_service $install_as_docker "$user_install_fluentd_install_path" "$gem_command"
 
   echo
   print_green '================================================================================================================='
@@ -124,5 +133,5 @@ In some cases it's necessary to reload the environment or logout $USER user befo
   fi
   echo
   print_green "More information: https://github.com/jfrog/log-analytics-datadog"
-  print_green '=============================================================================='
+  print_green '================================================================================================================='
 }
