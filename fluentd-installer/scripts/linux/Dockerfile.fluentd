@@ -11,8 +11,5 @@ RUN mkdir -p "$JF_PRODUCT_DATA_INTERNAL"
 RUN chown -R 1001:1001 /opt/bitnami/fluentd/
 ## Reset back to user
 USER 1001
-## Installing required JFrog fluentd plugins
-#RUN fluent-gem install fluent-plugin-splunk-enterprise
-#RUN fluent-gem install fluent-plugin-datadog
-#RUN fluent-gem install fluent-plugin-elasticsearch
-#RUN fluent-gem install fluent-plugin-jfrog-siem
+## Required JFrog fluentd plugins
+

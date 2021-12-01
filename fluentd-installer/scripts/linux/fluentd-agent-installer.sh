@@ -2,7 +2,7 @@
 
 # branch
 GITHUB_BRANCH="karolh2000/plugin-installers"
-DOCKERFILE_TEMPLATE_PATH="."
+DOCKERFILE_PATH="."
 # load conf file
 declare SCRIPT_PROPERTIES_FILE_PATH="./properties.conf"
 # load common functions

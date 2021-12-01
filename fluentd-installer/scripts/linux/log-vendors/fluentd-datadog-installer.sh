@@ -108,7 +108,10 @@ install_plugin() {
     # install fluentd datadog plugin
     run_command $fluentd_as_service "$install_datadog_command" || terminate "Error while installing Datadog plugin."
   else
+    # download dockerfile template
     download_dockerfile_template
+    # add datadog plugin install command to the dockerfile
+    echo "RUN fluent-gem install fluent-plugin-datadog" >> "$DOCKERFILE_PATH"
   fi
 
   declare help_link=https://github.com/jfrog/log-analytics-datadog

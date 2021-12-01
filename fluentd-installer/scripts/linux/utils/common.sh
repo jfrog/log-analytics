@@ -164,8 +164,8 @@ jfrog_env_variables() {
     fi
   else
     # update dockerfile
-    declare dockerfile_path="$DOCKERFILE_TEMPLATE_PATH/Dockerfile"
-    run_command $run_as_sudo "sed -i -e "s,JF_PRODUCT_DATA_INTERNAL_VALUE,TESTI,g" $dockerfile_path"
+    declare dockerfile_path="$DOCKERFILE_PATH/Dockerfile"
+    run_command false "sed -i -e "s,JF_PRODUCT_DATA_INTERNAL_VALUE,$user_product_path,g" $dockerfile_path"
   fi
   echo
 }
@@ -301,5 +301,5 @@ xray_shared_questions() {
 
 download_dockerfile_template() {
   # downloads Dockerfile template to the current dir
-  wget -O "$DOCKERFILE_TEMPLATE_PATH/Dockerfile" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/Dockerfile.fluentd
+  wget -O "$DOCKERFILE_PATH/Dockerfile" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/Dockerfile.fluentd
 }
