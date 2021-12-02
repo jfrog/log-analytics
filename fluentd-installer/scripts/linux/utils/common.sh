@@ -164,8 +164,7 @@ jfrog_env_variables() {
     fi
   else
     # update dockerfile
-    declare dockerfile_path="$DOCKERFILE_PATH/Dockerfile"
-    run_command false "sed -i -e "s,JF_PRODUCT_DATA_INTERNAL_VALUE,$user_product_path,g" $dockerfile_path"
+    run_command false "sed -i -e "s,JF_PRODUCT_DATA_INTERNAL_VALUE,$user_product_path,g" $DOCKERFILE_PATH"
   fi
   echo
 }
@@ -232,22 +231,21 @@ copy_fluentd_conf() {
       read -p "Please provide location where fluentd conf file will be stored (default: $fluentd_conf_path_base):" user_fluentd_conf_path
       # TODO "Trim" the string to make sure that no empty spaces string is passed
       if [ -z "$user_fluentd_conf_path" ]; then # empty string use the default value
-        fluentd_conf_file_path="$fluentd_conf_path_base/$fluentd_conf_file_name"
+        decalre fluentd_conf_file_path="$fluentd_conf_path_base/$fluentd_conf_file_name"
         break
       elif [ -h "$user_fluentd_conf_path" ]; then # user typed the conf path
-        fluentd_conf_file_path="$user_fluentd_conf_path/$fluentd_conf_file_name"
+        declare fluentd_conf_file_path="$user_fluentd_conf_path/$fluentd_conf_file_name"
         break
       fi
       done
     fi
   else
-    # in case of docker copy the fluentd file to the current folder where Dockerfile is
-    fluentd_conf_file_path="./"
+    # in case of docker, copy the fluentd file to the current folder where Dockerfile is
+    declare fluentd_conf_file_path="./"
   fi
 
   # copy the conf file to the td-agent folder/conf
   {
-    echo "copy the conf file to the td-agent folder/conf, fluentd_as_service=$fluentd_as_service"
     run_command $fluentd_as_service "cp $temp_folder/$fluentd_conf_file_name $fluentd_conf_file_path"
     echo "Fluentd conf file was saved in $fluentd_conf_file_path"
     # clean up
@@ -301,5 +299,5 @@ xray_shared_questions() {
 
 download_dockerfile_template() {
   # downloads Dockerfile template to the current dir
-  wget -O "$DOCKERFILE_PATH/Dockerfile" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/Dockerfile.fluentd
+  wget -O "$DOCKERFILE_PATH" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/Dockerfile.fluentd
 }

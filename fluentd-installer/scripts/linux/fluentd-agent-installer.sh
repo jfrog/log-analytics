@@ -2,7 +2,8 @@
 
 # branch
 GITHUB_BRANCH="karolh2000/plugin-installers"
-DOCKERFILE_PATH="."
+DOCKERFILE_PATH="./Dockerfile"
+DOCKER_IMAGE_NAME="jfrog/fluentd"
 # load conf file
 declare SCRIPT_PROPERTIES_FILE_PATH="./properties.conf"
 # load common functions
@@ -200,22 +201,26 @@ install_log_vendor() {
 
       case $log_vendor_name in
       [splunk]*)
+        log_vendor_name=splunk
         source ./log-vendors/fluentd-splunk-installer.sh # TODO Update the path (git raw)
         install_plugin $install_as_service $install_as_docker "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Splunk plugin."
         break
         ;;
       [datadog]*)
+        log_vendor_name=datadog
         source ./log-vendors/fluentd-datadog-installer.sh # TODO Update the path (git raw)
         install_plugin $install_as_service $install_as_docker "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Datadog plugin."
         break
         ;;
       [elastic]*)
+        log_vendor_name=elastic
         echo Installing fluent-plugin-elasticsearch...
         $gem_command install fluent-plugin-elasticsearch
         help_link=https://github.com/jfrog/log-analytics-elastic
         break
         ;;
       [prometheus]*)
+        log_vendor_name=prometheus
         echo Installing fluent-plugin-prometheus...
         $gem_command install fluent-plugin-prometheus
         help_link=https://github.com/jfrog/log-analytics-prometheus
@@ -301,8 +306,35 @@ To manually start Fluentd use the following command: '$user_fluentd_install_path
   fi
 }
 
+build_docker_image() {
+  echo
+  echo "Building docker image based on the provided information..."
+  docker build -t $DOCKER_IMAGE_NAME ./ || terminate "Docker image creation failed."
+  echo "Docker image created, tag: $DOCKER_IMAGE_NAME "
+  echo "Docker image info:"
+  docker image ls | grep $DOCKER_IMAGE_NAME
+  fluentd_service_msg="Docker image info:
+$(docker image ls | grep $DOCKER_IMAGE_NAME)"
+}
+
+start_docker_container() {
+  jf_log_mounting_path=$1
+  echo
+  declare docker_start_command="docker run -d \
+                                    -it \
+                                    --name jfrog-$log_vendor_name-container
+                                    --mount type=bind,source=$jf_log_mounting_path,target=$jf_log_mounting_path
+                                    $DOCKER_IMAGE_NAME:latest"
+  echo "Creating docker container..."
+  eval $(docker_start_command) || terminate "Creating and starting container $DOCKER_IMAGE_NAME:latest failed"
+  fluentd_conf_file_path=" Docker run command: $docker_start_command"
+  echo $fluentd_conf_file_path
+  echo "A new container for $DOCKER_IMAGE_NAME image started."
+}
+
+
 ## Fluentd Install Script
-#Init info
+# Init
 intro
 
 while true; do
@@ -362,6 +394,9 @@ install_log_vendor $install_as_service
 # Enable/start Fluentd, only for non docker options.
 if [ "$install_as_docker" == false ]; then
   start_enable_fluentd $install_as_service
+else
+  build_docker_image
+  start_docker_container $user_product_path
 fi
 
 echo

@@ -111,6 +111,7 @@ install_plugin() {
     # download dockerfile template
     download_dockerfile_template
     # add datadog plugin install command to the dockerfile
+    echo ""
     echo "RUN fluent-gem install fluent-plugin-datadog" >> "$DOCKERFILE_PATH"
   fi
 
