@@ -219,7 +219,7 @@ copy_fluentd_conf() {
   # if fluentd is installed as service
   if [ "$install_as_docker" == false ]; then
     if [ $fluentd_as_service == true ]; then
-      declare fluentd_conf_file_path="$fluentd_conf_path_base/td-agent.conf"
+      fluentd_conf_file_path="$fluentd_conf_path_base/td-agent.conf"
       declare backup_timestamp=$(date +%s)
       # if config exists than back-up the old fluentd conf file
       if [ -f "$fluentd_conf_file_path" ]; then
@@ -231,17 +231,17 @@ copy_fluentd_conf() {
       read -p "Please provide location where fluentd conf file will be stored (default: $fluentd_conf_path_base):" user_fluentd_conf_path
       # TODO "Trim" the string to make sure that no empty spaces string is passed
       if [ -z "$user_fluentd_conf_path" ]; then # empty string use the default value
-        decalre fluentd_conf_file_path="$fluentd_conf_path_base/$fluentd_conf_file_name"
+        fluentd_conf_file_path="$fluentd_conf_path_base/$fluentd_conf_file_name"
         break
       elif [ -h "$user_fluentd_conf_path" ]; then # user typed the conf path
-        declare fluentd_conf_file_path="$user_fluentd_conf_path/$fluentd_conf_file_name"
+        fluentd_conf_file_path="$user_fluentd_conf_path/$fluentd_conf_file_name"
         break
       fi
       done
     fi
   else
     # in case of docker, copy the fluentd file to the current folder where Dockerfile is
-    declare fluentd_conf_file_path="./"
+    fluentd_conf_file_path="./"
   fi
 
   # copy the conf file to the td-agent folder/conf

@@ -3,7 +3,7 @@
 # branch
 GITHUB_BRANCH="karolh2000/plugin-installers"
 DOCKERFILE_PATH="./Dockerfile"
-DOCKER_IMAGE_NAME="jfrog/fluentd"
+DOCKER_IMAGE_TAG="jfrog/fluentd"
 # load conf file
 declare SCRIPT_PROPERTIES_FILE_PATH="./properties.conf"
 # load common functions
@@ -17,11 +17,12 @@ intro() {
   echo
   print_green "================================================================================================================="
   echo
-  print_green 'JFrog fluentd installation script (Splunk, Datadog, Prometheus, Elastic).'
+  print_green 'JFrog fluentd installation script (Splunk, Datadog).'
   echo
   print_green 'The script installs fluentd and performs the following tasks:'
   print_green '- Checks if the Fluentd requirements are met and updates the OS if needed [optional].'
-  print_green '- Installs/Updates Fluentd as a service or in user space depending on Linux distro (Centos and Amazon is supported, more to come).'
+  print_green '- Installs/Updates Fluentd as a service or in the user space depending on Linux distro.[optional]'
+  print_green '- Creates (builds) Fluentd docker image. [optional]'
   print_green '- Updates the log files/folders permissions [optional].'
   print_green '- Installs Fluentd plugins (Splunk, Datadog) [optional].'
   print_green '- Starts and enables the Fluentd service [optional].'
@@ -196,7 +197,7 @@ install_log_vendor() {
   if [ "$install_log_vendors" == true ]; then
     while true; do
       echo
-      read -p "What log vendor would you like to install [Splunk, Datadog, Prometheus (plugin only) or Elastic (plugin only)]: " log_vendor_name
+      read -p "What log vendor would you like to install [Splunk or Datadog]: " log_vendor_name
       log_vendor_name=${log_vendor_name,,}
 
       case $log_vendor_name in
@@ -212,22 +213,22 @@ install_log_vendor() {
         install_plugin $install_as_service $install_as_docker "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Datadog plugin."
         break
         ;;
-      [elastic]*)
-        log_vendor_name=elastic
-        echo Installing fluent-plugin-elasticsearch...
-        $gem_command install fluent-plugin-elasticsearch
-        help_link=https://github.com/jfrog/log-analytics-elastic
-        break
-        ;;
-      [prometheus]*)
-        log_vendor_name=prometheus
-        echo Installing fluent-plugin-prometheus...
-        $gem_command install fluent-plugin-prometheus
-        help_link=https://github.com/jfrog/log-analytics-prometheus
-        break
-        ;;
+      #[elastic]*)
+      #  log_vendor_name=elastic
+      #  echo Installing fluent-plugin-elasticsearch...
+      #  $gem_command install fluent-plugin-elasticsearch
+      #  help_link=https://github.com/jfrog/log-analytics-elastic
+      #  break
+      #  ;;
+      #[prometheus]*)
+      #  log_vendor_name=prometheus
+      #  echo Installing fluent-plugin-prometheus...
+      #  $gem_command install fluent-plugin-prometheus
+      #  help_link=https://github.com/jfrog/log-analytics-prometheus
+      #  break
+      #  ;;
       *)
-      echo "Please answer: Splunk, Datadog, Prometheus, or Elastic." ;
+      echo "Please answer: Splunk or Datadog" ;
       esac
     done
   else
@@ -287,7 +288,7 @@ start_enable_fluentd() {
       } || {
         echo
         print_error "ALERT: Enabling the fluentd service wasn't successful, for additional info please check the errors above."
-        print_error "You can still start Fluentd manually with the following command: '$user_fluentd_install_path/fluentd $fluentd_conf_file_path'."
+        print_error "You can still start Fluentd manually with the following command: '$user_fluentd_install_path/fluentd $fluentd_conf_file_path'"
       }
     fi
   fi
@@ -297,39 +298,59 @@ start_enable_fluentd() {
   else
     if [ "$install_as_service" == true ]; then
       service_based_message="/etc/td-agent/td-agent.conf.
-  To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' command."
+To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' command."
     else
       service_based_message="$fluentd_conf_file_path.
 To manually start Fluentd use the following command: '$user_fluentd_install_path/fluentd $fluentd_conf_file_path'."
     fi
-    fluentd_service_msg="To change the Fluentd configuration please update: $service_based_message"
+    fluentd_service_msg="To change the Fluentd configuration please update: '$service_based_message'"
   fi
 }
 
 build_docker_image() {
   echo
+  declare docker_default_image_tag=$DOCKER_IMAGE_TAG/$log_vendor_name
+  read -p "Please provide docker image tag (default: $docker_default_image_tag): " docker_image_tag
+  if [ -z "$docker_image_tag" ]; then
+    docker_image_tag=$docker_default_image_tag
+  fi
+  echo
   echo "Building docker image based on the provided information..."
-  docker build -t $DOCKER_IMAGE_NAME ./ || terminate "Docker image creation failed."
-  echo "Docker image created, tag: $DOCKER_IMAGE_NAME "
+  echo
+  docker build -t $docker_image_tag ./ || terminate "Docker image creation failed."
+  echo
+  echo "Docker image created, tag: '$docker_image_tag' "
+  echo
   echo "Docker image info:"
-  docker image ls | grep $DOCKER_IMAGE_NAME
+  docker image ls | grep $docker_image_tag
+  echo
   fluentd_service_msg="Docker image info:
-$(docker image ls | grep $DOCKER_IMAGE_NAME)"
+$(docker image ls | grep $docker_image_tag)
+"
 }
 
-start_docker_container() {
+run_image() {
   jf_log_mounting_path=$1
   echo
-  declare docker_start_command="docker run -d \
-                                    -it \
-                                    --name jfrog-$log_vendor_name-container
-                                    --mount type=bind,source=$jf_log_mounting_path,target=$jf_log_mounting_path
-                                    $DOCKER_IMAGE_NAME:latest"
-  echo "Creating docker container..."
-  eval $(docker_start_command) || terminate "Creating and starting container $DOCKER_IMAGE_NAME:latest failed"
-  fluentd_conf_file_path=" Docker run command: $docker_start_command"
-  echo $fluentd_conf_file_path
-  echo "A new container for $DOCKER_IMAGE_NAME image started."
+  while true; do
+    read -p 'Please provide docker container name: ' docker_container_name
+    echo "Provided name: $docker_container_name"
+      if [ -z "$docker_container_name" ]; then
+        echo "Incorrect docker container name, please try it again."
+      else
+        break
+      fi
+  done
+  declare docker_start_command="docker run -d -it --name $docker_container_name --mount type=bind,source=$jf_log_mounting_path,target=$jf_log_mounting_path $docker_image_tag:latest"
+  echo
+  echo "Starting docker container..."
+  {
+    eval "$docker_start_command"
+    docker ps -all | grep $docker_container_name
+  } || print_error "Starting docker image '$DOCKER_IMAGE_TAG' failed, please resolve the problem and run it manually using the following command: '$docker_start_command'"
+  fluentd_service_msg="$fluentd_service_msg
+Docker run command:
+$docker_start_command"
 }
 
 
@@ -380,7 +401,7 @@ else
     echo "Checking if docker is installed..."
     echo
     docker -v
-    docker ps --all
+    docker ps -q
     echo
     echo "Docker is present and running!"
     echo
@@ -395,8 +416,12 @@ install_log_vendor $install_as_service
 if [ "$install_as_docker" == false ]; then
   start_enable_fluentd $install_as_service
 else
+  # build docker image
   build_docker_image
-  start_docker_container $user_product_path
+  declare run_docker_image=$(question "Would you like to create and run container for $docker_image_tag:latest? [y/n]: ")
+  if [ "$run_docker_image" == true ]; then
+    run_image $user_product_path
+  fi
 fi
 
 echo
@@ -405,6 +430,6 @@ print_green 'Fluentd installation completed!'
 echo
 print_green "$fluentd_service_msg"
 echo
-print_green "Additional information related to the JFrog analytics: https://github.com/jfrog/log-analytics"
+print_green "Additional information related to the JFrog log analytics: https://github.com/jfrog/log-analytics"
 print_green ==============================================================================================
 # Fin!

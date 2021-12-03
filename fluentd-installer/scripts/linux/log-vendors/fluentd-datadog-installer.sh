@@ -13,12 +13,12 @@ intro() {
   echo
   print_green "$logo"
   echo
-  print_green "================================================================================================================="
+  print_green "--------------------------------------------------------------------------------------------------------"
   print_green 'Installing and configuring Datadog plugin for fluentd.'
   print_green 'The installation script performs the following tasks:'
   print_green '- Configure Datadog for JFrog artifactory, xray, etc'
   print_green 'More info: https://github.com/jfrog/log-analytics-datadog'
-  print_green "================================================================================================================="
+  print_green "--------------------------------------------------------------------------------------------------------"
   echo
 }
 
@@ -121,21 +121,29 @@ install_plugin() {
   configure_fluentd $fluentd_as_service $install_as_docker "$user_install_fluentd_install_path" "$gem_command"
 
   echo
-  print_green '================================================================================================================='
+  print_green '--------------------------------------------------------------------------------------------------------'
   print_green "Fluentd Datadog plugin configured."
-  echo
-  print_green "Location of the fluentd conf file for Splunk conf file: $fluentd_conf_file_path"
-  echo
-  if [ $fluentd_as_service == false ]; then
-    print_green "To manually start fluentd with the Datadog conf run the following command:
-$user_install_fluentd_install_path/fluentd $fluentd_conf_file_path"
-  echo
-    print_green "Please make sure fluentd has read/write access to the log folder: '$user_product_path/log'.
-In some cases it's necessary to reload the environment or logout $USER user before starting fluentd."
+  if [ "$install_as_docker" == false ]; then
     echo
-    print_green "Location of the fluentd conf file for Datadog conf file: $fluentd_conf_file_path"
+    print_green "Location of the fluentd conf file for conf file: '$fluentd_conf_file_path'"
+    echo
+    if [ $fluentd_as_service == false ]; then
+      print_green "To manually start fluentd with the Datadog conf run the following command:
+$user_install_fluentd_install_path/fluentd $fluentd_conf_file_path"
+    echo
+    print_green "Please make sure fluentd has read/write access to the log folder: '$user_product_path/log'.
+In some cases it's necessary to reload the environment for '$USER' user before starting fluentd."
+    fi
+  else
+    echo
+    print_green "The fluentd configuration will be added to the docker image."
   fi
   echo
-  print_green "More information: https://github.com/jfrog/log-analytics-datadog"
-  print_green '================================================================================================================='
+  print_error 'ALERT: To use predefined Datadog Jfrog dashboards please do the following:'
+  print_green '1) Install Datadog JFrog integration integration: https://app.datadoghq.com/account/settings#integrations/jfrog-platform'
+  print_green '2) To add Datadog JFrog dashboards (Datadog portal) go to Dashboard -> Dashboard List, find JFrog Artifactory Dashboard,
+   Artifactory Metrics, Xray Metrics, Xray Logs, Xray Violations and explore it.'
+  echo
+  print_green 'More information: https://github.com/jfrog/log-analytics-datadog'
+  print_green '--------------------------------------------------------------------------------------------------------'
 }
