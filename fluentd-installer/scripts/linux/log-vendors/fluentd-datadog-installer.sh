@@ -75,6 +75,8 @@ configure_fluentd() {
     *) echo 'Incorrect value, please try again. ' ;
     esac
   done
+  # update dockerfile - fluentd conf file name
+  run_command false "sed -i -e "s,FLUENT_CONF_FILE_NAME,$fluentd_datadog_conf_name,g" $DOCKERFILE_PATH"
 
   # Update API key datadog
   update_fluentd_config_file "$TEMP_FOLDER/$fluentd_datadog_conf_name" 'Please provide Datadog API KEY (more info: https://docs.datadoghq.com/account_management/api-app-keys): ' 'API_KEY' true $fluentd_as_service
@@ -111,7 +113,6 @@ install_plugin() {
     # download dockerfile template
     download_dockerfile_template
     # add datadog plugin install command to the dockerfile
-    echo ""
     echo "RUN fluent-gem install fluent-plugin-datadog" >> "$DOCKERFILE_PATH"
   fi
 

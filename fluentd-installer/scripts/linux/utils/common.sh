@@ -268,7 +268,12 @@ install_custom_plugin() {
     case  $lower_case_plugin_name in
     [siem]*)
       echo Installing fluent-plugin-jfrog-siem...
-      run_command $run_as_sudo "$gem_command install fluent-plugin-jfrog-siem" || terminate 'Please review the errors.'
+      if [ "$install_as_docker" == false ]; then
+        run_command $run_as_sudo "$gem_command install fluent-plugin-jfrog-siem" || terminate 'Please review the errors.'
+      else
+         # add datadog plugin install command to the dockerfile
+        echo "RUN fluent-gem install fluent-plugin-jfrog-siem" >> "$DOCKERFILE_PATH"
+      fi
       declare help_link=https://github.com/jfrog/fluent-plugin-jfrog-siem
       break
       ;;
