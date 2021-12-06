@@ -75,8 +75,11 @@ configure_fluentd() {
     *) echo 'Incorrect value, please try again. ' ;
     esac
   done
-  # update dockerfile - fluentd conf file name
-  run_command false "sed -i -e "s,FLUENT_CONF_FILE_NAME,$fluentd_datadog_conf_name,g" $DOCKERFILE_PATH"
+
+  # update Dockerfile if needed - fluentd conf file name
+  if [ "$install_as_docker" == true ]; then
+    run_command false "sed -i -e "s,FLUENT_CONF_FILE_NAME,$fluentd_datadog_conf_name,g" $DOCKERFILE_PATH"
+  fi
 
   # Update API key datadog
   update_fluentd_config_file "$TEMP_FOLDER/$fluentd_datadog_conf_name" 'Please provide Datadog API KEY (more info: https://docs.datadoghq.com/account_management/api-app-keys): ' 'API_KEY' true $fluentd_as_service
@@ -141,6 +144,7 @@ In some cases it's necessary to reload the environment for '$USER' user before s
   fi
   echo
   print_error 'ALERT: To use predefined Datadog Jfrog dashboards please do the following:'
+  echo
   print_green '1) Install Datadog JFrog integration integration: https://app.datadoghq.com/account/settings#integrations/jfrog-platform'
   print_green '2) To add Datadog JFrog dashboards (Datadog portal) go to Dashboard -> Dashboard List, find JFrog Artifactory Dashboard,
    Artifactory Metrics, Xray Metrics, Xray Logs, Xray Violations and explore it.'

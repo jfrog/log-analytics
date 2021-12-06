@@ -329,7 +329,7 @@ $(docker image ls | grep $docker_image_tag)
 "
 }
 
-run_image() {
+run_docker_image() {
   jf_log_mounting_path=$1
   echo
   while true; do
@@ -349,6 +349,9 @@ run_image() {
     docker ps -all | grep $docker_container_name
   } || print_error "Starting docker image '$DOCKER_IMAGE_TAG' failed, please resolve the problem and run it manually using the following command: '$docker_start_command'"
   fluentd_service_msg="$fluentd_service_msg
+Docker container info:
+$(docker ps -all | grep $docker_container_name)
+
 Docker run command:
 $docker_start_command"
 }
@@ -362,7 +365,7 @@ while true; do
   echo
   read -p "Would you like to install Fluentd as SERVICE, in the USER space or build DOCKER image? [service/user/docker]
           [service] - Fluentd will be installed as service on this machine (sudo rights required).
-          [user]    - Fluentd will be installed in a folder specified in the next step on this machine (read/write permissions required).
+          [user]    - Fluentd will be installed in a folder specified in the next step.
           [docker]  - Custom Docker image will built based on the latest fluentd image and user input.
 [service/user/docker]: " install_type
   install_type=${install_type,,}
@@ -400,14 +403,13 @@ else
   {
     echo "Checking if docker is installed..."
     echo
-    docker -v
     docker ps -q
-    echo
-    echo "Docker is present and running!"
-    echo
   } || {
     terminate "Docker is not running or not installed, please fix the problem before running the script again."
   }
+  echo
+  echo "Docker is present and running!"
+  echo
 fi
 
 install_log_vendor $install_as_service
@@ -420,7 +422,7 @@ else
   build_docker_image
   declare run_docker_image=$(question "Would you like to create and run container for $docker_image_tag:latest? [y/n]: ")
   if [ "$run_docker_image" == true ]; then
-    run_image $user_product_path
+    run_docker_image $user_product_path
   fi
 fi
 

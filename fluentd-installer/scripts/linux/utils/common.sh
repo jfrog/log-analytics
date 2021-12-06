@@ -249,7 +249,7 @@ copy_fluentd_conf() {
     run_command $fluentd_as_service "cp $temp_folder/$fluentd_conf_file_name $fluentd_conf_file_path"
     echo "Fluentd conf file was saved in $fluentd_conf_file_path"
     # clean up
-    rm -rf $temp_folder/$fluentd_conf_file_name
+    # rm -rf $temp_folder/$fluentd_conf_file_name
   } || {
     terminate 'Please review the errors.'
   }
@@ -273,9 +273,9 @@ install_custom_plugin() {
       else
          # add datadog plugin install command to the dockerfile
         echo "RUN fluent-gem install fluent-plugin-jfrog-siem" >> "$DOCKERFILE_PATH"
+        echo "RUN fluent-gem install fluent-plugin-record-modifier" >> "$DOCKERFILE_PATH"
       fi
       declare help_link=https://github.com/jfrog/fluent-plugin-jfrog-siem
-      break
       ;;
     *) print_error "Plugin $plugin_name not found" ;;
     esac
@@ -292,14 +292,12 @@ xray_shared_questions() {
   # required: JPD_URL is the Artifactory JPD URL of the format http://<ip_address> with is used to pull Xray Violations
   update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" "Provide JFrog URL (more info: https://www.jfrog.com/confluence/display/JFROG/General+System+Settings): " 'JPD_URL' false $fluentd_as_service
   # required: USER is the Artifactory username for authentication
-  update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" 'Provide the Artifactory username for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups): ' 'USER' false $fluentd_as_service
+  update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" 'Provide the JPD username for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups): ' 'USER' false $fluentd_as_service
   # required: JFROG_API_KEY is the Artifactory API Key for authentication
-  update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" 'Provide the Artifactory API Key for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/User+Profile#UserProfile-APIKey): ' 'JFROG_API_KEY' true $fluentd_as_service
+  update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" 'Provide the JPD API Key for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/User+Profile#UserProfile-APIKey): ' 'JFROG_API_KEY' true $fluentd_as_service
   # install SIEM plugin
   echo
-  if [ "$install_as_docker" == false ]; then
-    install_custom_plugin 'SIEM' "$gem_command" "$fluentd_as_service"
-  fi
+  install_custom_plugin 'SIEM' "$gem_command" $fluentd_as_service
 }
 
 download_dockerfile_template() {
