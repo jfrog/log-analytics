@@ -249,7 +249,7 @@ copy_fluentd_conf() {
     run_command $fluentd_as_service "cp $temp_folder/$fluentd_conf_file_name $fluentd_conf_file_path"
     echo "Fluentd conf file was saved in $fluentd_conf_file_path"
     # clean up
-    # rm -rf $temp_folder/$fluentd_conf_file_name
+    rm -rf $temp_folder/$fluentd_conf_file_name
   } || {
     terminate 'Please review the errors.'
   }
@@ -289,11 +289,11 @@ xray_shared_questions() {
   fluentd_as_service=$4
   install_as_docker=$5
 
-  # required: JPD_URL is the Artifactory JPD URL of the format http://<ip_address> with is used to pull Xray Violations
+  # required: JPD_URL is the JPD URL of the format http://<ip_address> with is used to pull Xray Violations
   update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" "Provide JFrog URL (more info: https://www.jfrog.com/confluence/display/JFROG/General+System+Settings): " 'JPD_URL' false $fluentd_as_service
-  # required: USER is the Artifactory username for authentication
+  # required: USER is the JPD username for authentication
   update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" 'Provide the JPD username for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups): ' 'USER' false $fluentd_as_service
-  # required: JFROG_API_KEY is the Artifactory API Key for authentication
+  # required: JFROG_API_KEY is the JPD API Key for authentication
   update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" 'Provide the JPD API Key for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/User+Profile#UserProfile-APIKey): ' 'JFROG_API_KEY' true $fluentd_as_service
   # install SIEM plugin
   echo

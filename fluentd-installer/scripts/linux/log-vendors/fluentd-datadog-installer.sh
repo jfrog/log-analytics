@@ -38,6 +38,9 @@ configure_fluentd() {
       jfrog_env_variables '/var/opt/jfrog/artifactory/' 'artifactory' $fluentd_as_service 'artifactory' $install_as_docker
       declare fluentd_datadog_conf_name='fluent.conf.rt'
       download_fluentd_conf_file  $FLUENTD_DATADOG_CONF_BASE_URL $fluentd_datadog_conf_name $TEMP_FOLDER
+      # Update API key datadog
+      update_fluentd_config_file "$TEMP_FOLDER/$fluentd_datadog_conf_name" 'Please provide Datadog API KEY (more info: https://docs.datadoghq.com/account_management/api-app-keys): ' 'API_KEY' true $fluentd_as_service
+
       break
       ;;
     [xray]*)
@@ -46,6 +49,9 @@ configure_fluentd() {
       download_fluentd_conf_file $FLUENTD_DATADOG_CONF_BASE_URL $fluentd_datadog_conf_name $TEMP_FOLDER
       # Xray related config questions
       xray_shared_questions "$TEMP_FOLDER" "$fluentd_datadog_conf_name" "$gem_command" $fluentd_as_service $install_as_docker
+       # Update API key datadog
+      update_fluentd_config_file "$TEMP_FOLDER/$fluentd_datadog_conf_name" 'Please provide Datadog API KEY (more info: https://docs.datadoghq.com/account_management/api-app-keys): ' 'DATADOG_API_KEY' true $fluentd_as_service
+
       break
       ;;
     #[nginx]*)
@@ -80,9 +86,6 @@ configure_fluentd() {
   if [ "$install_as_docker" == true ]; then
     run_command false "sed -i -e "s,FLUENT_CONF_FILE_NAME,$fluentd_datadog_conf_name,g" $DOCKERFILE_PATH"
   fi
-
-  # Update API key datadog
-  update_fluentd_config_file "$TEMP_FOLDER/$fluentd_datadog_conf_name" 'Please provide Datadog API KEY (more info: https://docs.datadoghq.com/account_management/api-app-keys): ' 'API_KEY' true $fluentd_as_service
 
   # finalizing configuration
   if [ "$install_as_docker" == false ]; then
@@ -130,6 +133,7 @@ install_plugin() {
   if [ "$install_as_docker" == false ]; then
     echo
     print_green "Location of the fluentd conf file for conf file: '$fluentd_conf_file_path'"
+    print_error "Please make sure the docker container has access to the JPD logs folder (artifactory, xray, etc)."
     echo
     if [ $fluentd_as_service == false ]; then
       print_green "To manually start fluentd with the Datadog conf run the following command:
