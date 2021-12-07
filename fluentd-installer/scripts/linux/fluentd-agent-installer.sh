@@ -431,6 +431,10 @@ print_green ====================================================================
 print_green 'Fluentd installation completed!'
 echo
 print_green "$fluentd_service_msg"
+if [ "$install_as_docker" == true ]; then
+  echo
+  print_error "ALERT! Please make sure the docker container has read/write access to the JPD logs folder (artifactory, xray, etc)."
+fi
 echo
 print_green "Additional information related to the JFrog log analytics: https://github.com/jfrog/log-analytics"
 print_green ==============================================================================================

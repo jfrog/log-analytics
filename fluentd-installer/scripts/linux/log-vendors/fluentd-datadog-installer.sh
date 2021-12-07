@@ -133,7 +133,6 @@ install_plugin() {
   if [ "$install_as_docker" == false ]; then
     echo
     print_green "Location of the fluentd conf file for conf file: '$fluentd_conf_file_path'"
-    print_error "Please make sure the docker container has access to the JPD logs folder (artifactory, xray, etc)."
     echo
     if [ $fluentd_as_service == false ]; then
       print_green "To manually start fluentd with the Datadog conf run the following command:
