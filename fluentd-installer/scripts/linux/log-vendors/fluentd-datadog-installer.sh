@@ -5,8 +5,9 @@ declare FLUENTD_DATADOG_CONF_BASE_URL='https://raw.githubusercontent.com/jfrog/l
 declare TEMP_FOLDER='/tmp'
 declare ERROR_MESSAGE='Error while installing/configuring Datadog.'
 
-# load common functions
-source ./utils/common.sh # TODO Update the path (git raw)
+# load common script
+# source ./utils/common.sh
+load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
 
 intro() {
   ## Datadog - Fluentd Install Script

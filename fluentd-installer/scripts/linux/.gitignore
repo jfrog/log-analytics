@@ -2,3 +2,6 @@ Dockerfile
 run_container
 fluentd.conf
 fluent.conf.*
+fluentd-splunk-installer.sh
+install-redhat-td-agent4.sh
+common.sh

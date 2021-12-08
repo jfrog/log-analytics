@@ -2,12 +2,48 @@
 
 # branch
 GITHUB_BRANCH="karolh2000/plugin-installers"
+# dockerfile name
 DOCKERFILE_PATH="./Dockerfile"
+# docker image prefix tag
 DOCKER_IMAGE_TAG="jfrog/fluentd"
-# load conf file
-declare SCRIPT_PROPERTIES_FILE_PATH="./properties.conf"
-# load common functions
-source ./utils/common.sh # TODO Update the path (git raw)
+# log vendors scrips url
+SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux"
+
+# Terminate message
+terminate() {
+  declare termination_reason=$1
+  echo
+  print_green 'Installation was unsuccessful!'
+  echo
+  print_green "Reason(s): $termination_reason"
+  echo
+  print_error 'Installation aborted!'
+  echo
+  exit 1
+}
+
+run_remote_script() {
+  script_url=$1
+
+  # check url
+  curl -L -f "$script_url" || terminate "ERROR: Error while downloading ${script_url}. Exiting..."
+  # run script
+  curl -L -f "$script_url" | sh
+}
+
+load_remote_script() {
+  declare script_url=$1
+  declare script_path=$2
+
+  # check url
+  wget -O "$script_path" "$script_url" || terminate "ERROR: Error while downloading ${script_url}. Exiting..."
+  # load script
+  source $script_path
+}
+
+# load common script
+#source ./utils/common.sh
+load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
 
 intro() {
   declare logo=`cat ./other/jfrog_ascii_logo.txt`
@@ -51,27 +87,15 @@ modify_conf_file() {
   echo "File ${file_path} modified and the original content backed up to ${file_path_backup}"
 }
 
-load_remote_script() {
-  script_url=$1
-  # check url
-  curl -L -f "$script_url" || error_script=true
-  if [ $error_script == true ]; then
-    echo "ERROR: Error while downloading ${script_url}. Exiting..."
-    exit 1
-  fi
-  # run script
-  curl -L -f "$script_url" | sh
-}
-
 install_fluentd() {
   declare install_as_service=$1
   # supported linux distros
   declare supported_distros=("centos" "amazon")
 
   # Check distro
-  detected_distro=$(cat /etc/*-release | tr [:upper:] [:lower:] | grep -Poi '(centos|ubuntu|red hat|amazon|debian)' | uniq)
+  declare detected_distro=$(cat /etc/*-release | tr [:upper:] [:lower:] | grep -Poi '(centos|ubuntu|red hat|amazon|debian)' | uniq)
   supported_distros=("centos" "amazon")
-  is_supported_distro=false
+  declare is_supported_distro=false
   for supported_distro in "${supported_distros[@]}"; do
     if [[ $detected_distro == $supported_distro ]]; then
       is_supported_distro=true
@@ -124,14 +148,16 @@ install_fluentd() {
       error_message="ERROR: td-agent 4 installation failed. Fluentd was NOT installed. Exiting..."
       echo "Centos detected. Installing td-agent 4..."
       {
-        load_remote_script "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh"
+        #run_remote_script
+        load_remote_script "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh" "install-redhat-td-agent4.sh"
       } || {
         terminate "$error_message"
       }
     elif [ "$detected_distro" == "amazon" ]; then
       echo "Amazon Linux detected. Installing td-agent 4..."
       {
-        load_remote_script "https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh"
+        # run_remote_script "https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh"
+        load_remote_script "https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh" "install-amazon2-td-agent4.sh"
       } || {
         terminate "$error_message"
       }
@@ -197,13 +223,15 @@ install_log_vendor() {
       case $log_vendor_name in
       [splunk]*)
         log_vendor_name=splunk
-        source ./log-vendors/fluentd-splunk-installer.sh # TODO Update the path (git raw)
+        # source ./log-vendors/fluentd-splunk-installer.sh
+        load_remote_script "$SCRIPTS_URL_PATH/log-vendors/fluentd-splunk-installer.sh" "fluentd-splunk-installer.sh"
         install_plugin $install_as_service $install_as_docker "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Splunk plugin."
         break
         ;;
       [datadog]*)
         log_vendor_name=datadog
-        source ./log-vendors/fluentd-datadog-installer.sh # TODO Update the path (git raw)
+        # source ./log-vendors/fluentd-datadog-installer.sh
+        load_remote_script "$SCRIPTS_URL_PATH/log-vendors/fluentd-datadog-installer.sh" "fluentd-datadog-installer.sh"
         install_plugin $install_as_service $install_as_docker "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Datadog plugin."
         break
         ;;

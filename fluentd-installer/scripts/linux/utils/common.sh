@@ -3,8 +3,6 @@
 #common vars
 declare NO_COLOR='\033[0m'
 
-# Common functions
-
 # Yes/No Input
 question() {
   question_text=$1
@@ -24,19 +22,6 @@ question() {
     esac
   done
   echo $answer
-}
-
-# Terminate installation message
-terminate() {
-  declare termination_reason=$1
-  echo
-  print_green 'Installation was unsuccessful!'
-  echo
-  print_green "Reason(s): $termination_reason"
-  echo
-  print_error 'Installation aborted!'
-  echo
-  exit 1
 }
 
 # Check if fluentd installed
