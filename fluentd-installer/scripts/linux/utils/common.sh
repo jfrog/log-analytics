@@ -294,7 +294,7 @@ xray_shared_questions() {
   # required: USER is the JPD username for authentication
   update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" 'Provide the JPD username for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups): ' 'USER' false $fluentd_as_service
   # required: JFROG_API_KEY is the JPD API Key for authentication
-  update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" 'Provide the JPD API Key for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/User+Profile#UserProfile-APIKey): ' 'JFROG_API_KEY' true $fluentd_as_service
+  update_fluentd_config_file "$temp_folder/$fluentd_datadog_conf_name" 'Provide the JPD API Key for authentication (more info: https://www.jfrog.com/confluence/display/JFROG/User+Profile): ' 'JFROG_API_KEY' true $fluentd_as_service
   # install SIEM plugin
   echo
   install_custom_plugin 'SIEM' "$gem_command" $fluentd_as_service
@@ -303,4 +303,21 @@ xray_shared_questions() {
 download_dockerfile_template() {
   # downloads Dockerfile template to the current dir
   wget -O "$DOCKERFILE_PATH" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/Dockerfile.fluentd
+}
+
+finalizing_configuration() {
+  declare install_as_docker=$1
+  declare fluentd_as_service=$2
+  declare fluentd_conf_name=$3
+  declare user_install_fluentd_install_path=$4
+
+  if [ "$install_as_docker" == false ]; then
+    if [ $fluentd_as_service == true ]; then
+      copy_fluentd_conf '/etc/td-agent' "$fluentd_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
+    else
+      copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
+    fi
+  else
+    copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
+  fi
 }

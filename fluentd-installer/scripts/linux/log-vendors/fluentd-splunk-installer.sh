@@ -56,9 +56,9 @@ shared_config_questions() {
 
 configure_fluentd() {
   declare fluentd_as_service=$1
-  declare user_install_fluentd_install_path=$2
-  declare gem_command=$3
-  declare install_as_docker=$4
+  declare install_as_docker=$2
+  declare user_install_fluentd_install_path=$3
+  declare gem_command=$4
 
   # Downloading the fluentd config for Splunk based on the user input
   config_download_path_base="https://raw.githubusercontent.com/jfrog/log-analytics-splunk/master/"
@@ -113,16 +113,13 @@ configure_fluentd() {
     esac
   done
 
-  # finalizing configuration
-  if [ "$install_as_docker" == false ]; then
-    if [ $fluentd_as_service == true ]; then
-      copy_fluentd_conf '/etc/td-agent' "$fluentd_splunk_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
-    else
-      copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_splunk_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
-    fi
-  else
-    copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_splunk_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
+  # update Dockerfile if needed - fluentd conf file name
+  if [ "$install_as_docker" == true ]; then
+    run_command false "sed -i -e "s,FLUENT_CONF_FILE_NAME,$fluentd_splunk_conf_name,g" $DOCKERFILE_PATH"
   fi
+
+  # finalizing configuration
+  finalizing_configuration $install_as_docker $fluentd_as_service $fluentd_splunk_conf_name $user_install_fluentd_install_path
 }
 
 install_plugin() {
@@ -143,7 +140,7 @@ install_plugin() {
   fluentd_check $fluentd_as_service $user_install_fluentd_install_path
 
   # configure fluentd
-  configure_fluentd $fluentd_as_service "$user_install_fluentd_install_path" "$gem_command" $install_as_docker
+  configure_fluentd $fluentd_as_service $install_as_docker "$user_install_fluentd_install_path" "$gem_command" $install_as_docker
 
   # final message
   echo

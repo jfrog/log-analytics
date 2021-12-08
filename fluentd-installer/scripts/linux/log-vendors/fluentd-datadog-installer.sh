@@ -88,15 +88,7 @@ configure_fluentd() {
   fi
 
   # finalizing configuration
-  if [ "$install_as_docker" == false ]; then
-    if [ $fluentd_as_service == true ]; then
-      copy_fluentd_conf '/etc/td-agent' "$fluentd_datadog_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
-    else
-      copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_datadog_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
-    fi
-  else
-    copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_datadog_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
-  fi
+  finalizing_configuration $install_as_docker $fluentd_as_service $fluentd_datadog_conf_name $user_install_fluentd_install_path
 }
 
 install_plugin() {
