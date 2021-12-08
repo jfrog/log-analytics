@@ -136,9 +136,6 @@ install_plugin() {
   declare fluentd_plugin_name=fluent-plugin-splunk-enterprise
   install_fluentd_plugin $fluentd_as_service $install_as_docker $fluentd_plugin_name "$gem_command" || terminate $ERROR_MESSAGE
 
-  # init check
-  fluentd_check $fluentd_as_service $user_install_fluentd_install_path || terminate $ERROR_MESSAGE
-
   # configure fluentd
   configure_fluentd $fluentd_as_service $install_as_docker "$user_install_fluentd_install_path" "$gem_command" $install_as_docker || terminate $ERROR_MESSAGE
 
@@ -146,7 +143,7 @@ install_plugin() {
   echo
   print_green "Fluentd Splunk plugin configured!"
   echo
-  print_error 'ALERT: To enable SSL please update 'use_ssl' and 'ca_file' in the Fluentd Splunk configuration file: /etc/td-agent/fluent.conf.xray.'
+  print_error "ALERT: To enable SSL please update 'use_ssl' and 'ca_file' in the Fluentd Splunk configuration file: $fluentd_conf_file_path"
   print_green 'More information: https://github.com/jfrog/log-analytics-splunk'
   echo
 }
