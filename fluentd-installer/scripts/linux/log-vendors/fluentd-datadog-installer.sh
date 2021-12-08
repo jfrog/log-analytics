@@ -49,7 +49,7 @@ configure_fluentd() {
       download_fluentd_conf_file $FLUENTD_DATADOG_CONF_BASE_URL $fluentd_datadog_conf_name $TEMP_FOLDER
       # Xray related config questions
       xray_shared_questions "$TEMP_FOLDER" "$fluentd_datadog_conf_name" "$gem_command" $fluentd_as_service $install_as_docker
-       # Update API key datadog
+      # Update API key datadog
       update_fluentd_config_file "$TEMP_FOLDER/$fluentd_datadog_conf_name" 'Please provide Datadog API KEY (more info: https://docs.datadoghq.com/account_management/api-app-keys): ' 'DATADOG_API_KEY' true $fluentd_as_service
 
       break

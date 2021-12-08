@@ -17,7 +17,7 @@ intro() {
   print_green '- Configure Splunk for JFrog artifactory, xray, etc'
   print_green 'More info: https://github.com/jfrog/log-analytics-splunk'
   echo
-  print_error "ALERT: Before continuing please complete the following manual steps:"
+  print_error "ALERT: Before continuing please complete the following steps:"
   echo
   print_green "1) Splunkbase App
   - Install the JFrog Log Analytics Platform app from Splunkbase - https://splunkbase.splunk.com/app/5023.
@@ -79,10 +79,7 @@ configure_fluentd() {
       # shared splunk configuration questions
       shared_config_questions $fluentd_splunk_conf_name $fluentd_as_service
       # Xray related config questions
-      xray_shared_questions "$TEMP_FOLDER" "$fluentd_splunk_conf_name" "$gem_command" "$fluentd_as_service"
-      # install SIEM plugin
-      echo
-      install_custom_plugin 'SIEM' "$gem_command" "$fluentd_as_service"
+      xray_shared_questions "$TEMP_FOLDER" "$fluentd_splunk_conf_name" "$gem_command" "$fluentd_as_service" $install_as_docker
       break
       ;;
 #    [nginx]*)
@@ -149,6 +146,7 @@ install_plugin() {
   configure_fluentd $fluentd_as_service "$user_install_fluentd_install_path" "$gem_command" $install_as_docker
 
   # final message
+  echo
   print_green "Fluentd Splunk plugin configured!"
   echo
   print_error 'ALERT: To enable SSL please update 'use_ssl' and 'ca_file' in the Fluentd Splunk configuration file: /etc/td-agent/fluent.conf.xray.'

@@ -421,6 +421,7 @@ else
 fi
 
 # final message
+echo
 print_green 'Fluentd installation completed!'
 echo
 print_green "$fluentd_service_msg"
@@ -428,9 +429,7 @@ if [ "$install_as_docker" == true ]; then
   print_error "ALERT! Please make sure the docker container has read/write access to the JPD logs folder (artifactory, xray, etc)."
 else
   print_error "ALERT! Please make sure Fluentd has read/write access to the JPD logs folder (artifactory, xray, etc)."
-  if [ "$install_as_service" == false ]; then
-    print_error "ALERT! Before starting Fluentd please reload the environment (e.g. logout/login the current user: $USER)."
-  fi
+  print_error "ALERT! Before starting Fluentd please reload the environment (e.g. logout/login the current user: $USER)."
 fi
 print_green "Additional information related to the JFrog log analytics: https://github.com/jfrog/log-analytics"
 echo
