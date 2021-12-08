@@ -3,6 +3,7 @@
 # const
 declare FLUENTD_SPLUNK_CONF_BASE_URL='https://raw.githubusercontent.com/jfrog/log-analytics-splunk/master'
 declare TEMP_FOLDER='/tmp'
+declare ERROR_MESSAGE='Error while installing/configuring Splunk.'
 
 # load common functions
 source ./utils/common.sh # TODO Update the path (git raw)
@@ -119,7 +120,7 @@ configure_fluentd() {
   fi
 
   # finalizing configuration
-  finalizing_configuration $install_as_docker $fluentd_as_service $fluentd_splunk_conf_name $user_install_fluentd_install_path
+  finalizing_configuration $install_as_docker $fluentd_as_service $fluentd_splunk_conf_name "$user_install_fluentd_install_path" || terminate $ERROR_MESSAGE
 }
 
 install_plugin() {
@@ -131,16 +132,15 @@ install_plugin() {
   #init script
   intro
 
-  # install splunk fluentd plugin
-  declare install_splunk_command="$gem_command install fluent-plugin-splunk-enterprise"
-
-  run_command $fluentd_as_service "$install_splunk_command" || terminate "Error while installing Splunk plugin."
+  # install splunk plugin (VM or docker)
+  declare fluentd_plugin_name=fluent-plugin-splunk-enterprise
+  install_fluentd_plugin $fluentd_as_service $install_as_docker $fluentd_plugin_name "$gem_command" || terminate $ERROR_MESSAGE
 
   # init check
-  fluentd_check $fluentd_as_service $user_install_fluentd_install_path
+  fluentd_check $fluentd_as_service $user_install_fluentd_install_path || terminate $ERROR_MESSAGE
 
   # configure fluentd
-  configure_fluentd $fluentd_as_service $install_as_docker "$user_install_fluentd_install_path" "$gem_command" $install_as_docker
+  configure_fluentd $fluentd_as_service $install_as_docker "$user_install_fluentd_install_path" "$gem_command" $install_as_docker || terminate $ERROR_MESSAGE
 
   # final message
   echo

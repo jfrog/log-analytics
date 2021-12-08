@@ -321,3 +321,24 @@ finalizing_configuration() {
     copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
   fi
 }
+
+install_fluentd_plugin() {
+  declare fluentd_as_service=$1
+  declare install_as_docker=$2
+  declare plugin_name=$3
+  declare gem_command=$4
+
+  # install slunk fluentd plugin or modify Dockerfile
+  if [ "$install_as_docker" == false ]; then
+    declare install_plugin_command="$gem_command install $plugin_name"
+    # fluentd check
+    fluentd_check $fluentd_as_service $user_install_fluentd_install_path
+    # install fluentd datadog plugin
+    run_command $fluentd_as_service "$install_plugin_command" || terminate "Error while installing $plugin_name plugin."
+  else
+    # download dockerfile template
+    download_dockerfile_template
+    # add datadog plugin install command to the dockerfile
+    echo "RUN fluent-gem install $plugin_name" >> "$DOCKERFILE_PATH"
+  fi
+}

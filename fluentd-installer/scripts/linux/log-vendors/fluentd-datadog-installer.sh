@@ -3,6 +3,7 @@
 # const
 declare FLUENTD_DATADOG_CONF_BASE_URL='https://raw.githubusercontent.com/jfrog/log-analytics-datadog/master'
 declare TEMP_FOLDER='/tmp'
+declare ERROR_MESSAGE='Error while installing/configuring Datadog.'
 
 # load common functions
 source ./utils/common.sh # TODO Update the path (git raw)
@@ -51,7 +52,6 @@ configure_fluentd() {
       xray_shared_questions "$TEMP_FOLDER" "$fluentd_datadog_conf_name" "$gem_command" $fluentd_as_service $install_as_docker
       # Update API key datadog
       update_fluentd_config_file "$TEMP_FOLDER/$fluentd_datadog_conf_name" 'Please provide Datadog API KEY (more info: https://docs.datadoghq.com/account_management/api-app-keys): ' 'DATADOG_API_KEY' true $fluentd_as_service
-
       break
       ;;
     #[nginx]*)
@@ -88,7 +88,7 @@ configure_fluentd() {
   fi
 
   # finalizing configuration
-  finalizing_configuration $install_as_docker $fluentd_as_service $fluentd_datadog_conf_name $user_install_fluentd_install_path
+  finalizing_configuration $install_as_docker $fluentd_as_service $fluentd_datadog_conf_name "$user_install_fluentd_install_path"
 }
 
 install_plugin() {
@@ -100,24 +100,12 @@ install_plugin() {
   #init script
   intro
 
-  # install datadog fluentd plugin or modify Dockerfile
-  if [ "$install_as_docker" == false ]; then
-    declare install_datadog_command="$gem_command install fluent-plugin-datadog"
-    # fluentd check
-    fluentd_check $fluentd_as_service $user_install_fluentd_install_path
-    # install fluentd datadog plugin
-    run_command $fluentd_as_service "$install_datadog_command" || terminate "Error while installing Datadog plugin."
-  else
-    # download dockerfile template
-    download_dockerfile_template
-    # add datadog plugin install command to the dockerfile
-    echo "RUN fluent-gem install fluent-plugin-datadog" >> "$DOCKERFILE_PATH"
-  fi
-
-  declare help_link=https://github.com/jfrog/log-analytics-datadog
+  # install datadog plugin (VM or docker)
+  declare fluentd_plugin_name=fluent-plugin-datadog
+  install_fluentd_plugin $fluentd_as_service $install_as_docker $fluentd_plugin_name "$gem_command" || terminate $ERROR_MESSAGE
 
   # configure fluentd
-  configure_fluentd $fluentd_as_service $install_as_docker "$user_install_fluentd_install_path" "$gem_command"
+  configure_fluentd $fluentd_as_service $install_as_docker "$user_install_fluentd_install_path" "$gem_command" || terminate $ERROR_MESSAGE
 
   # final message
   print_green "Fluentd Datadog plugin configured!"
