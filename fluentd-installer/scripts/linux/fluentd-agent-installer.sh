@@ -15,27 +15,21 @@ intro() {
   echo
   print_green "$logo"
   echo
-  print_green "================================================================================================================="
-  echo
   print_green 'JFrog fluentd installation script (Splunk, Datadog).'
+  print_green "More information: $help_link"
   echo
   print_green 'The script installs fluentd and performs the following tasks:'
-  print_green '- Checks if the Fluentd requirements are met and updates the OS if needed [optional].'
-  print_green '- Installs/Updates Fluentd as a service or in the user space depending on Linux distro.[optional]'
-  print_green '- Creates (builds) Fluentd docker image. [optional]'
-  print_green '- Updates the log files/folders permissions [optional].'
-  print_green '- Installs Fluentd plugins (Splunk, Datadog) [optional].'
-  print_green '- Starts and enables the Fluentd service [optional].'
+  print_green '- Checks if the Fluentd requirements are met and updates the OS if needed.'
+  print_green '- Installs/Updates Fluentd as a service or in the user space depending on Linux distro.'
+  print_green '- Creates (builds) Fluentd docker image.'
+  print_green '- Updates the log files/folders permissions.'
+  print_green '- Installs Fluentd plugins (Splunk, Datadog).'
+  print_green '- Starts and enables the Fluentd service.'
   print_green '- Provides additional info related to the installed plugins.'
-  echo
-  print_green "More information: $help_link"
-  print_green "================================================================================================================="
-  print_green *EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*EXPERIMENTAL*
-  print_green "================================================================================================================="
   echo
 
   # Experimental warning
-  declare experiments_warning=$(question "The installer is still in the EXPERIMENTAL phase (might be unstable). Would you like to continue? [y/n]: ")
+  declare experiments_warning=$(question "The installer is still in the EXPERIMENTAL phase. Would you like to continue? [y/n]: ")
   if [ "$experiments_warning" == false ]; then
     echo Have a nice day! Good Bye!
     exit 0
@@ -303,7 +297,7 @@ To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' 
       service_based_message="$fluentd_conf_file_path.
 To manually start Fluentd use the following command: '$user_fluentd_install_path/fluentd $fluentd_conf_file_path'."
     fi
-    fluentd_service_msg="To change the Fluentd configuration please update: '$service_based_message'"
+    fluentd_service_msg="To change the Fluentd configuration please update: $service_based_message"
   fi
 }
 

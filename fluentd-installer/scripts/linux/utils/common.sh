@@ -93,7 +93,7 @@ update_permissions() {
       read -p "Please provide the product group name (e.g artifactory, xray, etc): " group
       run_command $run_as_sudo "usermod -a -G $group $user_name"
       echo "User $user_name added to $group."
-      run_command $run_as_sudo "chmod 0770 $product_path/log"
+      run_command $run_as_sudo "chmod 0770 $product_path/log -R"
       sudo find $product_path/log/ -name "*.log" -exec chmod 0640 {} \; # TODO this should be rewritten so can be executed with "run_command",
     } || {
       print_error "The permissions update for $group was unsuccessful. Please try to update the log folder permissions manually. The log folder path: $product_path/log."
