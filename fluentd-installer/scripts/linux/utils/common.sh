@@ -86,7 +86,7 @@ update_permissions() {
   declare run_as_sudo=$3
 
   echo
-  declare update_perm=$(question "Would you like to add '$user_name' user to the product group and update the log folder permissions? (sudo required)? [y/n]: ")
+  declare update_perm=$(question "Would you like to add user '$user_name' to the product group and update the log folder permissions? (sudo required)? [y/n]: ")
   if [ "$update_perm" == true ]; then
     {
       echo

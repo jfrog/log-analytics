@@ -15,6 +15,7 @@ intro() {
   echo
   print_green 'The installation script for the Splunk plugin performs the following tasks:'
   print_green '- Configure Splunk for JFrog artifactory, xray, etc'
+  print_green 'More info: https://github.com/jfrog/log-analytics-splunk'
   echo
   print_error "ALERT: Before continuing please complete the following manual steps:"
   echo
@@ -30,8 +31,6 @@ intro() {
     more info: https://github.com/jfrog/log-analytics-splunk/blob/master/README.md#create-index-jfrog_splunk
   - Configure new HEC (HTTP Event Collector) token to receive Logs (use 'jfrog_splunk' index to store the JFrog platform log data into).
     more info: https://github.com/jfrog/log-analytics-splunk/blob/master/README.md#configure-new-hec-token-to-receive-logs"
-  echo
-  print_green 'More info: https://github.com/jfrog/log-analytics-splunk'
   echo
   declare continue_with_steps=$(question "Are you ready to continue? [y/n]: ")
   if [ "$continue_with_steps" == false ]; then
@@ -118,13 +117,8 @@ configure_fluentd() {
   done
 
   # finalizing configuration
-   echo "fluentd_splunk_conf_name=$fluentd_splunk_conf_name"
-        echo "fluentd_as_service=$fluentd_as_service"
-        echo "install_as_docker=$install_as_docker"
-        echo "TEMP_FOLDER=$TEMP_FOLDER"
   if [ "$install_as_docker" == false ]; then
     if [ $fluentd_as_service == true ]; then
-      echo "DOCKER flase, as service"
       copy_fluentd_conf '/etc/td-agent' "$fluentd_splunk_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
     else
       copy_fluentd_conf "$user_install_fluentd_install_path" "$fluentd_splunk_conf_name" $fluentd_as_service $install_as_docker "$TEMP_FOLDER"
@@ -154,13 +148,10 @@ install_plugin() {
   # configure fluentd
   configure_fluentd $fluentd_as_service "$user_install_fluentd_install_path" "$gem_command" $install_as_docker
 
-  echo
+  # final message
   print_green "Fluentd Splunk plugin configured!"
   echo
-  print_green "Location of the fluentd conf file for Splunk conf file: $fluentd_conf_file_path"
+  print_error 'ALERT: To enable SSL please update 'use_ssl' and 'ca_file' in the Fluentd Splunk configuration file: /etc/td-agent/fluent.conf.xray.'
+  print_green 'More information: https://github.com/jfrog/log-analytics-splunk'
   echo
-  print_green "ALERT: To enable SSL please update 'use_ssl' and 'ca_file' in the
-Fluentd Splunk configuration file: /etc/td-agent/fluent.conf.xray.
-More information: https://github.com/jfrog/log-analytics-splunk"
-
 }

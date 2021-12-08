@@ -295,7 +295,7 @@ start_enable_fluentd() {
 To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' command."
     else
       service_based_message="$fluentd_conf_file_path.
-To manually start Fluentd use the following command: '$user_fluentd_install_path/fluentd $fluentd_conf_file_path'."
+To manually start Fluentd use the following command: $user_fluentd_install_path/fluentd $fluentd_conf_file_path"
     fi
     fluentd_service_msg="To change the Fluentd configuration please update: $service_based_message"
   fi
@@ -420,16 +420,18 @@ else
   fi
 fi
 
-echo
-print_green ==============================================================================================
+# final message
 print_green 'Fluentd installation completed!'
 echo
 print_green "$fluentd_service_msg"
 if [ "$install_as_docker" == true ]; then
-  echo
   print_error "ALERT! Please make sure the docker container has read/write access to the JPD logs folder (artifactory, xray, etc)."
+else
+  print_error "ALERT! Please make sure Fluentd has read/write access to the JPD logs folder (artifactory, xray, etc)."
+  if [ "$install_as_service" == false ]; then
+    print_error "ALERT! Before starting Fluentd please reload the environment (e.g. logout/login the current user: $USER)."
+  fi
 fi
-echo
 print_green "Additional information related to the JFrog log analytics: https://github.com/jfrog/log-analytics"
-print_green ==============================================================================================
+echo
 # Fin!
