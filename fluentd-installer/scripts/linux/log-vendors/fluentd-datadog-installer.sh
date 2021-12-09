@@ -15,8 +15,7 @@ intro() {
   echo
   print_green "$logo"
   echo
-  echo 'Installing and configuring Datadog plugin for fluentd.'
-  echo 'The installation script performs the following tasks:'
+  echo 'The installation script for the Datadog plugin performs the following tasks:'
   echo '- Configure Datadog for JFrog artifactory, xray, etc'
   echo 'More info: https://github.com/jfrog/log-analytics-datadog'
   echo
