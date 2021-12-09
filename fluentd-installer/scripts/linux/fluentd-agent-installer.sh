@@ -13,9 +13,9 @@ SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fl
 terminate() {
   declare termination_reason=$1
   echo
-  print_green 'Installation was unsuccessful!'
+  print_error 'Installation was unsuccessful!'
   echo
-  print_green "Reason(s): $termination_reason"
+  print_error "Reason(s): $termination_reason"
   echo
   print_error 'Installation aborted!'
   echo
@@ -42,7 +42,7 @@ load_remote_script() {
 }
 
 # load common script
-#source ./utils/common.sh
+# source ./utils/common.sh
 load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
 
 intro() {
@@ -51,17 +51,17 @@ intro() {
   echo
   print_green "$logo"
   echo
-  print_green 'JFrog fluentd installation script (Splunk, Datadog).'
-  print_green "More information: $help_link"
+  echo 'JFrog fluentd installation script (Splunk, Datadog).'
+  echo "More information: $help_link"
   echo
-  print_green 'The script installs fluentd and performs the following tasks:'
-  print_green '- Checks if the Fluentd requirements are met and updates the OS if needed.'
-  print_green '- Installs/Updates Fluentd as a service or in the user space depending on Linux distro.'
-  print_green '- Creates (builds) Fluentd docker image.'
-  print_green '- Updates the log files/folders permissions.'
-  print_green '- Installs Fluentd plugins (Splunk, Datadog).'
-  print_green '- Starts and enables the Fluentd service.'
-  print_green '- Provides additional info related to the installed plugins.'
+  echo 'The script installs fluentd and performs the following tasks:'
+  echo '- Checks if the Fluentd requirements are met and updates the OS if needed.'
+  echo '- Installs/Updates Fluentd as a service or in the user space depending on Linux distro.'
+  echo '- Creates (builds) Fluentd docker image.'
+  echo '- Updates the log files/folders permissions.'
+  echo '- Installs Fluentd plugins (Splunk, Datadog).'
+  echo '- Starts and enables the Fluentd service.'
+  echo '- Provides additional info related to the installed plugins.'
   echo
 
   # Experimental warning
@@ -452,13 +452,13 @@ fi
 echo
 print_green 'Fluentd installation completed!'
 echo
-print_green "$fluentd_service_msg"
+echo "$fluentd_service_msg"
 if [ "$install_as_docker" == true ]; then
   print_error "ALERT! Please make sure the docker container has read/write access to the JPD logs folder (artifactory, xray, etc)."
 else
   print_error "ALERT! Please make sure Fluentd has read/write access to the JPD logs folder (artifactory, xray, etc)."
   print_error "ALERT! Before starting Fluentd please reload the environment (e.g. logout/login the current user: $USER)."
 fi
-print_green "Additional information related to the JFrog log analytics: https://github.com/jfrog/log-analytics"
+echo "Additional information related to the JFrog log analytics: https://github.com/jfrog/log-analytics"
 echo
 # Fin!

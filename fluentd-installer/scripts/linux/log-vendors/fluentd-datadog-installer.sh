@@ -15,12 +15,10 @@ intro() {
   echo
   print_green "$logo"
   echo
-  print_green "--------------------------------------------------------------------------------------------------------"
-  print_green 'Installing and configuring Datadog plugin for fluentd.'
-  print_green 'The installation script performs the following tasks:'
-  print_green '- Configure Datadog for JFrog artifactory, xray, etc'
-  print_green 'More info: https://github.com/jfrog/log-analytics-datadog'
-  print_green "--------------------------------------------------------------------------------------------------------"
+  echo 'Installing and configuring Datadog plugin for fluentd.'
+  echo 'The installation script performs the following tasks:'
+  echo '- Configure Datadog for JFrog artifactory, xray, etc'
+  echo 'More info: https://github.com/jfrog/log-analytics-datadog'
   echo
 }
 
@@ -112,12 +110,12 @@ install_plugin() {
   print_green "Fluentd Datadog plugin configured!"
   echo
   if [ "$install_as_docker" == true ]; then
-    print_green "The fluentd configuration will be added to the docker image."
+    echo "The fluentd configuration will be added to the docker image."
   fi
-  print_green '1) Install Datadog JFrog integration integration: https://app.datadoghq.com/account/settings#integrations/jfrog-platform'
-  print_green '2) To add Datadog JFrog dashboards (Datadog portal) go to Dashboard -> Dashboard List, find JFrog Artifactory Dashboard,
+  echo '1) Install Datadog JFrog integration integration: https://app.datadoghq.com/account/settings#integrations/jfrog-platform'
+  echo '2) To add Datadog JFrog dashboards (Datadog portal) go to Dashboard -> Dashboard List, find JFrog Artifactory Dashboard,
    Artifactory Metrics, Xray Metrics, Xray Logs, Xray Violations and explore it.'
   print_error 'ALERT: To use predefined Datadog Jfrog dashboards please do the following:'
-  print_green 'More information: https://github.com/jfrog/log-analytics-datadog'
+  echo 'More information: https://github.com/jfrog/log-analytics-datadog'
   echo
 }

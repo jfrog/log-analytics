@@ -15,13 +15,13 @@ intro() {
   echo
   print_green "$logo"
   echo
-  print_green 'The installation script for the Splunk plugin performs the following tasks:'
-  print_green '- Configure Splunk for JFrog artifactory, xray, etc'
-  print_green 'More info: https://github.com/jfrog/log-analytics-splunk'
+  echo 'The installation script for the Splunk plugin performs the following tasks:'
+  echo '- Configure Splunk for JFrog artifactory, xray, etc'
+  echo 'More info: https://github.com/jfrog/log-analytics-splunk'
   echo
   print_error "ALERT: Before continuing please complete the following steps:"
   echo
-  print_green "1) Splunkbase App
+  echo "1) Splunkbase App
   - Install the JFrog Log Analytics Platform app from Splunkbase - https://splunkbase.splunk.com/app/5023.
   - Restart Splunk post installation of App.
   - Login to Splunk after the restart completes.
@@ -145,6 +145,6 @@ install_plugin() {
   print_green "Fluentd Splunk plugin configured!"
   echo
   print_error "ALERT: To enable SSL please update 'use_ssl' and 'ca_file' in the Fluentd Splunk configuration file: $fluentd_conf_file_path"
-  print_green 'More information: https://github.com/jfrog/log-analytics-splunk'
+  echo 'More information: https://github.com/jfrog/log-analytics-splunk'
   echo
 }

@@ -84,18 +84,18 @@ update_permissions() {
       print_error "The permissions update for $group was unsuccessful. Please try to update the log folder permissions manually. The log folder path: $product_path/log."
     }
   else
-    print_green "You chose not to update the logs folder permissions. Please make sure fluentd has read/write permissions to $product_path folder before continue."
+    print_error "ALERT! You chose not to update the logs folder permissions. Please make sure fluentd has read/write permissions to $product_path folder before continue."
   fi
 }
 
 print_error() {
   declare error_message=$1
-  echo -e "\033[0;31m$error_message$NO_COLOR"
+  echo -e "\033[0;31m$error_message${NO_COLOR}"
 }
 
 print_green() {
   declare message=$1
-  echo -e "\033[0;32m$message$NO_COLOR"
+  echo -e "\033[0;32m$message${NO_COLOR}"
 }
 
 # setup the fluentd environment
