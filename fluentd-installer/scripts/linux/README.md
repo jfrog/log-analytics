@@ -1,1 +1,1 @@
-Interactive experimental script that help to install and configure fluentd and plugins (Datadog, Splunk, etc) for different JPD configuration.
+Interactive script that helps to install and configures fluentd and the plugins (Datadog, Splunk, etc).

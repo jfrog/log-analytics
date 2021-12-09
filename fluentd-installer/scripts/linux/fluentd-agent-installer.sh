@@ -42,7 +42,7 @@ load_remote_script() {
 }
 
 # load common script
-# source ./utils/common.sh
+#source ./utils/common.sh
 load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
 
 intro() {
