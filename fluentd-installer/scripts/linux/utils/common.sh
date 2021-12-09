@@ -1,7 +1,9 @@
 #!/bin/bash
 
-#common vars
-declare NO_COLOR='\033[0m'
+#const colors
+RED=`tput setaf 1`
+GREEN=`tput setaf 2`
+RESET=`tput sgr0`
 
 # Yes/No Input
 question() {
@@ -90,12 +92,12 @@ update_permissions() {
 
 print_error() {
   declare error_message=$1
-  echo -e "\033[0;31m$error_message${NO_COLOR}"
+  echo "$RED$error_message$RESET"
 }
 
 print_green() {
   declare message=$1
-  echo -e "\033[0;32m$message${NO_COLOR}"
+  echo "$GREEN$message$RESET"
 }
 
 # setup the fluentd environment

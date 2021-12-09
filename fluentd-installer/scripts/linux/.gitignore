@@ -5,3 +5,4 @@ fluent.conf.*
 fluentd-splunk-installer.sh
 install-redhat-td-agent4.sh
 common.sh
+fluentd-datadog-installer.sh
