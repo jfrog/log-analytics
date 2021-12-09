@@ -1,14 +1,19 @@
 #!/bin/bash
 
-# const
+# Fluents datadog script for JFrog products
+
+# vars
 declare FLUENTD_DATADOG_CONF_BASE_URL='https://raw.githubusercontent.com/jfrog/log-analytics-datadog/master'
-declare TEMP_FOLDER='/tmp'
 declare ERROR_MESSAGE='Error while installing/configuring Datadog.'
 
-# load common script
-# source ./utils/common.sh
-load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
+# load the common script
+if [ "$DEV_MODE" == true ]; then
+  source ./utils/common.sh
+else
+  load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
+fi
 
+# intro message
 intro() {
   ## Datadog - Fluentd Install Script
   declare logo=`cat ./other/dd_ascii_logo.txt`
@@ -21,6 +26,7 @@ intro() {
   echo
 }
 
+# Configure fluentd datadog plugin based on the JFrog product
 configure_fluentd() {
   declare fluentd_as_service=$1
   declare install_as_docker=$2
@@ -39,7 +45,6 @@ configure_fluentd() {
       download_fluentd_conf_file  $FLUENTD_DATADOG_CONF_BASE_URL $fluentd_datadog_conf_name $TEMP_FOLDER
       # Update API key datadog
       update_fluentd_config_file "$TEMP_FOLDER/$fluentd_datadog_conf_name" 'Please provide Datadog API KEY (more info: https://docs.datadoghq.com/account_management/api-app-keys): ' 'API_KEY' true $fluentd_as_service
-
       break
       ;;
     [xray]*)
@@ -89,6 +94,7 @@ configure_fluentd() {
   finalizing_configuration $install_as_docker $fluentd_as_service $fluentd_datadog_conf_name "$user_install_fluentd_install_path"
 }
 
+# init method (run it first)
 install_plugin() {
   declare fluentd_as_service=$1
   declare install_as_docker=$2
@@ -106,8 +112,8 @@ install_plugin() {
   configure_fluentd $fluentd_as_service $install_as_docker "$user_install_fluentd_install_path" "$gem_command" || terminate $ERROR_MESSAGE
 
   # final message
-  print_green "Fluentd Datadog plugin configured!"
   echo
+  print_green 'Datadog plugin installation summary:'
   if [ "$install_as_docker" == true ]; then
     echo "The fluentd configuration will be added to the docker image."
   fi
@@ -116,5 +122,5 @@ install_plugin() {
    Artifactory Metrics, Xray Metrics, Xray Logs, Xray Violations and explore it.'
   print_error 'ALERT: To use predefined Datadog Jfrog dashboards please do the following:'
   echo 'More information: https://github.com/jfrog/log-analytics-datadog'
-  echo
+  print_green "Fluentd Datadog plugin configured!"
 }

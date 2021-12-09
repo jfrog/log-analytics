@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# branch
+# vars
+# branch name (usually master)
 GITHUB_BRANCH="karolh2000/plugin-installers"
 # dockerfile name
 DOCKERFILE_PATH="./Dockerfile"
@@ -8,8 +9,12 @@ DOCKERFILE_PATH="./Dockerfile"
 DOCKER_IMAGE_TAG="jfrog/fluentd"
 # log vendors scrips url
 SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux"
+# dev mode
+DEV_MODE=false
+# temp folder path
+TEMP_FOLDER="/tmp"
 
-# Terminate message
+# Terminate the script and print a message.
 terminate() {
   declare termination_reason=$1
   echo
@@ -22,15 +27,7 @@ terminate() {
   exit 1
 }
 
-run_remote_script() {
-  script_url=$1
-
-  # check url
-  curl -L -f "$script_url" || terminate "ERROR: Error while downloading ${script_url}. Exiting..."
-  # run script
-  curl -L -f "$script_url" | sh
-}
-
+# Loads the remote script based on the provided vars
 load_remote_script() {
   declare script_url=$1
   declare script_path=$2
@@ -41,10 +38,14 @@ load_remote_script() {
   source $script_path
 }
 
-# load common script
-# source ./utils/common.sh
-load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
+# load the common script
+if [ "$DEV_MODE" == true ]; then
+  source ./utils/common.sh
+else
+  load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
+fi
 
+# Intro message
 intro() {
   declare logo=`cat ./other/jfrog_ascii_logo.txt`
   help_link=https://github.com/jfrog/log-analytics
@@ -64,6 +65,10 @@ intro() {
   echo '- Provides additional info related to the installed plugins.'
   echo
 
+  if [ "$DEV_MODE" == true ]; then
+    print_error ">>>> THE SCRIPT RUNS IN THE DEV/DEBUGGING MODE (DEV_MODE==true)! <<<<"
+  fi
+
   # Experimental warning
   declare experiments_warning=$(question "The installer is still in the EXPERIMENTAL phase. Would you like to continue? [y/n]: ")
   if [ "$experiments_warning" == false ]; then
@@ -72,7 +77,7 @@ intro() {
   fi
 }
 
-# Modify conf file
+# Modify the conf file
 modify_conf_file() {
   declare now_date=$(date +"%m_%d_%Y_%H_%M_%S")
   declare backup_postfix="_la_backup_$now_date"
@@ -87,6 +92,7 @@ modify_conf_file() {
   echo "File ${file_path} modified and the original content backed up to ${file_path_backup}"
 }
 
+# Installs fluentd based on the type of installation and (service/user/etc) and based on Linux distro.
 install_fluentd() {
   declare install_as_service=$1
   # supported linux distros
@@ -148,7 +154,6 @@ install_fluentd() {
       error_message="ERROR: td-agent 4 installation failed. Fluentd was NOT installed. Exiting..."
       echo "Centos detected. Installing td-agent 4..."
       {
-        #run_remote_script
         load_remote_script "https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh" "install-redhat-td-agent4.sh"
       } || {
         terminate "$error_message"
@@ -156,7 +161,6 @@ install_fluentd() {
     elif [ "$detected_distro" == "amazon" ]; then
       echo "Amazon Linux detected. Installing td-agent 4..."
       {
-        # run_remote_script "https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh"
         load_remote_script "https://toolbelt.treasuredata.com/sh/install-amazon2-td-agent4.sh" "install-amazon2-td-agent4.sh"
       } || {
         terminate "$error_message"
@@ -197,6 +201,7 @@ install_fluentd() {
   fi
 }
 
+# Installs log vendors (Splunk, Datadog, etc)
 install_log_vendor() {
   declare install_as_service=$1
   # Install log vendors (splunk, datadog etc)
@@ -223,15 +228,27 @@ install_log_vendor() {
       case $log_vendor_name in
       [splunk]*)
         log_vendor_name=splunk
-        # source ./log-vendors/fluentd-splunk-installer.sh
-        load_remote_script "$SCRIPTS_URL_PATH/log-vendors/fluentd-splunk-installer.sh" "fluentd-splunk-installer.sh"
+
+        # load the script
+        if [ "$DEV_MODE" == true ]; then
+          source ./log-vendors/fluentd-splunk-installer.sh
+        else
+          load_remote_script "$SCRIPTS_URL_PATH/log-vendors/fluentd-splunk-installer.sh" "fluentd-splunk-installer.sh"
+        fi
+
         install_plugin $install_as_service $install_as_docker "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Splunk plugin."
         break
         ;;
       [datadog]*)
         log_vendor_name=datadog
-        # source ./log-vendors/fluentd-datadog-installer.sh
-        load_remote_script "$SCRIPTS_URL_PATH/log-vendors/fluentd-datadog-installer.sh" "fluentd-datadog-installer.sh"
+
+        # load the script
+        if [ "$DEV_MODE" == true ]; then
+          source ./log-vendors/fluentd-datadog-installer.sh
+        else
+          load_remote_script "$SCRIPTS_URL_PATH/log-vendors/fluentd-datadog-installer.sh" "fluentd-datadog-installer.sh"
+        fi
+
         install_plugin $install_as_service $install_as_docker "$user_fluentd_install_path" "$gem_command" || terminate "Error while installing Datadog plugin."
         break
         ;;
@@ -258,6 +275,7 @@ install_log_vendor() {
   fi
 }
 
+# Based on the type of installation starts and enables fluentd/td-agent.
 start_enable_fluentd() {
   declare install_as_service=$1
 
@@ -329,6 +347,7 @@ To manually start Fluentd use the following command: $user_fluentd_install_path/
   fi
 }
 
+# Based on the gather user's input builds the fluentd docker image.
 build_docker_image() {
   echo
   declare docker_default_image_tag=$DOCKER_IMAGE_TAG/$log_vendor_name
@@ -351,6 +370,7 @@ $(docker image ls | grep $docker_image_tag)
 "
 }
 
+# Runs the dockers image created by the script
 run_docker_image() {
   jf_log_mounting_path=$1
   echo
@@ -379,10 +399,10 @@ $docker_start_command"
 }
 
 
-## Fluentd Install Script
-# Init
+# intro message
 intro
 
+# installation type selection
 while true; do
   echo
   read -p "Would you like to install Fluentd as SERVICE, in the USER space or build DOCKER image? [service/user/docker]
@@ -449,9 +469,7 @@ else
 fi
 
 # final message
-echo
-print_green 'Fluentd installation completed!'
-echo
+print_green 'Fluentd installation summary:'
 echo "$fluentd_service_msg"
 if [ "$install_as_docker" == true ]; then
   print_error "ALERT! Please make sure the docker container has read/write access to the JPD logs folder (artifactory, xray, etc)."
@@ -460,5 +478,6 @@ else
   print_error "ALERT! Before starting Fluentd please reload the environment (e.g. logout/login the current user: $USER)."
 fi
 echo "Additional information related to the JFrog log analytics: https://github.com/jfrog/log-analytics"
+print_green 'Fluentd installation completed!'
 echo
 # Fin!

@@ -3,9 +3,10 @@
 #const colors
 RED=`tput setaf 1`
 GREEN=`tput setaf 2`
+DEBUG_COLOR=`tput setaf 3`
 RESET=`tput sgr0`
 
-# Yes/No Input
+# Simple Yes/No Input util function.
 question() {
   question_text=$1
   answer=null
@@ -26,7 +27,7 @@ question() {
   echo $answer
 }
 
-# Check if fluentd installed
+# Checks if fluentd is installed.
 fluentd_check() {
   declare fluentd_as_service=$1
   declare user_install_fluentd_file_test_path=$2
@@ -46,31 +47,39 @@ fluentd_check() {
   fi
 }
 
+# Executes commands based on the provided command string.
 run_command() {
   declare run_as_sudo=$1
   declare command_string=$2
 
   # check if run the command as sudo
   if [ $run_as_sudo == true ]; then
-    echo "Run '$command_string' as SUDO..."
+    print_in_dev_mode_only "Run '$command_string' as SUDO..."
     declare sudo_cmd="sudo"
   else
-    echo "Run '$command_string' as user (non SUDO)..."
+    print_in_dev_mode_only "Run '$command_string' as user (non SUDO)..."
     declare sudo_cmd=""
   fi
+
   # run the command
-  echo "Run command: '${sudo_cmd} ${command_string}'"
   {
+    print_in_dev_mode_only "Run command: '${sudo_cmd} ${command_string}'"
     ${sudo_cmd} ${command_string}
   } || {
     print_error "Error, command:'$command_string'. Please check the logs for more information. "
   }
 }
 
+# Updates the JPD product log folder access based on the provided product path.
 update_permissions() {
   declare product_path=$1
   declare user_name=$2
   declare run_as_sudo=$3
+
+  print_in_dev_mode_only "Method: 'update_permissions', values:
+  product_path=$1
+  user_name=$2
+  run_as_sudo=$3"
 
   echo
   declare update_perm=$(question "Would you like to add user '$user_name' to the product group and update the log folder permissions? (sudo required)? [y/n]: ")
@@ -90,36 +99,42 @@ update_permissions() {
   fi
 }
 
+# Prints text in red.
 print_error() {
   declare error_message=$1
   echo "$RED$error_message$RESET"
 }
 
+# Prints text in green.
 print_green() {
   declare message=$1
   echo "$GREEN$message$RESET"
 }
 
-# setup the fluentd environment
+# Helps to setup the fluentd environment based on the provided data.
 jfrog_env_variables() {
   declare jf_default_path_value=$1
   declare jf_product_data_default_name=$2
   declare fluentd_as_service=$3
   declare group=$4
   declare install_as_docker=$5
+
   echo
   read -p "Please provide $jf_product_data_default_name location (path where the log folder is located). (default: $jf_default_path_value): " user_product_path
+
   # check if the path is empty, if empty then use default
   echo "Provided location: $user_product_path"
   if [ -z "$user_product_path" ]; then
     echo "Using the default value $jf_default_path_value"
     user_product_path=$jf_default_path_value
   fi
+
   if [ ! -d "$user_product_path" ] && [ "$install_as_docker" == false ]; then
     echo "Incorrect product path $user_product_path"
     echo "Please try again."
     jfrog_env_variables $jf_default_path_value $jf_product_data_default_name $fluentd_as_service $group $install_as_docker
   fi
+
   # update the product path if needed (remove / if needed)
   if [ "${user_product_path: -1}" == "/" ]; then
     user_product_path=${user_product_path::-1}
@@ -156,6 +171,7 @@ jfrog_env_variables() {
   echo
 }
 
+# Downloads predefined fluentd template based on the provided vars.
 download_fluentd_conf_file() {
   declare fluentd_conf_base_url=$1
   declare fluentd_conf_name=$2
@@ -165,6 +181,7 @@ download_fluentd_conf_file() {
   wget -O $fluentd_conf_file_path "$fluentd_conf_base_url/$fluentd_conf_name"
 }
 
+# Utility function that simplify the asks for the impout and based on the input updates the indicated fluentd conf file
 update_fluentd_config_file() {
   declare fluentd_conf_file_path=$1
   declare conf_question=$2
@@ -172,20 +189,30 @@ update_fluentd_config_file() {
   declare value_is_secret=$4
   declare run_as_sudo=$5
 
+  print_in_dev_mode_only "Method: 'update_fluentd_config_file', values:
+  fluentd_conf_file_path=$1
+  conf_question=$2
+  conf_property=$3
+  value_is_secret=$4
+  run_as_sudo=$5"
+
   # check if we hide the user input
   echo
-  if [ "$value_is_secret" == true ]; then # hide user input
-    echo -n $conf_question
-    read -s fluentd_conf_value
-  else
-    read -p "$conf_question" fluentd_conf_value # don't hide user input
-  fi
-  # check if the value is empty, if empty then ask again
-  if [ -z "$fluentd_conf_value" -a "$fluentd_conf_value" ]; then
-    echo "Incorrect value '$fluentd_conf_value', please try again."
-    update_fluentd_config_file "$conf_question" "$conf_property" "$value_is_secret" "$run_as_sudo"
-  fi
-
+  while true; do
+    if [ "$value_is_secret" == true ]; then
+      echo -n $conf_question
+      read -s fluentd_conf_value # hide user input
+    else
+      read -p "$conf_question" fluentd_conf_value # don't hide user input
+    fi
+    print_in_dev_mode_only "fluentd_conf_value=$fluentd_conf_value"
+    # check if the value is empty, if empty then ask again
+    if [ -z "$fluentd_conf_value" -a "$fluentd_conf_value" ]; then
+      echo "Incorrect value, please try again."
+    else
+      break
+    fi
+  done
   # update the config file
   {
     run_command $run_as_sudo "sed -i -e "s,$conf_property,$fluentd_conf_value,g" $fluentd_conf_file_path"
@@ -195,6 +222,7 @@ update_fluentd_config_file() {
   }
 }
 
+# Copy fluentd conf file based on the type of installation and provided vars.
 copy_fluentd_conf() {
   declare fluentd_conf_path_base=$1
   declare fluentd_conf_file_name=$2
@@ -234,7 +262,7 @@ copy_fluentd_conf() {
   # copy the conf file to the td-agent folder/conf
   {
     run_command $fluentd_as_service "cp $temp_folder/$fluentd_conf_file_name $fluentd_conf_file_path"
-    echo "Fluentd conf file was saved in $fluentd_conf_file_path"
+    echo "Fluentd conf file path: $fluentd_conf_file_path/$fluentd_conf_file_name"
     # clean up
     rm -rf $temp_folder/$fluentd_conf_file_name
   } || {
@@ -242,6 +270,7 @@ copy_fluentd_conf() {
   }
 }
 
+# Util method to install fluentd (gem) plugins (only SIEM at this point)
 install_custom_plugin() {
   declare plugin_name=$1
   declare gem_command=$2
@@ -269,6 +298,7 @@ install_custom_plugin() {
   fi
 }
 
+# Util method to share the xray installation questions.
 xray_shared_questions() {
   temp_folder=$1
   fluentd_datadog_conf_name=$2
@@ -287,11 +317,12 @@ xray_shared_questions() {
   install_custom_plugin 'SIEM' "$gem_command" $fluentd_as_service
 }
 
+# Downloads Dockerfile template to the current dir
 download_dockerfile_template() {
-  # downloads Dockerfile template to the current dir
   wget -O "$DOCKERFILE_PATH" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/Dockerfile.fluentd
 }
 
+# Util method to copy the fluentd conf file based on the installation type
 finalizing_configuration() {
   declare install_as_docker=$1
   declare fluentd_as_service=$2
@@ -309,6 +340,7 @@ finalizing_configuration() {
   fi
 }
 
+# Util method to install fluentd plugins
 install_fluentd_plugin() {
   declare fluentd_as_service=$1
   declare install_as_docker=$2
@@ -327,5 +359,15 @@ install_fluentd_plugin() {
     download_dockerfile_template
     # add datadog plugin install command to the dockerfile
     echo "RUN fluent-gem install $plugin_name" >> "$DOCKERFILE_PATH"
+  fi
+}
+
+# Print messages only when DEV_MODE=true
+print_in_dev_mode_only() {
+  declare debug_message=$1
+  if [ "$DEV_MODE" == true ]; then
+    echo
+    echo "${DEBUG_COLOR}DEBUG: $debug_message$RESET"
+    echo
   fi
 }

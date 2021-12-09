@@ -2,12 +2,14 @@
 
 # const
 declare FLUENTD_SPLUNK_CONF_BASE_URL='https://raw.githubusercontent.com/jfrog/log-analytics-splunk/master'
-declare TEMP_FOLDER='/tmp'
 declare ERROR_MESSAGE='Error while installing/configuring Splunk.'
 
-# load common script
-# source ./utils/common.sh
-load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
+# load the common script
+if [ "$DEV_MODE" == true ]; then
+  source ./utils/common.sh
+else
+  load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
+fi
 
 intro() {
   ## Splunk - Fluentd Install Script
@@ -142,9 +144,8 @@ install_plugin() {
 
   # final message
   echo
-  print_green "Fluentd Splunk plugin configured!"
-  echo
+   print_green 'Splunk plugin installation summary:'
   print_error "ALERT: To enable SSL please update 'use_ssl' and 'ca_file' in the Fluentd Splunk configuration file: $fluentd_conf_file_path"
   echo 'More information: https://github.com/jfrog/log-analytics-splunk'
-  echo
+  print_green "Fluentd Splunk plugin configured!"
 }
