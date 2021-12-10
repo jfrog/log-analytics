@@ -10,8 +10,8 @@ DOCKER_IMAGE_TAG="jfrog/fluentd"
 # log vendors scrips url
 SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux"
 # dev mode
-DEV_MODE=true
-# load scripts from the file system
+DEV_MODE=false
+# load scripts from the local file system
 LOCAL_MODE=false
 # temp folder path
 TEMP_FOLDER="/tmp"
