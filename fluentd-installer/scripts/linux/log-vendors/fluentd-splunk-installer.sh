@@ -13,9 +13,7 @@ fi
 
 intro() {
   ## Splunk - Fluentd Install Script
-  declare logo=`cat ./other/spl_ascii_logo.txt`
-  echo
-  print_green "$logo"
+  load_and_print_logo "$SCRIPTS_URL_PATH/other/spl_ascii_logo.txt" "spl_ascii_logo.txt"
   echo
   echo 'The installation script for the Splunk plugin performs the following tasks:'
   echo '- Configure Splunk for JFrog artifactory, xray, etc'

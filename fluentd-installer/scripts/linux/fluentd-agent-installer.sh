@@ -12,7 +12,7 @@ SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fl
 # dev mode
 DEV_MODE=false
 # load scripts from the local file system
-LOCAL_MODE=false
+LOCAL_MODE=true
 # temp folder path
 TEMP_FOLDER="/tmp"
 
@@ -49,11 +49,9 @@ fi
 
 # Intro message
 intro() {
-  declare logo=`cat ./other/jfrog_ascii_logo.txt`
+
   help_link=https://github.com/jfrog/log-analytics
-  echo
-  print_green "$logo"
-  echo
+  load_and_print_logo "$SCRIPTS_URL_PATH/other/jfrog_ascii_logo.txt" "jfrog_ascii_logo.txt"
   echo 'JFrog fluentd installation script (Splunk, Datadog).'
   echo "More information: $help_link"
   echo
