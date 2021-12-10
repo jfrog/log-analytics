@@ -178,7 +178,7 @@ download_fluentd_conf_file() {
   declare temp_folder=$3
   declare fluentd_conf_file_path="$temp_folder/$fluentd_conf_name"
 
-  wget -O $fluentd_conf_file_path "$fluentd_conf_base_url/$fluentd_conf_name"
+  wget -nv -O $fluentd_conf_file_path "$fluentd_conf_base_url/$fluentd_conf_name"
 }
 
 # Utility function that simplify the asks for the impout and based on the input updates the indicated fluentd conf file
@@ -319,7 +319,7 @@ xray_shared_questions() {
 
 # Downloads Dockerfile template to the current dir
 download_dockerfile_template() {
-  wget -O "$DOCKERFILE_PATH" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/Dockerfile.fluentd
+  wget -nv -O "$DOCKERFILE_PATH" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/Dockerfile.fluentd
 }
 
 # Util method to copy the fluentd conf file based on the installation type

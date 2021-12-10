@@ -111,16 +111,15 @@ install_plugin() {
   # configure fluentd
   configure_fluentd $fluentd_as_service $install_as_docker "$user_install_fluentd_install_path" "$gem_command" || terminate $ERROR_MESSAGE
 
-  # final message
+  # summary message
   echo
-  print_green 'Datadog plugin installation summary:'
+  echo 'Datadog plugin installation summary:'
   if [ "$install_as_docker" == true ]; then
-    echo "The fluentd configuration will be added to the docker image."
+    echo "- The fluentd configuration will be added to the docker image."
   fi
-  echo '1) Install Datadog JFrog integration integration: https://app.datadoghq.com/account/settings#integrations/jfrog-platform'
-  echo '2) To add Datadog JFrog dashboards (Datadog portal) go to Dashboard -> Dashboard List, find JFrog Artifactory Dashboard,
-   Artifactory Metrics, Xray Metrics, Xray Logs, Xray Violations and explore it.'
-  print_error 'ALERT: To use predefined Datadog Jfrog dashboards please do the following:'
-  echo 'More information: https://github.com/jfrog/log-analytics-datadog'
+  print_error '- ALERT: To use predefined Datadog Jfrog dashboards please do the following:'
+  print_error '     1) Install Datadog JFrog integration integration: https://app.datadoghq.com/account/settings#integrations/jfrog-platform'
+  print_error '     2) To add Datadog JFrog dashboards (Datadog portal) go to Dashboard -> Dashboard List, find JFrog Artifactory Dashboard, Artifactory Metrics, Xray Metrics, Xray Logs, Xray Violations and explore it.'
+  echo '- More information: https://github.com/jfrog/log-analytics-datadog'
   print_green "Fluentd Datadog plugin configured!"
 }

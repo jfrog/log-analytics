@@ -142,10 +142,10 @@ install_plugin() {
   # configure fluentd
   configure_fluentd $fluentd_as_service $install_as_docker "$user_install_fluentd_install_path" "$gem_command" $install_as_docker || terminate $ERROR_MESSAGE
 
-  # final message
+  # summary message
   echo
-   print_green 'Splunk plugin installation summary:'
-  print_error "ALERT: To enable SSL please update 'use_ssl' and 'ca_file' in the Fluentd Splunk configuration file: $fluentd_conf_file_path"
-  echo 'More information: https://github.com/jfrog/log-analytics-splunk'
+  echo 'Splunk plugin installation summary:'
+  print_error "- ALERT: To enable SSL please update 'use_ssl' and 'ca_file' in the Fluentd Splunk configuration file: $fluentd_conf_file_path"
+  echo '- More information: https://github.com/jfrog/log-analytics-splunk'
   print_green "Fluentd Splunk plugin configured!"
 }

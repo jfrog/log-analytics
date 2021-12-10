@@ -33,7 +33,7 @@ load_remote_script() {
   declare script_path=$2
 
   # check url
-  wget -O "$script_path" "$script_url" || terminate "ERROR: Error while downloading ${script_url}. Exiting..."
+  wget -nv -O "$script_path" "$script_url" || terminate "ERROR: Error while downloading ${script_url}. Exiting..."
   # load script
   source $script_path
 }
@@ -66,7 +66,9 @@ intro() {
   echo
 
   if [ "$DEV_MODE" == true ]; then
+    echo
     print_error ">>>> THE SCRIPT RUNS IN THE DEV/DEBUGGING MODE (DEV_MODE==true)! <<<<"
+    echo
   fi
 
   # Experimental warning
@@ -173,29 +175,26 @@ install_fluentd() {
     declare fluentd_file_name="fluentd-1.11.0-linux-x86_64.tar.gz"
     declare fluentd_zip_install_default_path="$HOME/fluentd"
     echo
-    read -p "Please provide a path where Fluentd will be installed, (default: $fluentd_zip_install_default_path): " user_fluentd_install_path
 
+    read -p "Please provide a path where Fluentd will be installed, (default: $fluentd_zip_install_default_path): " user_fluentd_install_path
     # check if the path is empty, if empty then use fluentd_zip_install_default_path
     if [ -z "$user_fluentd_install_path" ]; then
       user_fluentd_install_path="$fluentd_zip_install_default_path"
     fi
     # create folder if not present
-    echo Create $user_fluentd_install_path
-    mkdir -p "$user_fluentd_install_path"
+    echo "Creating $user_fluentd_install_path..."
+    mkdir -p "$user_fluentd_install_path" || terminate "Error while creating $user_fluentd_install_path"
     # check if user has write permissions in the specified path
     if ! [ -w "$user_fluentd_install_path" ]; then
       terminate "ERROR: Write permission denied in ${user_fluentd_install_path}. Please make sure that you have read/write permissions in ${user_fluentd_install_path}. Fluentd was NOT installed. Exiting..."
     fi
-    # cd to the specified folder
-    # cd "$user_fluentd_install_path"
     # download and extract
     declare zip_file="$user_fluentd_install_path/$fluentd_file_name"
-    wget -O "$zip_file" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/${fluentd_file_name}
-    echo "Please wait, extracting $fluentd_file_name to $user_fluentd_install_path"
-    tar -xf "$zip_file" -C "$user_fluentd_install_path" --strip-components 1
+    wget -nv -O "$zip_file" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/${fluentd_file_name}
+    echo "Please wait, unpacking $fluentd_file_name to $user_fluentd_install_path"
+    tar -xf "$zip_file" -C "$user_fluentd_install_path" --strip-components 1 || terminate "Error while unpacking $zip_file"
     # clean up
     rm "$zip_file"
-    # cd $current_path
     echo "Fluentd files extracted to: $user_fluentd_install_path"
     echo
   fi
@@ -271,7 +270,8 @@ install_log_vendor() {
       esac
     done
   else
-    echo "Skipping the log vendor installation."
+    echo
+    echo "Skipping the log vendor installation!"
   fi
 }
 
@@ -334,40 +334,50 @@ start_enable_fluentd() {
   fi
 
   if [[ -z $(ps aux | grep fluentd | grep -v "grep") ]]; then
-    fluentd_service_msg="ALERT: Service ${fluentd_service_name} not found. Fluentd is not available as service."
+    fluentd_summary_msg="ALERT: Service ${fluentd_service_name} not found. Fluentd is not available as service."
   else
     if [ "$install_as_service" == true ]; then
-      service_based_message="/etc/td-agent/td-agent.conf.
-To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' command."
+      service_based_message="- To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' command."
+      fluentd_conf_file_path="/etc/td-agent/td-agent.conf"
     else
-      service_based_message="$fluentd_conf_file_path.
-To manually start Fluentd use the following command: $user_fluentd_install_path/fluentd $fluentd_conf_file_path"
+      service_based_message="- To manually start Fluentd use the following command: $user_fluentd_install_path/fluentd $fluentd_conf_file_path"
     fi
-    fluentd_service_msg="To change the Fluentd configuration please update: $service_based_message"
+
+    if ! [ -z $fluentd_conf_file_path ]; then
+      fluentd_summary_msg="- To change the Fluentd configuration please update: $fluentd_conf_file_path
+$service_based_message"
+    else
+      fluentd_summary_msg="$service_based_message"
+    fi
   fi
 }
 
 # Based on the gather user's input builds the fluentd docker image.
 build_docker_image() {
   echo
-  declare docker_default_image_tag=$DOCKER_IMAGE_TAG/$log_vendor_name
-  read -p "Please provide docker image tag (default: $docker_default_image_tag): " docker_image_tag
-  if [ -z "$docker_image_tag" ]; then
-    docker_image_tag=$docker_default_image_tag
+  if ! [ -z $log_vendor_name ]; then
+    declare docker_default_image_tag="$DOCKER_IMAGE_TAG/$log_vendor_name"
+    read -p "Please provide docker image tag (default: $docker_default_image_tag): " docker_image_tag
+    if [ -z "$docker_image_tag" ]; then
+      docker_image_tag=$docker_default_image_tag
+    fi
+    echo
+    echo "Building docker image based on the provided information..."
+    echo
+    docker build -t $docker_image_tag ./ || terminate "Docker image creation failed."
+    echo
+    declare docker_image_info="Docker image: $(docker image ls | grep $docker_image_tag)"
+    print_green "$docker_image_info"
+    echo
+    fluentd_summary_msg="- $docker_image_info"
+  else
+    echo 'Fluentd installation summary:'
+    print_error "- ALERT! - You didn't request any Jfrog product related customization therefore no docker image was created or built, please use the Fluentd docker image instead: https://hub.docker.com/r/fluent/fluentd/ "
+    echo "- Additional information related to the JFrog log analytics: https://github.com/jfrog/log-analytics"
+    print_green 'Fluentd installation completed!'
+    echo
+    exit 0
   fi
-  echo
-  echo "Building docker image based on the provided information..."
-  echo
-  docker build -t $docker_image_tag ./ || terminate "Docker image creation failed."
-  echo
-  echo "Docker image created, tag: '$docker_image_tag' "
-  echo
-  echo "Docker image info:"
-  docker image ls | grep $docker_image_tag
-  echo
-  fluentd_service_msg="Docker image info:
-$(docker image ls | grep $docker_image_tag)
-"
 }
 
 # Runs the dockers image created by the script
@@ -390,14 +400,10 @@ run_docker_image() {
     eval "$docker_start_command"
     docker ps -all | grep $docker_container_name
   } || print_error "Starting docker image '$DOCKER_IMAGE_TAG' failed, please resolve the problem and run it manually using the following command: '$docker_start_command'"
-  fluentd_service_msg="$fluentd_service_msg
-Docker container info:
-$(docker ps -all | grep $docker_container_name)
-
-Docker run command:
-$docker_start_command"
+  fluentd_summary_msg="$fluentd_summary_msg
+- Docker container info: $(docker ps -all | grep $docker_container_name)
+- Docker run command: $docker_start_command"
 }
-
 
 # intro message
 intro
@@ -468,16 +474,17 @@ else
   fi
 fi
 
-# final message
+# summary message
+echo
 print_green 'Fluentd installation summary:'
-echo "$fluentd_service_msg"
+echo "$fluentd_summary_msg"
 if [ "$install_as_docker" == true ]; then
-  print_error "ALERT! Please make sure the docker container has read/write access to the JPD logs folder (artifactory, xray, etc)."
+  print_error "- ALERT! Please make sure the docker container has read/write access to the JPD logs folder (artifactory, xray, etc)."
 else
-  print_error "ALERT! Please make sure Fluentd has read/write access to the JPD logs folder (artifactory, xray, etc)."
-  print_error "ALERT! Before starting Fluentd please reload the environment (e.g. logout/login the current user: $USER)."
+  print_error "- ALERT! Please make sure Fluentd has read/write access to the JPD logs folder (artifactory, xray, etc)."
+  print_error "- ALERT! Before starting Fluentd please reload the environment (e.g. logout/login the current user: $USER)."
 fi
-echo "Additional information related to the JFrog log analytics: https://github.com/jfrog/log-analytics"
+echo "- Additional information related to the JFrog log analytics: https://github.com/jfrog/log-analytics"
 print_green 'Fluentd installation completed!'
 echo
 # Fin!
