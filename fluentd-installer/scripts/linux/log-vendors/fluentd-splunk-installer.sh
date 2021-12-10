@@ -5,7 +5,7 @@ declare FLUENTD_SPLUNK_CONF_BASE_URL='https://raw.githubusercontent.com/jfrog/lo
 declare ERROR_MESSAGE='Error while installing/configuring Splunk.'
 
 # load the common script
-if [ "$DEV_MODE" == true ]; then
+if [ "$LOCAL_MODE" == true ]; then
   source ./utils/common.sh
 else
   load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"

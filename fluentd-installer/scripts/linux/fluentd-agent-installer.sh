@@ -10,7 +10,9 @@ DOCKER_IMAGE_TAG="jfrog/fluentd"
 # log vendors scrips url
 SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux"
 # dev mode
-DEV_MODE=false
+DEV_MODE=true
+# load scripts from the file system
+LOCAL_MODE=true
 # temp folder path
 TEMP_FOLDER="/tmp"
 
@@ -39,7 +41,7 @@ load_remote_script() {
 }
 
 # load the common script
-if [ "$DEV_MODE" == true ]; then
+if [ "$LOCAL_MODE" == true ]; then
   source ./utils/common.sh
 else
   load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
@@ -229,7 +231,7 @@ install_log_vendor() {
         log_vendor_name=splunk
 
         # load the script
-        if [ "$DEV_MODE" == true ]; then
+        if [ "$LOCAL_MODE" == true ]; then
           source ./log-vendors/fluentd-splunk-installer.sh
         else
           load_remote_script "$SCRIPTS_URL_PATH/log-vendors/fluentd-splunk-installer.sh" "fluentd-splunk-installer.sh"
@@ -242,7 +244,7 @@ install_log_vendor() {
         log_vendor_name=datadog
 
         # load the script
-        if [ "$DEV_MODE" == true ]; then
+        if [ "$LOCAL_MODE" == true ]; then
           source ./log-vendors/fluentd-datadog-installer.sh
         else
           load_remote_script "$SCRIPTS_URL_PATH/log-vendors/fluentd-datadog-installer.sh" "fluentd-datadog-installer.sh"
