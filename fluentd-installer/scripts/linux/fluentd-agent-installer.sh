@@ -12,7 +12,7 @@ SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fl
 # dev mode
 DEV_MODE=true
 # load scripts from the file system
-LOCAL_MODE=true
+LOCAL_MODE=false
 # temp folder path
 TEMP_FOLDER="/tmp"
 

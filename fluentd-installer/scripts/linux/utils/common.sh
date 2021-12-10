@@ -178,6 +178,12 @@ download_fluentd_conf_file() {
   declare temp_folder=$3
   declare fluentd_conf_file_path="$temp_folder/$fluentd_conf_name"
 
+  print_in_dev_mode_only "Method: download_fluentd_conf_file, values:
+  fluentd_conf_base_url=$1
+  fluentd_conf_name=$2
+  temp_folder=$3
+  fluentd_conf_file_path=$temp_folder/$fluentd_conf_name"
+
   wget -nv -O $fluentd_conf_file_path "$fluentd_conf_base_url/$fluentd_conf_name"
 }
 
