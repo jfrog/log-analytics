@@ -377,3 +377,17 @@ print_in_dev_mode_only() {
     echo
   fi
 }
+
+# Loads the remote script based on the provided vars
+load_and_print_logo() {
+  declare logo_url=$1
+  declare logo_path=$2
+
+  # download script
+  wget -nv -O "$logo_path" "$logo_url" || terminate "ERROR: Error while downloading ${logo_url}. Exiting..."
+  # show logo
+  declare logo=`cat $logo_path`
+  echo
+  print_green "$logo"
+  echo
+}

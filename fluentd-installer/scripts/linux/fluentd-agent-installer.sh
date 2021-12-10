@@ -2,7 +2,7 @@
 
 # vars
 # branch name (usually master)
-GITHUB_BRANCH="karolh2000/plugin-installers"
+GITHUB_BRANCH="karolh2000/fluentd_installer"
 # dockerfile name
 DOCKERFILE_PATH="./Dockerfile"
 # docker image prefix tag
@@ -49,11 +49,9 @@ fi
 
 # Intro message
 intro() {
-  declare logo=`cat ./other/jfrog_ascii_logo.txt`
+
   help_link=https://github.com/jfrog/log-analytics
-  echo
-  print_green "$logo"
-  echo
+  load_and_print_logo "$SCRIPTS_URL_PATH/other/jfrog_ascii_logo.txt" "jfrog_ascii_logo.txt"
   echo 'JFrog fluentd installation script (Splunk, Datadog).'
   echo "More information: $help_link"
   echo
