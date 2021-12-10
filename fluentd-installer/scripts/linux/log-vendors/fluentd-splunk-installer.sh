@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # const
-declare FLUENTD_SPLUNK_CONF_BASE_URL='https://raw.githubusercontent.com/jfrog/log-analytics-splunk/master'
-declare ERROR_MESSAGE='Error while installing/configuring Splunk.'
+FLUENTD_SPLUNK_CONF_BASE_URL='https://raw.githubusercontent.com/jfrog/log-analytics-splunk/master'
+ERROR_MESSAGE='Error while installing/configuring Splunk.'
 
 # load the common script
 if [ "$LOCAL_MODE" == true ]; then

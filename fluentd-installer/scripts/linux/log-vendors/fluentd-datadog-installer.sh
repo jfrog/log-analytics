@@ -3,8 +3,8 @@
 # Fluents datadog script for JFrog products
 
 # vars
-declare FLUENTD_DATADOG_CONF_BASE_URL='https://raw.githubusercontent.com/jfrog/log-analytics-datadog/master'
-declare ERROR_MESSAGE='Error while installing/configuring Datadog.'
+FLUENTD_DATADOG_CONF_BASE_URL='https://raw.githubusercontent.com/jfrog/log-analytics-datadog/master'
+ERROR_MESSAGE='Error while installing/configuring Datadog.'
 
 # load the common script
 if [ "$LOCAL_MODE" == true ]; then
