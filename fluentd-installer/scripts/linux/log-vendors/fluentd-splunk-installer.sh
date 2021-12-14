@@ -54,6 +54,17 @@ shared_config_questions() {
   update_fluentd_config_file "$TEMP_FOLDER/$fluentd_splunk_conf_name" 'Provide Splunk HEC port: ' 'HEC_PORT' false $fluentd_as_service
   # configure HEC token
   update_fluentd_config_file "$TEMP_FOLDER/$fluentd_splunk_conf_name" 'Provide Splunk HEC token value: ' 'HEC_TOKEN' true $fluentd_as_service
+  # configure SSL token
+  declare enable_ssl=$(question "Would you like to enable SSL? [y/n]: ")
+  if [ "$enable_ssl" == true ]; then
+    update_fluentd_config_file_headless "$TEMP_FOLDER/$fluentd_splunk_conf_name" "#use_ssl" "use_ssl" $fluentd_as_service
+  fi
+  # configure CA file
+  declare add_ca_file=$(question "Would you like to add 'root certificate authority' file (CA)? [y/n]: ")
+  if [ "$add_ca_file" == true ]; then
+    update_fluentd_config_file_headless "$TEMP_FOLDER/$fluentd_splunk_conf_name" "#ca_file" "ca_file" $fluentd_as_service
+    update_fluentd_config_file "$TEMP_FOLDER/$fluentd_splunk_conf_name" 'Provide CA file path: ' "/path/to/ca.pem" false $fluentd_as_service
+  fi
 }
 
 configure_fluentd() {

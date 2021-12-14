@@ -52,6 +52,11 @@ run_command() {
   declare run_as_sudo=$1
   declare command_string=$2
 
+  print_in_dev_mode_only "Method 'run_command', values:
+  run_as_sudo=$run_as_sudo
+  command_string=$command_string
+  "
+
   # check if run the command as sudo
   if [ $run_as_sudo == true ]; then
     print_in_dev_mode_only "Run '$command_string' as SUDO..."
@@ -220,10 +225,31 @@ update_fluentd_config_file() {
     fi
   done
   # update the config file
+  update_fluentd_config_file_headless "$fluentd_conf_file_path" "$conf_property" "$fluentd_conf_value" $run_as_sudo
+}
+
+update_fluentd_config_file_headless() {
+  declare fluentd_conf_file_path="$1"
+  declare conf_property="$2"
+  declare fluentd_conf_value="$3"
+  declare run_as_sudo="$4"
+
+  print_in_dev_mode_only "Method: 'update_fluentd_config_file_headless', values:
+  fluentd_conf_file_path=$fluentd_conf_file_path
+  conf_property=$conf_property
+  fluentd_conf_value=$fluentd_conf_value
+  run_as_sudo=$run_as_sudo"
+
+  # update the config file
   {
     run_command $run_as_sudo "sed -i -e "s,$conf_property,$fluentd_conf_value,g" $fluentd_conf_file_path"
     echo "The value was added to fluentd conf file $fluentd_conf_file_path"
   } || {
+    print_in_dev_mode_only "Method: 'update_fluentd_config_file_headless' FAILED, values:
+    fluentd_conf_file_path=$fluentd_conf_file_path
+    conf_property=$conf_property
+    fluentd_conf_value=$fluentd_conf_value
+    run_as_sudo=$run_as_sudo"
     print_error "The value was not added to fluentd conf file $fluentd_conf_file_path. Please check the logs for more info."
   }
 }

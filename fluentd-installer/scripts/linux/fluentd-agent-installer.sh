@@ -2,7 +2,7 @@
 
 # vars
 # branch name (usually master)
-GITHUB_BRANCH="karolh2000/fluentd_installer"
+GITHUB_BRANCH="master"
 # dockerfile name
 DOCKERFILE_PATH="./Dockerfile"
 # docker image prefix tag
@@ -10,7 +10,7 @@ DOCKER_IMAGE_TAG="jfrog/fluentd"
 # log vendors scrips url
 SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux"
 # dev mode
-DEV_MODE=false
+DEV_MODE=true
 # load scripts from the local file system
 LOCAL_MODE=false
 # temp folder path
@@ -49,7 +49,6 @@ fi
 
 # Intro message
 intro() {
-
   help_link=https://github.com/jfrog/log-analytics
   load_and_print_logo "$SCRIPTS_URL_PATH/other/jfrog_ascii_logo.txt" "jfrog_ascii_logo.txt"
   echo 'JFrog fluentd installation script (Splunk, Datadog).'
@@ -70,6 +69,11 @@ intro() {
     print_error ">>>> THE SCRIPT RUNS IN THE DEV/DEBUGGING MODE (DEV_MODE==true)! <<<<"
     echo
   fi
+  if [ "$LOCAL_MODE" == true ]; then
+      echo
+      print_error ">>>> THE SCRIPT RUNS IN THE LOCAL MODE, The scripts are loaded from the local file system instead of the github repository (LOCAL_MODE==true)! <<<<"
+      echo
+    fi
 
   # Experimental warning
   declare experiments_warning=$(question "The installer is still in the EXPERIMENTAL phase. Would you like to continue? [y/n]: ")
