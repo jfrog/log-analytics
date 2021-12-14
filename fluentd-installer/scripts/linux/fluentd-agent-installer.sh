@@ -121,7 +121,7 @@ install_fluentd() {
   if [ $ulimit_output -lt 65536 ]; then
     # Update the file descriptors limit per process and 'high load environments' if needed
     echo
-    declare update_limit=$(question "Fluentd requires higher limit of the file descriptors per process and the network kernel parameters adjustment (more info: https://docs.fluentd.org/installation/before-install). Would you like to update the mentioned configuration (optional and sudo rights required)? [y/n]: ")
+    declare update_limit=$(question "Fluentd requires a higher limit of the file descriptors per process and the network kernel parameters adjustment (more info: https://docs.fluentd.org/installation/before-install). Would you like to update the mentioned configuration (optional and sudo rights required)? [y/n]: ")
     if [ "$update_limit" == true ]; then
       limit_conf_file_path=/etc/security/limits.conf
       limit_config="
@@ -221,7 +221,7 @@ install_log_vendor() {
   if [ "$install_log_vendors" == true ]; then
     while true; do
       echo
-      read -p "What log vendor would you like to install [Splunk or Datadog]: " log_vendor_name
+      read -p "What log vendor would you like to install? [Splunk or Datadog]: " log_vendor_name
       log_vendor_name=${log_vendor_name,,}
 
       case $log_vendor_name in
@@ -468,7 +468,7 @@ if [ "$install_as_docker" == false ]; then
 else
   # build docker image
   build_docker_image
-  declare run_docker_image=$(question "Would you like to create and run container for $docker_image_tag:latest? [y/n]: ")
+  declare run_docker_image=$(question "Would you like to create and run a container for $docker_image_tag:latest? [y/n]: ")
   if [ "$run_docker_image" == true ]; then
     run_docker_image $user_product_path
   fi
