@@ -1,5 +1,5 @@
 # Dockerfile for bitnami/fluentd sidecar image with all the necessary plugins for our log analytic providers
-FROM bitnami/fluentd:1.12.0
+FROM bitnami/fluentd:latest
 LABEL maintainer "Partner Engineering <partner_support@jfrog.com>"
 
 USER root
@@ -7,7 +7,7 @@ USER root
 RUN fluent-gem install fluent-plugin-splunk-enterprise
 RUN fluent-gem install fluent-plugin-datadog
 RUN fluent-gem install fluent-plugin-elasticsearch
-RUN fluent-gem install fluentd-plugin-jfrog-siem
+RUN fluent-gem install fluent-plugin-jfrog-siem
 RUN fluent-gem install fluent-plugin-jfrog-metrics
 
 USER 1001
