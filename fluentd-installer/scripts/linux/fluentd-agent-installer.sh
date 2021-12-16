@@ -2,7 +2,7 @@
 
 # vars
 # branch name (usually master)
-GITHUB_BRANCH="master"
+GITHUB_BRANCH="karolh2000/fluentd_installer"
 # dockerfile name
 DOCKERFILE_PATH="./Dockerfile"
 # docker image prefix tag
@@ -10,7 +10,7 @@ DOCKER_IMAGE_TAG="jfrog/fluentd"
 # log vendors scrips url
 SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux"
 # dev mode
-DEV_MODE=true
+DEV_MODE=false
 # load scripts from the local file system
 LOCAL_MODE=false
 # temp folder path
@@ -34,6 +34,8 @@ load_remote_script() {
   declare script_url=$1
   declare script_path=$2
 
+  echo "Loading script '$script_url', please wait..."
+
   # check url
   wget -nv -O "$script_path" "$script_url" || terminate "ERROR: Error while downloading ${script_url}. Exiting..."
   # load script
@@ -42,7 +44,7 @@ load_remote_script() {
 
 # load the common script
 if [ "$LOCAL_MODE" == true ]; then
-  source ./utils/common.sh
+  source ./utils/common.sh || exit 1
 else
   load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
 fi
@@ -60,8 +62,9 @@ intro() {
   echo '- Creates (builds) Fluentd docker image.'
   echo '- Updates the log files/folders permissions.'
   echo '- Installs Fluentd plugins (Splunk, Datadog).'
+  echo '- Installs Fluentd SIEM plugin (Xray only).'
   echo '- Starts and enables the Fluentd service.'
-  echo '- Provides additional info related to the installed plugins.'
+  echo '- Provides additional info related to the installed plugins and configurations.'
   echo
 
   if [ "$DEV_MODE" == true ]; then

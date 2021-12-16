@@ -55,6 +55,8 @@ shared_config_questions() {
   # configure HEC token
   update_fluentd_config_file "$TEMP_FOLDER/$fluentd_splunk_conf_name" 'Provide Splunk HEC token value: ' 'HEC_TOKEN' true $fluentd_as_service
   # configure SSL token
+  echo
+  echo
   declare enable_ssl=$(question "Would you like to enable SSL? [y/n]: ")
   if [ "$enable_ssl" == true ]; then
     update_fluentd_config_file_headless "$TEMP_FOLDER/$fluentd_splunk_conf_name" "#use_ssl" "use_ssl" $fluentd_as_service
@@ -63,7 +65,31 @@ shared_config_questions() {
   declare add_ca_file=$(question "Would you like to add 'root certificate authority' file (CA)? [y/n]: ")
   if [ "$add_ca_file" == true ]; then
     update_fluentd_config_file_headless "$TEMP_FOLDER/$fluentd_splunk_conf_name" "#ca_file" "ca_file" $fluentd_as_service
-    update_fluentd_config_file "$TEMP_FOLDER/$fluentd_splunk_conf_name" 'Provide CA file path: ' "/path/to/ca.pem" false $fluentd_as_service
+    # ask for the CA file path
+    while [ true ]; do
+      update_fluentd_config_file "$TEMP_FOLDER/$fluentd_splunk_conf_name" 'Provide CA file path: ' "/path/to/ca.pem" false $fluentd_as_service
+      ca_file_path=$last_fluentd_conf_value
+      if [ -f "$ca_file_path" ]; then
+          break
+      else
+        echo "The provided CA file path '$ca_file_path' is incorrect, please try again."
+      fi
+    done
+
+    # splunk dockerfile CA configuration
+    if [ "$install_as_docker" == true ]; then
+      echo '## Required for CA file' >> "$DOCKERFILE_PATH"
+      echo '## Root might be needed to create copy the CA file' >> "$DOCKERFILE_PATH"
+      echo "USER root" >> "$DOCKERFILE_PATH"
+      echo "RUN mkdir -p $ca_file_path" >> "$DOCKERFILE_PATH"
+      echo "COPY ./$(basename $ca_file_path) $ca_file_path" >> "$DOCKERFILE_PATH"
+      echo '## Fix the CA file permissions' >> "$DOCKERFILE_PATH"
+      echo "RUN chown -R 1001:1001 $ca_file_path" >> "$DOCKERFILE_PATH"
+      echo '## Reset back to user' >> "$DOCKERFILE_PATH"
+      echo "USER 1001" >> "$DOCKERFILE_PATH"
+      # copy the CA file to the dockerfile folder
+      cp $ca_file_path ./
+    fi
   fi
 }
 
@@ -154,7 +180,6 @@ install_plugin() {
   # summary message
   echo
   echo 'Splunk plugin installation summary:'
-  print_error "- ALERT: To enable SSL please update 'use_ssl' and 'ca_file' in the Fluentd Splunk configuration file: $fluentd_conf_file_path"
   echo '- More information: https://github.com/jfrog/log-analytics-splunk'
   print_green "Fluentd Splunk plugin configured!"
 }

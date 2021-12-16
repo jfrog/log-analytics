@@ -226,6 +226,7 @@ update_fluentd_config_file() {
   done
   # update the config file
   update_fluentd_config_file_headless "$fluentd_conf_file_path" "$conf_property" "$fluentd_conf_value" $run_as_sudo
+  last_fluentd_conf_value=$fluentd_conf_value
 }
 
 update_fluentd_config_file_headless() {
@@ -233,6 +234,7 @@ update_fluentd_config_file_headless() {
   declare conf_property="$2"
   declare fluentd_conf_value="$3"
   declare run_as_sudo="$4"
+  declare value_is_secret=$5
 
   print_in_dev_mode_only "Method: 'update_fluentd_config_file_headless', values:
   fluentd_conf_file_path=$fluentd_conf_file_path
@@ -243,13 +245,12 @@ update_fluentd_config_file_headless() {
   # update the config file
   {
     run_command $run_as_sudo "sed -i -e "s,$conf_property,$fluentd_conf_value,g" $fluentd_conf_file_path"
-    echo "The value was added to fluentd conf file $fluentd_conf_file_path"
   } || {
     print_in_dev_mode_only "Method: 'update_fluentd_config_file_headless' FAILED, values:
     fluentd_conf_file_path=$fluentd_conf_file_path
     conf_property=$conf_property
     fluentd_conf_value=$fluentd_conf_value
-    run_as_sudo=$run_as_sudo"
+    run_as_sudo=$run_as_sudoq"
     print_error "The value was not added to fluentd conf file $fluentd_conf_file_path. Please check the logs for more info."
   }
 }
@@ -319,7 +320,7 @@ install_custom_plugin() {
       if [ "$install_as_docker" == false ]; then
         run_command $run_as_sudo "$gem_command install fluent-plugin-jfrog-siem" || terminate 'Please review the errors.'
       else
-         # add datadog plugin install command to the dockerfile
+        echo '## Required JFrog fluentd plugins' >> "$DOCKERFILE_PATH"
         echo "RUN fluent-gem install fluent-plugin-jfrog-siem" >> "$DOCKERFILE_PATH"
         echo "RUN fluent-gem install fluent-plugin-record-modifier" >> "$DOCKERFILE_PATH"
       fi
@@ -389,7 +390,8 @@ install_fluentd_plugin() {
   else
     # download dockerfile template
     download_dockerfile_template
-    # add datadog plugin install command to the dockerfile
+    # add plugin install command to the dockerfile
+    echo '## Required JFrog fluentd plugins' >> "$DOCKERFILE_PATH"
     echo "RUN fluent-gem install $plugin_name" >> "$DOCKERFILE_PATH"
   fi
 }
