@@ -66,6 +66,7 @@ intro() {
   echo '- Starts and enables the Fluentd service.'
   echo '- Provides additional info related to the installed plugins and configurations.'
   echo
+  print_error "This script in might require superuser access. You might be prompted for your password by sudo."
 
   if [ "$DEV_MODE" == true ]; then
     echo
