@@ -34,6 +34,8 @@ load_remote_script() {
   declare script_url=$1
   declare script_path=$2
 
+  echo "Loading script '$script_url', please wait..."
+
   # check url
   wget -nv -O "$script_path" "$script_url" || terminate "ERROR: Error while downloading ${script_url}. Exiting..."
   # load script
@@ -42,14 +44,13 @@ load_remote_script() {
 
 # load the common script
 if [ "$LOCAL_MODE" == true ]; then
-  source ./utils/common.sh
+  source ./utils/common.sh || exit 1
 else
   load_remote_script "$SCRIPTS_URL_PATH/utils/common.sh" "common.sh"
 fi
 
 # Intro message
 intro() {
-
   help_link=https://github.com/jfrog/log-analytics
   load_and_print_logo "$SCRIPTS_URL_PATH/other/jfrog_ascii_logo.txt" "jfrog_ascii_logo.txt"
   echo 'JFrog fluentd installation script (Splunk, Datadog).'
@@ -61,15 +62,22 @@ intro() {
   echo '- Creates (builds) Fluentd docker image.'
   echo '- Updates the log files/folders permissions.'
   echo '- Installs Fluentd plugins (Splunk, Datadog).'
+  echo '- Installs Fluentd SIEM plugin (Xray only).'
   echo '- Starts and enables the Fluentd service.'
-  echo '- Provides additional info related to the installed plugins.'
+  echo '- Provides additional info related to the installed plugins and configurations.'
   echo
+  print_error "This script in might require superuser access. You might be prompted for your password by sudo."
 
   if [ "$DEV_MODE" == true ]; then
     echo
     print_error ">>>> THE SCRIPT RUNS IN THE DEV/DEBUGGING MODE (DEV_MODE==true)! <<<<"
     echo
   fi
+  if [ "$LOCAL_MODE" == true ]; then
+      echo
+      print_error ">>>> THE SCRIPT RUNS IN THE LOCAL MODE, The scripts are loaded from the local file system instead of the github repository (LOCAL_MODE==true)! <<<<"
+      echo
+    fi
 
   # Experimental warning
   declare experiments_warning=$(question "The installer is still in the EXPERIMENTAL phase. Would you like to continue? [y/n]: ")
