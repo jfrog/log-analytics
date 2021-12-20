@@ -2,13 +2,13 @@
 
 # vars
 # branch name (usually master)
-GITHUB_BRANCH="karolh2000/fluentd_installer"
+SCRIPT_BRANCH="master"
 # dockerfile name
 DOCKERFILE_PATH="./Dockerfile"
 # docker image prefix tag
 DOCKER_IMAGE_TAG="jfrog/fluentd"
 # log vendors scrips url
-SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux"
+SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${SCRIPT_BRANCH}/fluentd-installer/scripts/linux"
 # dev mode
 DEV_MODE=false
 # load scripts from the local file system
@@ -198,7 +198,7 @@ install_fluentd() {
     fi
     # download and extract
     declare zip_file="$user_fluentd_install_path/$fluentd_file_name"
-    wget -nv -O "$zip_file" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/${fluentd_file_name}
+    wget -nv -O "$zip_file" https://github.com/jfrog/log-analytics/raw/${SCRIPT_BRANCH}/fluentd-installer/${fluentd_file_name}
     echo "Please wait, unpacking $fluentd_file_name to $user_fluentd_install_path"
     tar -xf "$zip_file" -C "$user_fluentd_install_path" --strip-components 1 || terminate "Error while unpacking $zip_file"
     # clean up

@@ -352,7 +352,7 @@ xray_shared_questions() {
 
 # Downloads Dockerfile template to the current dir
 download_dockerfile_template() {
-  wget -nv -O "$DOCKERFILE_PATH" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux/Dockerfile.fluentd
+  wget -nv -O "$DOCKERFILE_PATH" https://github.com/jfrog/log-analytics/raw/${SCRIPT_BRANCH}/fluentd-installer/scripts/linux/Dockerfile.fluentd
 }
 
 # Util method to copy the fluentd conf file based on the installation type
