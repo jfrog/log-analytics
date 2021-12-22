@@ -2,13 +2,13 @@
 
 # vars
 # branch name (usually master)
-GITHUB_BRANCH="karolh2000/fluentd_installer"
+SCRIPT_BRANCH="master"
 # dockerfile name
 DOCKERFILE_PATH="./Dockerfile"
 # docker image prefix tag
 DOCKER_IMAGE_TAG="jfrog/fluentd"
 # log vendors scrips url
-SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/scripts/linux"
+SCRIPTS_URL_PATH="https://github.com/jfrog/log-analytics/raw/${SCRIPT_BRANCH}/fluentd-installer/scripts/linux"
 # dev mode
 DEV_MODE=false
 # load scripts from the local file system
@@ -106,11 +106,10 @@ modify_conf_file() {
 install_fluentd() {
   declare install_as_service=$1
   # supported linux distros
-  declare supported_distros=("centos" "amazon")
+  declare supported_distros=("centos" "amazon" "red hat")
 
   # Check distro
   declare detected_distro=$(cat /etc/*-release | tr [:upper:] [:lower:] | grep -Poi '(centos|ubuntu|red hat|amazon|debian)' | uniq)
-  supported_distros=("centos" "amazon")
   declare is_supported_distro=false
   for supported_distro in "${supported_distros[@]}"; do
     if [[ $detected_distro == $supported_distro ]]; then
@@ -198,7 +197,7 @@ install_fluentd() {
     fi
     # download and extract
     declare zip_file="$user_fluentd_install_path/$fluentd_file_name"
-    wget -nv -O "$zip_file" https://github.com/jfrog/log-analytics/raw/${GITHUB_BRANCH}/fluentd-installer/${fluentd_file_name}
+    wget -nv -O "$zip_file" https://github.com/jfrog/log-analytics/raw/${SCRIPT_BRANCH}/fluentd-installer/${fluentd_file_name}
     echo "Please wait, unpacking $fluentd_file_name to $user_fluentd_install_path"
     tar -xf "$zip_file" -C "$user_fluentd_install_path" --strip-components 1 || terminate "Error while unpacking $zip_file"
     # clean up
@@ -343,20 +342,19 @@ start_enable_fluentd() {
 
   if [[ -z $(ps aux | grep fluentd | grep -v "grep") ]]; then
     fluentd_summary_msg="ALERT: Service ${fluentd_service_name} not found. Fluentd is not available as service."
+  fi
+  if [ "$install_as_service" == true ]; then
+    service_based_message="- To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' command."
+    fluentd_conf_file_path="/etc/td-agent/td-agent.conf"
   else
-    if [ "$install_as_service" == true ]; then
-      service_based_message="- To manage the Fluentd as service (td-agent) please use 'service' or 'systemctl' command."
-      fluentd_conf_file_path="/etc/td-agent/td-agent.conf"
-    else
-      service_based_message="- To manually start Fluentd use the following command: $user_fluentd_install_path/fluentd $fluentd_conf_file_path"
-    fi
+    service_based_message="- To manually start Fluentd use the following command: $user_fluentd_install_path/fluentd $fluentd_conf_file_path"
+  fi
 
-    if ! [ -z $fluentd_conf_file_path ]; then
-      fluentd_summary_msg="- To change the Fluentd configuration please update: $fluentd_conf_file_path
+  if ! [ -z $fluentd_conf_file_path ]; then
+    fluentd_summary_msg="- To change the Fluentd configuration please update: $fluentd_conf_file_path
 $service_based_message"
-    else
-      fluentd_summary_msg="$service_based_message"
-    fi
+  else
+    fluentd_summary_msg="$service_based_message"
   fi
 }
 
