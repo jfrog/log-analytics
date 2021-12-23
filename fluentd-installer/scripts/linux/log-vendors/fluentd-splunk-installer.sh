@@ -172,7 +172,8 @@ install_plugin() {
   intro
 
   # install splunk plugin (VM or docker)
-  declare fluentd_plugin_name=fluent-plugin-splunk-enterprise
+  #declare fluentd_plugin_name=fluent-plugin-splunk-enterprise
+  declare fluentd_plugin_name=fluent-plugin-splunk-hec
   install_fluentd_plugin $fluentd_as_service $install_as_docker $fluentd_plugin_name "$gem_command" || terminate $ERROR_MESSAGE
 
   # configure fluentd

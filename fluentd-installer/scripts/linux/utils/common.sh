@@ -380,7 +380,7 @@ install_fluentd_plugin() {
   declare plugin_name=$3
   declare gem_command=$4
 
-  # install slunk fluentd plugin or modify Dockerfile
+  # install splunk fluentd plugin or modify Dockerfile
   if [ "$install_as_docker" == false ]; then
     declare install_plugin_command="$gem_command install $plugin_name"
     # fluentd check
