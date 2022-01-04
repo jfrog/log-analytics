@@ -4,7 +4,7 @@ LABEL maintainer "Partner Engineering <partner_support@jfrog.com>"
 
 USER root
 ## Install custom Fluentd plugins
-RUN fluent-gem install fluent-plugin-splunk-enterprise
+RUN fluent-gem install fluent-plugin-splunk-hec
 RUN fluent-gem install fluent-plugin-datadog
 RUN fluent-gem install fluent-plugin-elasticsearch
 RUN fluent-gem install fluent-plugin-jfrog-siem
