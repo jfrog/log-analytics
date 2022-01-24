@@ -1,0 +1,11 @@
+JFROG_PRODUCT=rt
+JF_PRODUCT_DATA_INTERNAL=path_to_jfrog_logs
+HEC_HOST=splunk.change_me.com
+HEC_PORT=8088
+HEC_TOKEN=change_me
+METRICS_HEC_TOKEN=change_me
+COM_PROTOCOL=https
+INSECURE_SSL=false
+JPD_URL=http:\/\/change_me.jfrog.io
+JPD_USER_NAME=change_me
+JPD_API_KEY=change_me
