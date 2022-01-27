@@ -7,6 +7,7 @@ USER root
 RUN fluent-gem install fluent-plugin-splunk-hec
 RUN fluent-gem install fluent-plugin-datadog
 RUN fluent-gem install fluent-plugin-elasticsearch
+RUN fluent-gem install fluent-plugin-record-modifier
 RUN fluent-gem install fluent-plugin-jfrog-siem
 RUN fluent-gem install fluent-plugin-jfrog-metrics
 
