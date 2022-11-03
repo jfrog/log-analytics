@@ -10,5 +10,8 @@ RUN fluent-gem install fluent-plugin-elasticsearch
 RUN fluent-gem install fluent-plugin-record-modifier
 RUN fluent-gem install fluent-plugin-jfrog-siem
 RUN fluent-gem install fluent-plugin-jfrog-metrics
+RUN fluent-gem install fluent-plugin-newrelic
+RUN fluent-gem install fluent-plugin-jfrog-send-metrics
+
 
 USER 1001
