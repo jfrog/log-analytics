@@ -1,0 +1,115 @@
+installerInfo: '{ "productId": "OnPremObservability-Splunk/1.0.1", "features": [ { "featureId": "ArtifactoryVersion/{{ default .Chart.AppVersion .Values.artifactory.image.version }}" }, { "featureId": "{{ if .Values.postgresql.enabled }}postgresql{{ else }}{{ .Values.database.type }}{{ end }}/0.0.0" }, { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}" },  { "featureId": "Channel/OnPremObservability-Splunk-Helm" } ] }'
+
+fluentd:
+  splunkConf: |
+    # SPLUNK ARTIFACTORY METRICS OUTPUT
+    <match jfrog.metrics.**>
+      @type splunk_hec
+      protocol "#{ENV['SPLUNK_COM_PROTOCOL']}"
+      data_type metric
+      hec_host "#{ENV['SPLUNK_HEC_HOST']}"
+      hec_port "#{ENV['SPLUNK_HEC_PORT']}"
+      hec_token "#{ENV['SPLUNK_METRICS_HEC_TOKEN']}"
+      flush_interval 5s
+      source ${tag}
+      index jfrog_splunk_metrics
+      metric_name_key metric_name
+      metric_value_key value
+      insecure_ssl "#{ENV['SPLUNK_INSECURE_SSL']}"
+      target_platform "SPLUNK"
+    </match>     
+
+    ## SPLUNK ARTIFACTORY LOGS OUTPUT
+    <label @vendor.ready>
+      <match jfrog.rt.**>
+        @type splunk_hec
+        protocol "#{ENV['SPLUNK_COM_PROTOCOL']}"
+        hec_host "#{ENV['SPLUNK_HEC_HOST']}"
+        hec_port "#{ENV['SPLUNK_HEC_PORT']}"
+        hec_token "#{ENV['SPLUNK_HEC_TOKEN']}"
+        index jfrog_splunk
+        format json
+        sourcetype_key log_source
+        use_fluentd_time false
+        insecure_ssl "#{ENV['SPLUNK_INSECURE_SSL']}"
+        # ssl parameter
+        # use_ssl true
+        # ca_file /path/to/ca.pem
+        <buffer>
+          flush_interval 1s
+          # frequency of the buffer flush
+          flush_thread_count 5
+          # The number of threads to flush/write chunks in parallel
+          chunk_limit_records 10
+          # The max number of events that each chunks can store in it
+        </buffer>
+      </match>
+    </label>
+
+artifactory:
+  configMaps: |
+      {{ .Values.fluentd.sharedConf | indent 4 }}
+      {{ .Values.fluentd.splunkConf | indent 6 }}
+
+  customVolumes: |
+    - name: confmap-volume
+      configMap:
+        name: artifactory-configmaps
+#        items:
+#          - key: fluentd.conf
+#            path: fluentd.conf
+
+  customSidecarContainers: |
+    - name: "artifactory-fluentd-sidecar"
+      image: "{{ .Values.fluentd.imageName }}:{{ .Values.fluentd.imageTag }}"
+      imagePullPolicy: "IfNotPresent"
+      volumeMounts:
+        - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+          name: artifactory-volume
+        - mountPath: /etc/fluentd
+          name: confmap-volume
+      env:
+        - name: JF_PRODUCT_DATA_INTERNAL
+          value: {{ .Values.artifactory.persistence.mountPath }}
+        - name: JPD_URL
+          value: {{ .Values.jfrog.observability.jpd_url }}
+        - name: JPD_ADMIN_USERNAME
+          value: {{ .Values.jfrog.observability.username }}
+        - name: JFROG_ADMIN_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: jfrog-admin-token
+              key: token
+        - name: COMMON_JPD
+          value: {{ .Values.jfrog.observability.common_jpd | quote }}
+        - name: SPLUNK_COM_PROTOCOL
+          value: {{ .Values.splunk.com_protocol }}
+        - name: SPLUNK_HEC_HOST
+          value: {{ .Values.splunk.host }}
+        - name: SPLUNK_HEC_PORT
+          value: {{ .Values.splunk.port | quote}}
+        - name: SPLUNK_METRICS_HEC_TOKEN
+          value: {{ .Values.splunk.metrics_token }}
+        - name: SPLUNK_HEC_TOKEN
+          value: {{ .Values.splunk.logs_token }}
+        - name: SPLUNK_INSECURE_SSL
+          value: {{ .Values.splunk.insecure_ssl | quote}}
+        - name: FLUENTD_CONF
+          value: ../../../../etc/fluentd/fluentd.conf
+        - name: TARGET_PLATFORM
+          value: 'SPLUNK'
+
+splunk:
+  host: SPLUNK_HEC_HOST
+  port: SPLUNK_HEC_PORT
+  logs_token: SPLUNK_HEC_TOKEN
+  metrics_token: SPLUNK_METRICS_HEC_TOKEN
+  com_protocol: SPLUNK_COM_PROTOCOL
+  insecure_ssl: SPLUNK_INSECURE_SSL
+
+jfrog:
+  observability:
+    jpd_url: JPD_URL
+    username: JPD_ADMIN_USERNAME
+    common_jpd: COMMON_JPD
+
