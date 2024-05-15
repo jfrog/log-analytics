@@ -1,0 +1,77 @@
+installerInfo: '{ "productId": "OnPremObservability-DataDog/1.0.1", "features": [ { "featureId": "XrayVersion/{{ default .Chart.AppVersion .Values.xray.image.version }}" }, { "featureId": "{{ if .Values.postgresql.enabled }}postgresql{{ else }}{{ .Values.database.type }}{{ end }}/0.0.0" }, { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}" },  { "featureId": "Channel/OnPremObservability-DataDog-Helm" } ] }'
+
+fluentd:
+  dataDogConf: |
+    # DATADOG XRAY METRICS OUTPUT
+    <match jfrog.metrics.**>
+      @type jfrog_send_metrics
+      target_platform "DATADOG"
+      apikey "#{ENV['DATADOG_API_KEY']}"
+      url "https://api.#{ENV['DATADOG_API_HOST']}/api/v2/series"
+      # ddtags ["instance:test-xray", "cluster:GKE"]
+    </match>
+      
+    # DATADOG XRAY LOGS OUTPUT
+    <match jfrog.**>
+      @type datadog
+      @id jfrog_xray
+      api_key "#{ENV['DATADOG_API_KEY']}"
+      #optional
+      include_tag_key true
+      dd_source jfrog_platform
+      service jfrog_xray
+      host "http-intake.logs.#{ENV['DATADOG_API_HOST']}"
+      <buffer>
+        flush_interval 1s
+        # frequency of the buffer flush
+        flush_thread_count 5
+        # The number of threads to flush/write chunks in parallel
+        chunk_limit_records 10
+        # The max number of events that each chunks can store in it
+      </buffer>
+    </match>
+
+xray:
+  configMaps: |
+      {{ .Values.fluentd.sharedConf | indent 4 }}
+      {{ .Values.fluentd.dataDogConf | indent 6 }}
+      
+common:
+  customSidecarContainers: |
+    - name: "xray-fluentd-sidecar"
+      image: "{{ .Values.fluentd.imageName }}:{{ .Values.fluentd.imageTag }}"
+      imagePullPolicy: "IfNotPresent"
+      volumeMounts:
+        - mountPath: "{{ .Values.xray.persistence.mountPath }}"
+          name: xray-volume
+        - mountPath: /etc/fluentd
+          name: fluentd-conf-xray-volume 
+      env:
+        - name: JF_PRODUCT_DATA_INTERNAL
+          value: {{ .Values.xray.persistence.mountPath }}
+        - name: JPD_URL
+          value: {{ .Values.jfrog.observability.jpd_url }}
+        - name: JPD_ADMIN_USERNAME
+          value: {{ .Values.jfrog.observability.username }}
+        - name: JFROG_ADMIN_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: jfrog-admin-token
+              key: token
+        - name: COMMON_JPD
+          value: {{ .Values.jfrog.observability.common_jpd | quote }}
+        - name: DATADOG_API_KEY
+          value: {{ .Values.datadog.api_key }}
+        - name: DATADOG_API_HOST
+          value: {{ .Values.datadog.api_host }}
+        - name: FLUENTD_CONF
+          value: ../../../etc/fluentd/fluentd.conf
+        - name: TARGET_PLATFORM
+          value: 'DATADOG'
+
+
+datadog:
+  api_key: DATADOG_API_KEY
+  api_host: DATADOG_API_HOST
+
+

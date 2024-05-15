@@ -1,0 +1,66 @@
+installerInfo: '{ "productId": "OnPremObservability-NewRelic/1.0.1", "features": [ { "featureId": "XrayVersion/{{ default .Chart.AppVersion .Values.xray.image.version }}" }, { "featureId": "{{ if .Values.postgresql.enabled }}postgresql{{ else }}{{ .Values.database.type }}{{ end }}/0.0.0" }, { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}" },  { "featureId": "Channel/OnPremObservability-NewRelic-Helm" } ] }'
+
+fluentd:
+  newRelicConf: |
+    # NEWRELIC XRAY METRICS OUTPUT
+    <match jfrog.metrics.**>
+      @type jfrog_send_metrics
+      target_platform "NEWRELIC"
+      apikey "#{ENV['NEWRELIC_LICENSE_KEY']}"
+      url "#{ENV['NEWRELIC_METRICS_URI']}"
+    </match>
+    
+    # NEWRELIC XRAY LOGS OUTPUT
+    <match jfrog.**>
+      @type newrelic
+      license_key "#{ENV['NEWRELIC_LICENSE_KEY']}"
+      base_uri "#{ENV['NEWRELIC_LOGS_URI']}"
+      logtype "jfrog_xray_logs"
+    </match>
+
+xray:
+  configMaps: |
+      {{ .Values.fluentd.sharedConf | indent 4 }}
+      {{ .Values.fluentd.newRelicConf | indent 6 }}
+
+common:
+  customSidecarContainers: |
+    - name: "xray-platform-fluentd-sidecar"
+      image: "{{ .Values.fluentd.imageName }}:{{ .Values.fluentd.imageTag }}"
+      imagePullPolicy: "IfNotPresent"
+      volumeMounts:
+        - mountPath: "{{ .Values.xray.persistence.mountPath }}"
+          name: data-volume
+        - mountPath: /etc/fluentd
+          name: fluentd-conf-xray-volume  
+      env:
+        - name: JF_PRODUCT_DATA_INTERNAL
+          value: {{ .Values.xray.persistence.mountPath }}
+        - name: FLUENTD_CONF
+          value: ../../../etc/fluentd/fluentd.conf
+        - name: JPD_URL
+          value: {{ .Values.jfrog.observability.jpd_url }}
+        - name: JPD_ADMIN_USERNAME
+          value: {{ .Values.jfrog.observability.username }}
+        - name: JPD_ADMIN_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: jfrog-admin-token
+              key: token
+        - name: COMMON_JPD
+          value: {{ .Values.jfrog.observability.common_jpd | quote }}
+        - name: NEWRELIC_LICENSE_KEY
+          value: {{ .Values.newrelic.license_key }}
+        - name: NEWRELIC_LOGS_URI
+          value: {{ .Values.newrelic.logs_uri }}
+        - name: NEWRELIC_METRICS_URI
+          value: {{ .Values.newrelic.metrics_uri }}
+        - name: TARGET_PLATFORM
+          value: 'NEWRELIC'
+
+newrelic:
+  license_key: NEWRELIC_LICENSE_KEY
+  logs_uri: https://log-api.newrelic.com
+  metrics_uri: https://metrics-api.newrelic.com
+
+

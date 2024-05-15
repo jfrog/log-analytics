@@ -1,7 +1,7 @@
 installerInfo: '{ "productId": "OnPremObservability-Splunk/1.0.1", "features": [ { "featureId": "ArtifactoryVersion/{{ default .Chart.AppVersion .Values.artifactory.image.version }}" }, { "featureId": "{{ if .Values.postgresql.enabled }}postgresql{{ else }}{{ .Values.database.type }}{{ end }}/0.0.0" }, { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}" },  { "featureId": "Channel/OnPremObservability-Splunk-Helm" } ] }'
 
 fluentd:
-  splunkConf: |
+  dataDogConf: |
     # DATADOG ARTIFACTORY METRICS OUTPUT
     <match jfrog.metrics.**>
       @type jfrog_send_metrics
@@ -36,7 +36,7 @@ fluentd:
 artifactory:
   configMaps: |
       {{ .Values.fluentd.sharedConf | indent 4 }}
-      {{ .Values.fluentd.splunkConf | indent 6 }}
+      {{ .Values.fluentd.dataDogConf | indent 6 }}
 
   customSidecarContainers: |
     - name: "artifactory-fluentd-sidecar"
@@ -68,12 +68,8 @@ artifactory:
         - name: TARGET_PLATFORM
           value: 'DATADOG'
 
-splunk:
-  host: SPLUNK_HEC_HOST
-  port: SPLUNK_HEC_PORT
-  logs_token: SPLUNK_HEC_TOKEN
-  metrics_token: SPLUNK_METRICS_HEC_TOKEN
-  com_protocol: SPLUNK_COM_PROTOCOL
-  insecure_ssl: SPLUNK_INSECURE_SSL
+datadog:
+  api_key: DATADOG_API_KEY
+  api_host: DATADOG_API_HOST
 
 

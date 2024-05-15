@@ -1,13 +1,18 @@
-# car Log Analytics Integrations
+# JFrog Log Analytics Integrations
 
 ## Versions Supported
+The following observability vendors are supported in this repository:
+* DataDog
+* Splunk
+* New Relic
+
+Other observability solutions are supported. For Prometheus-Loki-Grafana log analytics integration please [visit here](https://github.com/jfrog/log-analytics-prometheus) 
 
 ## Table of Contents
 
 1. [Integration Specific Setup](#integration-specific-setup)
 2. [JFrog Metrics Setup](#jfrog-metrics-setup)
 3. [Fluentd Installation](#fluentd-installation)
-
    * [OS / Virtual Machine](#os--virtual-machine)
    * [Docker](#docker)
    * [Kubernetes Deployment with Helm](#kubernetes-deployment-with-helm)
@@ -78,12 +83,16 @@ Ensure you have access to the Internet from VM. Recommended install is through f
 
 After FluentD is successfully installed, the below plugins are required to be installed
 
-````shell
+````bash
 gem install fluent-plugin-concat
 gem install fluent-plugin-splunk-hec
 gem install fluent-plugin-jfrog-siem
 gem install fluent-plugin-jfrog-metrics
 ````
+For `DataDog` and `New Relic` integrations please also install the `jfrog-send-metrics` plugin
+```bash
+gem install fluent-plugin-jfrog-send-metrics
+```
 
 ### Configure Fluentd
 
@@ -214,24 +223,24 @@ For Splunk as the observability platform, execute these commands to setup the do
 
    Integration specific environment variables:
 
-   <details><summary>Splunk environment variables configurtion</summary>
-    * SPLUNK_COM_PROTOCOL: HTTP Scheme, http or https<br>
-    * SPLUNK_HEC_HOST: Splunk Instance URL<br>
-    * SPLUNK_HEC_PORT: Splunk HEC configured port<br>
-    * SPLUNK_HEC_TOKEN: Splunk HEC Token for sending logs to Splunk<br>
-    * SPLUNK_METRICS_HEC_TOKEN: Splunk HEC Token for sending metrics to Splunk<br>
-    * SPLUNK_INSECURE_SSL: false for test environments only or if http scheme<br>
-    </details><br>
+   <details><summary>Splunk environment variables configurtion</summary><ul>
+    <li>SPLUNK_COM_PROTOCOL: HTTP Scheme, http or https</li>
+    <li>SPLUNK_HEC_HOST: Splunk Instance URL</li>
+    <li>SPLUNK_HEC_PORT: Splunk HEC configured port</li>
+    <li>SPLUNK_HEC_TOKEN: Splunk HEC Token for sending logs to Splunk</li>
+    <li>SPLUNK_METRICS_HEC_TOKEN: Splunk HEC Token for sending metrics to Splunk</li>
+    <li>SPLUNK_INSECURE_SSL: false for test environments only or if http scheme</li>
+    </ul></details><br>
 
-   <details><summary>DataDog environment variables configurtion</summary>
-    * DATADOG_API_KEY: API Key from [Datadog](https://docs.datadoghq.com/account_management/api-app-keys/)<br>
-    * DATADOG_API_HOST: Your DataDog host based on your [DataDog Site Parameter from this list](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site)<br>
+   <details><summary>DataDog environment variables configurtion</summary><ul>
+    <li>DATADOG_API_KEY: API Key from <a href="https://docs.datadoghq.com/account_management/api-app-keys/">here</a></li>
+    <li>DATADOG_API_HOST: Your DataDog host based on your <a href="https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site">DataDog Site Parameter from this list</a></li>
    </details><br>
 
-    <details><summary>New Relic environment variables configurtion</summary>
-    * NEWRELIC_LICENSE_KEY=change_me<br>
-    * NEWRELIC_LOGS_URI=https://log-api.newrelic.com/log/v1<br>
-    * NEWRELIC_METRICS_URI=https://metric-api.newrelic.com/metric/v1<br>
+    <details><summary>New Relic environment variables configurtion</summary><ul>
+    <li>NEWRELIC_LICENSE_KEY: License Key from <a href="https://one.newrelic.com/launcher/api-keys-ui.api-keys-launcher">NewRelic</a></li>
+    <li>NEWRELIC_LOGS_URI: This New Relic logs endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://log-api.newrelic.com/log/v1</li>
+    <li>NEWRELIC_METRICS_URI: This New Relic metrics endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://metric-api.newrelic.com/metric/</li></ul>
    </details><br>
     
 
@@ -460,34 +469,13 @@ helm upgrade --install xray jfrog/xray --set xray.jfrogUrl=http://my-artifactory
 
 ## Dashboards
 
-### Artifactory dashboard
+### Integration Dashboards
 
-JFrog Artifactory Dashboard is divided into multiple sections Application, Audit, Requests, Docker, System Metrics, Heap Metrics and Connection Metrics
+Dashboards are unique to your observability provider. For more info please refer to:
 
-* **Application** - This section tracks Log Volume(information about different log sources) and Artifactory Errors over time(bursts of application errors that may otherwise go undetected)
-* **Audit** - This section tracks audit logs help you determine who is accessing your Artifactory instance and from where. These can help you track potentially malicious requests or processes (such as CI jobs) using expired credentials.
-* **Requests** - This section tracks HTTP response codes, Top 10 IP addresses for uploads and downloads
-* **Docker** - To monitor Dockerhub pull requests users should have a Dockerhub account either paid or free. Free accounts allow up to 200 pull requests per 6 hour window. Various widgets have been added in the new Docker tab under Artifactory to help monitor your Dockerhub pull requests. An alert is also available to enable if desired that will allow you to send emails or add outbound webhooks through configuration to be notified when you exceed the configurable threshold.
-* **System Metrics** - This section tracks CPU Usage, System Memory and Disk Usage metrics
-* **Heap Metrics** - This section tracks Heap Memory and Garbage Collection
-* **Connection Metrics** - This section tracks Database connections and HTTP Connections
-
-### Xray dashboard
-
-JFrog Xray Dashboard is divided into three sections Logs, Violations and Metrics
-
-* **Logs** - This section provides a summary of access, service and traffic log volumes associated with Xray. Additionally, customers are also able to track various HTTP response codes, HTTP 500 errors, and log errors for greater operational insight
-* **Violations** - This section provides an aggregated summary of all the license violations and security vulnerabilities found by Xray.  Information is segment by watch policies and rules.  Trending information is provided on the type and severity of violations over time, as well as, insights on most frequently occurring CVEs, top impacted artifacts and components.
-* **Metrics** - This section tracks CPU usage, System Memory, Disk Usage, Heap Memory and Database Connections
-
-### CIM Compatibility
-
-Log data from JFrog platform logs is translated to pre-defined Common Information Models (CIM) compatible with Splunk. This compatibility enables new advanced features where users can search and access JFrog log data that is compatible with data models. For example
-
-```text
-| datamodel Web Web search
-| datamodel Change_Analysis All_Changes search
-| datamodel Vulnerabilities Vulnerabilities search
+* For **Splunk** integration please visit here: [dashboards](log-vendors/Splunk#dashboards)
+* For **DataDog** integration please visit here: [dashboards](log-vendors/DataDog/#dashboards)
+* For **New Relic** integration please visit here: [dashboards](log-vendors/NewRelic/#dashboardsp)
 ```
 
 ## References
