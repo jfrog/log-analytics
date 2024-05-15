@@ -1,4 +1,4 @@
-# Log Analytics Integrations
+# car Log Analytics Integrations
 
 ## Versions Supported
 
@@ -8,9 +8,9 @@
 2. [JFrog Metrics Setup](#jfrog-metrics-setup)
 3. [Fluentd Installation](#fluentd-installation)
 
-* [OS / Virtual Machine](#os--virtual-machine)
-* [Docker](#docker)
-* [Kubernetes Deployment with Helm](#kubernetes-deployment-with-helm)
+   * [OS / Virtual Machine](#os--virtual-machine)
+   * [Docker](#docker)
+   * [Kubernetes Deployment with Helm](#kubernetes-deployment-with-helm)
 
 5. [Dashboards](#dashboards)
 6. [Splunk Demo](#splunk-demo)
@@ -18,13 +18,11 @@
 
 ## Integration Specific Setup
 
-
 Before we begin the intallation please refer to your observability provider section for a needed setup which is unique to your integration:
 
 * For **Splunk** integration please follow the following steps [here](log-vendors/Splunk#splunk-setup)
 * For **DataDog** integration please follow the following steps [here](log-vendors/DataDog/#datadog-setup)
 * For **New Relic** integration please follow the following steps [here](log-vendors/NewRelic/#new-relic-setup)
-
 
 After completing the vendor specific setup phase, please continue to the following steps below
 
@@ -87,15 +85,15 @@ gem install fluent-plugin-jfrog-siem
 gem install fluent-plugin-jfrog-metrics
 ````
 
-## Configure Fluentd
+### Configure Fluentd
 
 We rely heavily on environment variables so that the correct log files are streamed to your observability dashboards. Ensure that you fill in the .env file with correct values.
 
 Configure the environment variables with accordance to your observability provider:
 
-<details> <summary> Configure Splunk </summary>
+<details><summary> Configure Splunk </summary>
 
-Download the .env file from [here](log-vendors/Splunk/jfrog.env)
+Download the .env file from [here](./log-vendors/Splunk/jfrog.env)
 
 * **JF_PRODUCT_DATA_INTERNAL**: The environment variable JF_PRODUCT_DATA_INTERNAL must be defined to the correct location. For each JFrog service you will find its active log files in the `$JFROG_HOME/<product>/var/log` directory
 * **JPD_URL**: Artifactory JPD URL of the format `http://<ip_address>`
@@ -109,10 +107,18 @@ Download the .env file from [here](log-vendors/Splunk/jfrog.env)
 * **SPLUNK_METRICS_HEC_TOKEN**: Splunk HEC Token for sending metrics to Splunk
 * **SPLUNK_INSECURE_SSL**: false for test environments only or if http scheme
 
+Run the following command/s to generate the `fluentd.conf.rt` or `fluentd.conf.xray` file for the steps below:
 
-</details><details><summary>Configure DataDog</summary>
+```bash
+cat fluentd-conf/fluentd.conf.shared.rt log-vendors/Splunk/fluend-conf/fluentd.conf.rt
+```
+OR
+```bash
+cat fluentd-conf/fluentd.conf.shared.xray log-vendors/Splunk/fluend-conf/fluentd.conf.xray
+```
 
-
+</details>
+<details><summary>Configure DataDog</summary>
 
 Download the .env file from [here](log-vendors/DataDog/jfrog.env)
 
@@ -126,7 +132,15 @@ Download the .env file from [here](log-vendors/DataDog/jfrog.env)
 * **JPD_URL**: Artifactory JPD URL with the format `http://<ip_address>`
 * **JPD_ADMIN_USERNAME**: Artifactory username for authentication
 
-Apply the `.env` files and run the fluentd wrapper with the following command, and note that the argument points to the `fluent.conf.*` file previously configured:</details>
+Run the following command/s to generate the `fluentd.conf.rt` or `fluentd.conf.xray` file for the steps below:
+
+```bash
+cat fluentd-conf/fluentd.conf.shared.rt log-vendors/DataDog/fluend-conf/fluentd.conf.rt
+```
+OR
+```bash
+ cat fluentd-conf/fluentd.conf.shared.xray log-vendors/DataDog/fluend-conf/fluentd.conf.xray
+```
 
 </details>
 
@@ -135,7 +149,6 @@ Apply the `.env` files and run the fluentd wrapper with the following command, a
 Download the .env file [here](log-vendors/NewRelic/jfrog.env)
 
 * **NEWRELIC_LICENSE_KEY**: License Key from [NewRelic](https://one.newrelic.com/launcher/api-keys-ui.api-keys-launcher)
-
 * **JPD_URL**: Artifactory JPD URL of the format `http://<ip_address>`
 * **JPD_ADMIN_USERNAME**: Artifactory username for authentication
 * **JPD_ADMIN_TOKEN**: Artifactory [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) for authentication
@@ -143,9 +156,18 @@ Download the .env file [here](log-vendors/NewRelic/jfrog.env)
 * **NEWRELIC_LOGS_URI**: This New Relic logs endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://log-api.newrelic.com/log/v1
 * **NEWRELIC_METRICS_URI**: This New Relic metrics endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://metric-api.newrelic.com/metric/v1
 
+Run the following command/s to generate the `fluentd.conf.rt` or `fluentd.conf.xray` file for the steps below:
+
+```bash
+cat fluentd-conf/fluentd.conf.shared.rt log-vendors/NewRelic/fluend-conf/fluentd.conf.rt > fluentd.conf.rt
+```
+OR
+```bash
+cat fluentd-conf/fluentd.conf.shared.xray log-vendors/NewRelic/fluend-conf/fluentd.conf.xray > fluentd.conf.xray
+```
 
 
-</details>
+</details><br>
 
 Apply the `.env` files and run the fluentd wrapper with the following command, and note that the argument points to the `fluent.conf.*` file previously configured:
 
@@ -162,12 +184,12 @@ In order to run fluentd as a docker image to send the logs, violations and metri
 1. Check the docker installation is functional, execute command 'docker version' and 'docker ps'.
 2. Once the version and process are listed successfully, build the intended docker image for Splunk using the docker file,
 
-   * Download Dockerfile from [here](https://raw.githubusercontent.com/jfrog/log-analytics-splunk/master/docker-build/Dockerfile) to any directory which has write permissions.
+   * Download Dockerfile from `log-vendors/<vendorName>/docker/Dockerfile`to any directory which has write permissions.
 3. Download the docker.env file needed to run Jfrog/FluentD Docker Images for Splunk,
 
-   * Download docker.env from [here](https://raw.githubusercontent.com/jfrog/log-analytics-splunk/master/docker-build/docker.env) to the directory where the docker file was downloaded.
+   * Download docker.env from `log-vendors/<vendorName>/docker/docker.env` to the directory where the docker file was downloaded.
 
-```text
+
 
 For Splunk as the observability platform, execute these commands to setup the docker container running the fluentd installation
 
@@ -181,17 +203,37 @@ For Splunk as the observability platform, execute these commands to setup the do
 
 2. Fill the necessary information in the docker.env file
 
-    JF_PRODUCT_DATA_INTERNAL: The environment variable JF_PRODUCT_DATA_INTERNAL must be defined to the correct location. For each JFrog service you will find its active log files in the `$JFROG_HOME/<product>/var/log` directory
-    SPLUNK_COM_PROTOCOL: HTTP Scheme, http or https
-    SPLUNK_HEC_HOST: Splunk Instance URL
-    SPLUNK_HEC_PORT: Splunk HEC configured port
-    SPLUNK_HEC_TOKEN: Splunk HEC Token for sending logs to Splunk
-    SPLUNK_METRICS_HEC_TOKEN: Splunk HEC Token for sending metrics to Splunk
-    SPLUNK_INSECURE_SSL: false for test environments only or if http scheme
-    JPD_URL: Artifactory JPD URL of the format `http://<ip_address>`
-    JPD_ADMIN_USERNAME: Artifactory username for authentication
-    JFROG_ADMIN_TOKEN: Artifactory [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) for authentication
-    COMMON_JPD: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)
+   Common environment variables:
+
+   * JF_PRODUCT_DATA_INTERNAL: The environment variable JF_PRODUCT_DATA_INTERNAL must be defined to the correct location. For each JFrog service you will find its active log files in the `$JFROG_HOME/<product>/var/log` directory
+   * JPD_URL: Artifactory JPD URL of the format `http://<ip_address>`
+   * JPD_ADMIN_USERNAME**: Artifactory username for authentication
+   * JFROG_ADMIN_TOKEN**: Artifactory [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) for authentication
+   * COMMON_JPD: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)
+   * TARGET_PLATFORM: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]
+
+   Integration specific environment variables:
+
+   <details><summary>Splunk environment variables configurtion</summary>
+    * SPLUNK_COM_PROTOCOL: HTTP Scheme, http or https<br>
+    * SPLUNK_HEC_HOST: Splunk Instance URL<br>
+    * SPLUNK_HEC_PORT: Splunk HEC configured port<br>
+    * SPLUNK_HEC_TOKEN: Splunk HEC Token for sending logs to Splunk<br>
+    * SPLUNK_METRICS_HEC_TOKEN: Splunk HEC Token for sending metrics to Splunk<br>
+    * SPLUNK_INSECURE_SSL: false for test environments only or if http scheme<br>
+    </details><br>
+
+   <details><summary>DataDog environment variables configurtion</summary>
+    * DATADOG_API_KEY: API Key from [Datadog](https://docs.datadoghq.com/account_management/api-app-keys/)<br>
+    * DATADOG_API_HOST: Your DataDog host based on your [DataDog Site Parameter from this list](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site)<br>
+   </details><br>
+
+    <details><summary>New Relic environment variables configurtion</summary>
+    * NEWRELIC_LICENSE_KEY=change_me<br>
+    * NEWRELIC_LOGS_URI=https://log-api.newrelic.com/log/v1<br>
+    * NEWRELIC_METRICS_URI=https://metric-api.newrelic.com/metric/v1<br>
+   </details><br>
+    
 
 3. Execute 'docker run -it --name jfrog-fluentd-splunk-rt -v <path_to_logs>:/var/opt/jfrog/artifactory --env-file docker.env <image_name>' 
 
@@ -252,7 +294,10 @@ export MASTER_KEY=$(openssl rand -hex 32)
 
    kubectl create secret generic jfrog-admin-token --from-literal=token=<JFROG_ADMN_TOKEN>
    ```
-3. For Artifactory installation, download the .env file from [here](https://github.com/jfrog/log-analytics-splunk/raw/master/helm/jfrog_helm.env). Fill in the jfrog_helm.env file with correct values.
+3. For Artifactory installation, download the .env file from:
+   <details><summary>Splunk Helm environment variables configurtion</summary>
+      [here](log-vendors/Splunk/helm/jfrog_helm.env)
+   </details>
 
    * **SPLUNK_COM_PROTOCOL**: HTTP Scheme, http or https
    * **SPLUNK_HEC_HOST**: Splunk Instance URL
@@ -263,6 +308,7 @@ export MASTER_KEY=$(openssl rand -hex 32)
    * **JPD_URL**: Artifactory JPD URL of the format `http://<ip_address>`
    * **JPD_ADMIN_USERNAME**: Artifactory username for authentication
    * **COMMON_JPD**: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)
+   * **TARGET_PLATFORM**: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]
 
    Apply the .env files using the helm command below
 

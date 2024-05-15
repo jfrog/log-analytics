@@ -1,0 +1,30 @@
+# DATADOG ARTIFACTORY METRICS OUTPUT
+<match jfrog.metrics.**>
+  @type jfrog_send_metrics
+  target_platform "DATADOG"
+  apikey "#{ENV['DATADOG_API_KEY']}"
+  url "https://api.#{ENV['DATADOG_API_HOST']}/api/v2/series"
+  # ddtags ["instance:test-artifactory", "cluster:GKE"]
+</match>
+
+## DATADOG ARTIFACTORY LOGS OUTPUT
+<label @vendor.ready>
+  <match jfrog.**>
+    @type datadog
+    @id jfrog_artifactory
+    api_key "#{ENV['DATADOG_API_KEY']}"
+    #optional
+    include_tag_key true
+    dd_source jfrog_platform
+    service jfrog_artifactory
+    host "http-intake.logs.#{ENV['DATADOG_API_HOST']}"
+    <buffer>
+      flush_interval 1s
+      # frequency of the buffer flush
+      flush_thread_count 5
+      # The number of threads to flush/write chunks in parallel
+      chunk_limit_records 10
+      # The max number of events that each chunks can store in it
+    </buffer>
+  </match>
+</label>

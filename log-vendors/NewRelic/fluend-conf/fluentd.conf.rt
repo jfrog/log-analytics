@@ -1,0 +1,17 @@
+# NEW RELIC ARTIFACTORY METRICS OUTPUT
+<match jfrog.metrics.**>
+  @type jfrog_send_metrics
+  target_platform "NEWRELIC"
+  apikey "#{ENV['NEWRELIC_LICENSE_KEY']}"
+  url "#{ENV['NEWRELIC_METRICS_URI']}"
+</match>
+
+## NEWRELIC ARTIFACTORY LOGS OUTPUT
+<label @vendor.ready>
+  <match jfrog.**>
+    @type newrelic
+    license_key "#{ENV['NEWRELIC_LICENSE_KEY']}"
+    base_uri "#{ENV['NEWRELIC_LOGS_URI']}"
+    logtype "jfrog_artifactory_logs"
+  </match>
+</label>
