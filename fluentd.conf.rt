@@ -378,3 +378,46 @@
   #</match>
 </label>
 
+# SPLUNK ARTIFACTORY METRICS OUTPUT
+<match jfrog.metrics.**>
+  @type splunk_hec
+  protocol "#{ENV['SPLUNK_COM_PROTOCOL']}"
+  data_type metric
+  hec_host "#{ENV['SPLUNK_HEC_HOST']}"
+  hec_port "#{ENV['SPLUNK_HEC_PORT']}"
+  hec_token "#{ENV['SPLUNK_METRICS_HEC_TOKEN']}"
+  flush_interval 5s
+  source ${tag}
+  index jfrog_splunk_metrics
+  metric_name_key metric_name
+  metric_value_key value
+  insecure_ssl "#{ENV['SPLUNK_INSECURE_SSL']}"
+  target_platform "SPLUNK"
+</match>
+
+## SPLUNK ARTIFACTORY LOGS OUTPUT
+<label @vendor.ready>
+  <match jfrog.rt.**>
+    @type splunk_hec
+    protocol "#{ENV['SPLUNK_COM_PROTOCOL']}"
+    hec_host "#{ENV['SPLUNK_HEC_HOST']}"
+    hec_port "#{ENV['SPLUNK_HEC_PORT']}"
+    hec_token "#{ENV['SPLUNK_HEC_TOKEN']}"
+    index jfrog_splunk
+    format json
+    sourcetype_key log_source
+    use_fluentd_time false
+    insecure_ssl "#{ENV['SPLUNK_INSECURE_SSL']}"
+    # ssl parameter
+    # use_ssl true
+    # ca_file /path/to/ca.pem
+    <buffer>
+      flush_interval 1s
+      # frequency of the buffer flush
+      flush_thread_count 5
+      # The number of threads to flush/write chunks in parallel
+      chunk_limit_records 10
+      # The max number of events that each chunks can store in it
+    </buffer>
+  </match>
+</label>

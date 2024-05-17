@@ -15,6 +15,8 @@ xray:
     - name: fluentd-conf-volume
       configMap:
         name: xray-configmaps
+  openMetrics:
+    enabled: true
 
 fluentd:
   imageName: releases-pts-observability-fluentd.jfrog.io/jfrog-fluentd

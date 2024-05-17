@@ -4,15 +4,10 @@ LABEL maintainer "Partner Engineering <partner_support@jfrog.com>"
 
 USER root
 
-##Uninstall elastic plugin which is preinstalled in bitnami fluentd
-##Pin elastic gem version to 7.14
-RUN fluent-gem uninstall elasticsearch -a --ignore-dependencies \
-  && fluent-gem install elasticsearch -v 7.14 --no-document \
-  ## Install custom Fluentd plugins
-  && fluent-gem install fluent-plugin-jfrog-siem --no-document \
+## Install custom Fluentd plugins
+RUN fluent-gem install fluent-plugin-jfrog-siem --no-document \
   && fluent-gem install fluent-plugin-splunk-hec --no-document \
   && fluent-gem install fluent-plugin-datadog --no-document \
-  && fluent-gem install fluent-plugin-elasticsearch --no-document \
   && fluent-gem install fluent-plugin-record-modifier --no-document \
   && fluent-gem install fluent-plugin-jfrog-metrics --no-document \
   && fluent-gem install fluent-plugin-jfrog-send-metrics --no-document \

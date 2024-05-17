@@ -4,3 +4,5 @@
 ./idea
 .idea/
 .DS_Store
+fluentd.conf.rt
+fluentd.conf.xray

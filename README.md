@@ -1,29 +1,39 @@
 # JFrog Log Analytics Integrations
 
-## Versions Supported
+The following document describes how to configure Datadog, Splunk and New Relic to gather logs, metrics and violations from Artifactory and Xray through the use of FluentD.
+
+## Observability Vendors Supported
+
 The following observability vendors are supported in this repository:
+
 * DataDog
 * Splunk
 * New Relic
 
-Other observability solutions are supported. For Prometheus-Loki-Grafana log analytics integration please [visit here](https://github.com/jfrog/log-analytics-prometheus) 
+Other observability solutions are supported. For Prometheus-Loki-Grafana log analytics integration please [visit here](https://github.com/jfrog/log-analytics-prometheus)
+
+## Version Supported
+
+The following Artifactory and Xray versions are supported in this repository:
+
+* Artifactory: 7.77.11
+* Xray: 3.88.12
 
 ## Table of Contents
 
 1. [Integration Specific Setup](#integration-specific-setup)
 2. [JFrog Metrics Setup](#jfrog-metrics-setup)
 3. [Fluentd Installation](#fluentd-installation)
+
    * [OS / Virtual Machine](#os--virtual-machine)
    * [Docker](#docker)
    * [Kubernetes Deployment with Helm](#kubernetes-deployment-with-helm)
-
-5. [Dashboards](#dashboards)
-6. [Splunk Demo](#splunk-demo)
-7. [References](#references)
+4. [Dashboards](#dashboards)
+5. [References](#references)
 
 ## Integration Specific Setup
 
-Before we begin the intallation please refer to your observability provider section for a needed setup which is unique to your integration:
+Before we begin the installation please refer to your observability provider section for a needed setup which is unique to your integration:
 
 * For **Splunk** integration please follow the following steps [here](log-vendors/Splunk#splunk-setup)
 * For **DataDog** integration please follow the following steps [here](log-vendors/DataDog/#datadog-setup)
@@ -36,11 +46,7 @@ After completing the vendor specific setup phase, please continue to the followi
 To enable metrics in Artifactory, make the following configuration changes to the [Artifactory System YAML](https://www.jfrog.com/confluence/display/JFROG/Artifactory+System+YAML)
 
 ```yaml
-artifactory:
-    metrics:
-        enabled: true
-    openMetrics:
-        enabled: true
+span
 ```
 
 Once this configuration is done and the application is restarted, metrics will be available in Open Metrics Format
@@ -63,38 +69,66 @@ Ensure you have access to the Internet from VM. Recommended install is through f
 | Windows       | Windows - MSI       | https://docs.fluentd.org/installation/install-by-msi |
 | Gem Install** | MacOS & Linux - Gem | https://docs.fluentd.org/installation/install-by-gem |
 
-```text
-** For Gem based install, Ruby Interpreter has to be setup first, following is the recommended process to install Ruby
+#### Install Ruby (Gem-based installations)
+For Gem based install, Ruby Interpreter has to be setup first, following is the recommended process to install Ruby:
 
 1. Install Ruby Version Manager (RVM) as described in https://rvm.io/rvm/install#installation-explained, ensure to follow all the onscreen instructions provided to complete the rvm installation
 	* For installation across users a SUDO based install is recommended, the installation is as described in https://rvm.io/support/troubleshooting#sudo
 
 2. Once rvm installation is complete, verify the RVM installation executing the command 'rvm -v'
 
-3. Now install ruby v2.7.0 or above executing the command 'rvm install <ver_num>', ex: 'rvm install 2.7.5'
+3. Now install ruby v2.7.0 or above executing the command `rvm install <ver_num>`, ex: `rvm install 2.7.5`
 
-4. Verify the ruby installation, execute 'ruby -v', gem installation 'gem -v' and 'bundler -v' to ensure all the components are intact
+4. Verify the ruby installation, execute the following commands to ensure all the components are intact:
+   ```bash
+   # verify ruby installation
+   ruby -v 
+   # verify gems installation
+   gem -v
+   bundler -v
+   ```
 
-5. Post completion of Ruby, Gems installation, the environment is ready to further install new gems, execute the following gem install commands one after other to setup the needed ecosystem
+#### Install FluentD
+Post completion of Ruby, Gems installation, the environment is ready to further install new gems, execute the following gem install commands one after other to setup the needed ecosystem
 
-	'gem install fluentd'
-
+```bash
+gem install fluentd
 ```
-
+#### Install FluentD plugins
 After FluentD is successfully installed, the below plugins are required to be installed
 
-````bash
+<details><summary>Install FluentD plugins for Splunk</summary>
+
+```bash
 gem install fluent-plugin-concat
-gem install fluent-plugin-splunk-hec
 gem install fluent-plugin-jfrog-siem
 gem install fluent-plugin-jfrog-metrics
-````
-For `DataDog` and `New Relic` integrations please also install the `jfrog-send-metrics` plugin
+gem install fluent-plugin-splunk-hec
+```
+</details>
+<details><summary>Install FluentD plugins for DataDog</summary>
+
 ```bash
+gem install fluent-plugin-concat
+gem install fluent-plugin-jfrog-siem
+gem install fluent-plugin-jfrog-metrics
+gem install fluent-plugin-datadog
 gem install fluent-plugin-jfrog-send-metrics
 ```
+</details>
 
-### Configure Fluentd
+<details><summary>Install FluentD plugins for New Relic</summary>
+
+```bash
+gem install fluent-plugin-concat
+gem install fluent-plugin-jfrog-siem
+gem install fluent-plugin-jfrog-metrics
+gem install fluent-plugin-newrelic
+gem install fluent-plugin-jfrog-send-metrics
+```
+</details>
+
+#### Configure Fluentd
 
 We rely heavily on environment variables so that the correct log files are streamed to your observability dashboards. Ensure that you fill in the .env file with correct values.
 
@@ -104,26 +138,36 @@ Configure the environment variables with accordance to your observability provid
 
 Download the .env file from [here](./log-vendors/Splunk/jfrog.env)
 
-* **JF_PRODUCT_DATA_INTERNAL**: The environment variable JF_PRODUCT_DATA_INTERNAL must be defined to the correct location. For each JFrog service you will find its active log files in the `$JFROG_HOME/<product>/var/log` directory
-* **JPD_URL**: Artifactory JPD URL of the format `http://<ip_address>`
-* **JPD_ADMIN_USERNAME**: Artifactory username for authentication
-* **JFROG_ADMIN_TOKEN**: Artifactory [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) for authentication
-* **COMMON_JPD**: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)
-* **SPLUNK_COM_PROTOCOL**: HTTP Scheme, http or https
-* **SPLUNK_HEC_HOST**: Splunk Instance URL
-* **SPLUNK_HEC_PORT**: Splunk HEC configured port
-* **SPLUNK_HEC_TOKEN**: Splunk HEC Token for sending logs to Splunk
-* **SPLUNK_METRICS_HEC_TOKEN**: Splunk HEC Token for sending metrics to Splunk
-* **SPLUNK_INSECURE_SSL**: false for test environments only or if http scheme
-
+<ul>
+   <li><b>SPLUNK_COM_PROTOCOL</b>: HTTP Scheme, http or https</li>
+   <li><b>SPLUNK_HEC_HOST</b>: Splunk Instance URL</li>
+   <li><b>SPLUNK_HEC_PORT</b>: Splunk HEC configured port</li>
+   <li><b>SPLUNK_HEC_TOKEN</b>: Splunk HEC Token for sending logs to Splunk</li>
+   <li><b>SPLUNK_METRICS_HEC_TOKEN</b>: Splunk HEC Token for sending metrics to Splunk</li>
+   <li><b>SPLUNK_INSECURE_SSL</b>: false for test environments only or if http scheme</li>
+   <li><b>JF_PRODUCT_DATA_INTERNAL</b>: The environment variable JF_PRODUCT_DATA_INTERNAL must be defined to the correct location. For each JFrog service you will find its active log files in the `$JFROG_HOME/<product>/var/log` directory</li>
+   <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+   <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+   <li><b>JFROG_ADMIN_TOKEN</b>: Artifactory <a href="https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory">Access Token</a> for authentication</li>
+   <li><b>COMMON_JPD</b>: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)</li>
+</ul>
 Run the following command/s to generate the `fluentd.conf.rt` or `fluentd.conf.xray` file for the steps below:
 
 ```bash
-cat fluentd-conf/fluentd.conf.shared.rt log-vendors/Splunk/fluend-conf/fluentd.conf.rt
+cat fluentd-conf/fluentd.conf.shared.rt log-vendors/Splunk/fluend-conf/fluentd.conf.rt > fluentd.conf.rt
 ```
+
 OR
+
 ```bash
-cat fluentd-conf/fluentd.conf.shared.xray log-vendors/Splunk/fluend-conf/fluentd.conf.xray
+cat fluentd-conf/fluentd.conf.shared.xray log-vendors/Splunk/fluend-conf/fluentd.conf.xray >  fluentd.conf.xray
+```
+
+In order to verify that your environment variables are set correctly, run the following commands:
+
+```bash
+   env_vars=("SPLUNK_COM_PROTOCOL" "SPLUNK_HEC_HOST" "SPLUNK_HEC_PORT" "SPLUNK_HEC_TOKEN" "SPLUNK_METRICS_HEC_TOKEN" "SPLUNK_INSECURE_SSL" "JF_PRODUCT_DATA_INTERNAL" "JPD_URL" "JPD_ADMIN_USERNAME" "JFROG_ADMIN_TOKEN" "COMMON_JPD")
+   ./test_envs.sh $env_vars
 ```
 
 </details>
@@ -131,24 +175,32 @@ cat fluentd-conf/fluentd.conf.shared.xray log-vendors/Splunk/fluend-conf/fluentd
 
 Download the .env file from [here](log-vendors/DataDog/jfrog.env)
 
-* **JF_PRODUCT_DATA_INTERNAL**: The environment variable JF_PRODUCT_DATA_INTERNAL must be defined to the correct location. For each JFrog service, you can find its active log files in the `$JFROG_HOME/<product>/var/log` directory
-* **JPD_URL**: Artifactory JPD URL with the format `http://<ip_address>`
-* **JPD_ADMIN_USERNAME**: Artifactory username for authentication
-* **JFROG_ADMIN_TOKEN**: Artifactory [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) for authentication
-* **COMMON_JPD**: This flag should be set as true only for non-Kubernetes installations or installations where the JPD base URL is the same to access both Artifactory and Xray (for example, `https://sample_base_url/artifactory` or `https://sample_base_url/xray`)
-* **DATADOG_API_KEY**: API Key from [Datadog](https://app.datadoghq.com/organization-settings/api-keys)
-* **DATADOG_API_HOST**: Your DataDog host based on your [DataDog Site Parameter from this list](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site)
-* **JPD_URL**: Artifactory JPD URL with the format `http://<ip_address>`
-* **JPD_ADMIN_USERNAME**: Artifactory username for authentication
-
+<ul>
+   <li><b>DATADOG_API_KEY</b>: API Key from <a href="https://app.datadoghq.com/organization-settings/api-keys">Datadog</a></li>
+   <li><b>DATADOG_API_HOST</b>: Your DataDog host based on your <a href="https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site">DataDog Site Parameter from this list</a></li>
+   <li><b>JF_PRODUCT_DATA_INTERNAL</b>: The environment variable JF_PRODUCT_DATA_INTERNAL must be defined to the correct location. For each JFrog service, you can find its active log files in the `$JFROG_HOME/<product>/var/log` directory</li>
+   <li><b>JPD_URL</b>: Artifactory JPD URL with the format `http://<ip_address>`</li>
+   <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+   <li><b>JFROG_ADMIN_TOKEN</b>: Artifactory <a href="https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory">Access Token</a> for authentication</li>
+   <li><b>COMMON_JPD</b>: This flag should be set as true only for non-Kubernetes installations or installations where the JPD base URL is the same to access both Artifactory and Xray (for example, `https://sample_base_url/artifactory` or `https://sample_base_url/xray`)</li>
+</ul>
 Run the following command/s to generate the `fluentd.conf.rt` or `fluentd.conf.xray` file for the steps below:
 
 ```bash
-cat fluentd-conf/fluentd.conf.shared.rt log-vendors/DataDog/fluend-conf/fluentd.conf.rt
+cat fluentd-conf/fluentd.conf.shared.rt log-vendors/DataDog/fluend-conf/fluentd.conf.rt > fluentd.conf.rt
 ```
+
 OR
+
 ```bash
- cat fluentd-conf/fluentd.conf.shared.xray log-vendors/DataDog/fluend-conf/fluentd.conf.xray
+ cat fluentd-conf/fluentd.conf.shared.xray log-vendors/DataDog/fluend-conf/fluentd.conf.xray > fluentd.conf.xray
+```
+
+In order to verify that your environment variables are set correctly, run the following commands:
+
+```bash
+   env_vars=("DATADOG_API_KEY" "DATADOG_API_HOST" "JF_PRODUCT_DATA_INTERNAL" "JPD_URL" "JPD_ADMIN_USERNAME" "JFROG_ADMIN_TOKEN" "COMMON_JPD")
+   ./test_envs.sh $env_vars
 ```
 
 </details>
@@ -157,24 +209,27 @@ OR
 
 Download the .env file [here](log-vendors/NewRelic/jfrog.env)
 
-* **NEWRELIC_LICENSE_KEY**: License Key from [NewRelic](https://one.newrelic.com/launcher/api-keys-ui.api-keys-launcher)
-* **JPD_URL**: Artifactory JPD URL of the format `http://<ip_address>`
-* **JPD_ADMIN_USERNAME**: Artifactory username for authentication
-* **JPD_ADMIN_TOKEN**: Artifactory [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) for authentication
-* **COMMON_JPD**: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)
-* **NEWRELIC_LOGS_URI**: This New Relic logs endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://log-api.newrelic.com/log/v1
-* **NEWRELIC_METRICS_URI**: This New Relic metrics endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://metric-api.newrelic.com/metric/v1
+<ul>
+   <li><b>NEWRELIC_LICENSE_KEY</b>: License Key from <a href="https://one.newrelic.com/launcher/api-keys-ui.api-keys-launcher">NewRelic</a></li>
+   <li><b>NEWRELIC_LOGS_URI</b>: This New Relic logs endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://log-api.newrelic.com/log/v1</li>
+   <li><b>NEWRELIC_METRICS_URI</b>: This New Relic metrics endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://metric-api.newrelic.com/metric/v1</li>
+   <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+   <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+   <li><b>JPD_ADMIN_TOKEN</b>: Artifactory <a href="https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory">Access Token</a> for authentication
+   <li><b>COMMON_JPD</b>: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)</li>
+</ul>
 
 Run the following command/s to generate the `fluentd.conf.rt` or `fluentd.conf.xray` file for the steps below:
 
 ```bash
-cat fluentd-conf/fluentd.conf.shared.rt log-vendors/NewRelic/fluend-conf/fluentd.conf.rt > fluentd.conf.rt
-```
-OR
-```bash
-cat fluentd-conf/fluentd.conf.shared.xray log-vendors/NewRelic/fluend-conf/fluentd.conf.xray > fluentd.conf.xray
+cat fluentd-conf/fluentd.conf.shared.rt log-vendors/NewRelic/fluentd-conf/fluentd.conf.rt > fluentd.conf.rt
 ```
 
+OR
+
+```bash
+cat fluentd-conf/fluentd.conf.shared.xray log-vendors/NewRelic/fluentd-conf/fluentd.conf.xray > fluentd.conf.xray
+```
 
 </details><br>
 
@@ -185,92 +240,225 @@ source jfrog.env
 ./fluentd $JF_PRODUCT_DATA_INTERNAL/fluent.conf.<product_name>
 ```
 
-## Docker
+In order to verify that your environment variables are set correctly, run the following commands:
+
+```bash
+env_vars=("NEWRELIC_LICENSE_KEY" "NEWRELIC_LOGS_URI" "NEWRELIC_METRICS_URI" "JF_PRODUCT_DATA_INTERNAL" "JPD_URL" "JPD_ADMIN_USERNAME" "JPD_ADMIN_TOKEN" "COMMON_JPD")
+./test_envs.sh $env_vars
+```
+
+### Docker
 
 `Note! These steps were not tested to work out of the box on MAC`
-In order to run fluentd as a docker image to send the logs, violations and metrics data to splunk, the following commands needs to be executed on the host that runs the docker.
+In order to run fluentd as a docker image to send the logs, violations and metrics data to your observability provider, the following commands needs to be executed on the host that runs the docker.
 
-1. Check the docker installation is functional, execute command 'docker version' and 'docker ps'.
-2. Once the version and process are listed successfully, build the intended docker image for Splunk using the docker file,
+#### Download required docker files for the setup
+1. Check the docker installation is functional, execute commands
 
-   * Download Dockerfile from `log-vendors/<vendorName>/docker/Dockerfile`to any directory which has write permissions.
-3. Download the docker.env file needed to run Jfrog/FluentD Docker Images for Splunk,
-
-   * Download docker.env from `log-vendors/<vendorName>/docker/docker.env` to the directory where the docker file was downloaded.
-
-
-
-For Splunk as the observability platform, execute these commands to setup the docker container running the fluentd installation
-
-1. Execute 'docker build --build-arg SOURCE="JFRT" --build-arg TARGET="SPLUNK" -t <image_name> .'
-
-    Command example
-
-    'docker build --build-arg SOURCE="JFRT" --build-arg TARGET="SPLUNK" -t jfrog/fluentd-splunk-rt .'
-
-    The above command will build the docker image.
-
-2. Fill the necessary information in the docker.env file
-
-   Common environment variables:
-
-   * JF_PRODUCT_DATA_INTERNAL: The environment variable JF_PRODUCT_DATA_INTERNAL must be defined to the correct location. For each JFrog service you will find its active log files in the `$JFROG_HOME/<product>/var/log` directory
-   * JPD_URL: Artifactory JPD URL of the format `http://<ip_address>`
-   * JPD_ADMIN_USERNAME**: Artifactory username for authentication
-   * JFROG_ADMIN_TOKEN**: Artifactory [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) for authentication
-   * COMMON_JPD: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)
-   * TARGET_PLATFORM: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]
-
-   Integration specific environment variables:
-
-   <details><summary>Splunk environment variables configurtion</summary><ul>
-    <li>SPLUNK_COM_PROTOCOL: HTTP Scheme, http or https</li>
-    <li>SPLUNK_HEC_HOST: Splunk Instance URL</li>
-    <li>SPLUNK_HEC_PORT: Splunk HEC configured port</li>
-    <li>SPLUNK_HEC_TOKEN: Splunk HEC Token for sending logs to Splunk</li>
-    <li>SPLUNK_METRICS_HEC_TOKEN: Splunk HEC Token for sending metrics to Splunk</li>
-    <li>SPLUNK_INSECURE_SSL: false for test environments only or if http scheme</li>
-    </ul></details><br>
-
-   <details><summary>DataDog environment variables configurtion</summary><ul>
-    <li>DATADOG_API_KEY: API Key from <a href="https://docs.datadoghq.com/account_management/api-app-keys/">here</a></li>
-    <li>DATADOG_API_HOST: Your DataDog host based on your <a href="https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site">DataDog Site Parameter from this list</a></li>
-   </details><br>
-
-    <details><summary>New Relic environment variables configurtion</summary><ul>
-    <li>NEWRELIC_LICENSE_KEY: License Key from <a href="https://one.newrelic.com/launcher/api-keys-ui.api-keys-launcher">NewRelic</a></li>
-    <li>NEWRELIC_LOGS_URI: This New Relic logs endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://log-api.newrelic.com/log/v1</li>
-    <li>NEWRELIC_METRICS_URI: This New Relic metrics endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://metric-api.newrelic.com/metric/</li></ul>
-   </details><br>
-    
-
-3. Execute 'docker run -it --name jfrog-fluentd-splunk-rt -v <path_to_logs>:/var/opt/jfrog/artifactory --env-file docker.env <image_name>' 
-
-    The <path_to_logs> should be an absolute path where the Jfrog Artifactory Logs folder resides, i.e for an Docker based Artifactory Installation,  ex: /var/opt/jfrog/artifactory/var/logs on the docker host.
-
-    Command example
-
-    'docker run -it --name jfrog-fluentd-splunk-rt -v $JFROG_HOME/artifactory/var/:/var/opt/jfrog/artifactory --env-file docker.env jfrog/fluentd-splunk-rt'
-
-
+```bash
+docker version
+docker ps
 ```
+2. Once the version and process are listed successfully, build the intended docker image using the docker file
+   * Download `Dockerfile` to any directory which has write permissions:<br>
+     [Dockerfile](docker-build/Dockerfile)<br>
+
+3. Download the `docker.env` file needed to run Jfrog/FluentD docker images for your integration:
+   * Download `docker.env` to the directory where the `Dockerfile` was downloaded:<br>
+     [Splunk docker.env](log-vendors/Splunk/docker/docker.env)<br>
+     [DataDog docker.env](log-vendors/DataDog/docker/docker.env)<br>
+     [New Relic docker.env](log-vendors/NewRelic/docker/docker.env)<br>
+
+#### Docker Container Setup
+Execute the following commands to setup the docker container running the FluentD installation
+
+1. Execute the following command to build the docker image:
+
+   <details><summary>For Splunk</summary>
+   Run the following command to generate the <b>fluentd.conf.rt</b> or <b>fluentd.conf.xray</b> file for the steps below:
+
+   ```bash
+   cat fluentd-conf/fluentd.conf.shared.rt log-vendors/Splunk/fluentd-conf/fluentd.conf.rt > fluentd.conf.rt
+   ```
+   OR
+   ```bash
+   cat fluentd-conf/fluentd.conf.shared.xray log-vendors/Splunk/fluentd-conf/fluentd.conf.xray > fluentd.conf.xray
+   ```
+   Build a docker image ,using the above generated FluentD config file (for Artifactory or Xray)    
+   ```bash
+   docker build --build-arg TARGET="SPLUNK" --build-arg FLUENTD_CONF_LOCATION=<fluentd_conf__file_location> -f <docker_file_location> -t <image_name> .
+   ```
+
+   Command examples
+
+   ```bash
+   docker build --build-arg TARGET="SPLUNK" --build-arg FLUENTD_CONF_LOCATION="./fluentd.conf.rt" -f ./docker-build/Dockerfile -t jfrog/fluentd-splunk-rt .
+   docker build --build-arg TARGET="SPLUNK" --build-arg FLUENTD_CONF_LOCATION="./fluentd.conf.xray" -f ./docker-build/Dockerfile -t jfrog/fluentd-splunk-xray .
+   ```
+   </details>
+   <details><summary>For DataDog</summary>
+   Run the following command to generate the <b>fluentd.conf.rt</b> or <b>fluentd.conf.xray</b> file for the steps below:
+
+   ```bash
+   cat fluentd-conf/fluentd.conf.shared.rt log-vendors/DataDog/fluentd-conf/fluentd.conf.rt > fluentd.conf.rt
+   ```
+   OR
+   ```bash
+   cat fluentd-conf/fluentd.conf.shared.xray log-vendors/DataDog/fluentd-conf/fluentd.conf.xray > fluentd.conf.xray
+   ```
+   Build a docker image ,using the above generated FluentD config file (for Artifactory or Xray)    
+   ```bash
+   docker build --build-arg TARGET="DATADOG" --build-arg FLUENTD_CONF_LOCATION=<fluentd_conf__file_location> -f <docker_file_location> -t <image_name> .
+   ```
+
+   Command examples
+
+   ```bash
+   docker build --build-arg TARGET="DATADOG" --build-arg FLUENTD_CONF_LOCATION="./fluentd.conf.rt" -f ./docker-build/Dockerfile -t jfrog/fluentd-datadog-rt .
+   docker build --build-arg TARGET="DATADOG" --build-arg FLUENTD_CONF_LOCATION="./fluentd.conf.xray" -f ./docker-build/Dockerfile -t jfrog/fluentd-datadog-xray .
+   ```
+   </details>
+   <details><summary>For New Relic</summary>
+   Run the following command to generate the <b>fluentd.conf.rt</b> or <b>fluentd.conf.xray</b> file for the steps below:
+
+   ```bash
+   cat fluentd-conf/fluentd.conf.shared.rt log-vendors/NewRelic/fluentd-conf/fluentd.conf.rt > fluentd.conf.rt
+   ```
+   OR
+   ```bash
+   cat fluentd-conf/fluentd.conf.shared.xray log-vendors/NewRelic/fluentd-conf/fluentd.conf.xray > fluentd.conf.xray
+   ```
+   Build a docker image ,using the above generated FluentD config file (for Artifactory or Xray)    
+   ```bash
+   docker build --build-arg TARGET="NEWRELIC" --build-arg FLUENTD_CONF_LOCATION=<fluentd_conf__file_location> -f <docker_file_location> -t <image_name> .
+   ```
+
+   Command examples
+
+   ```bash
+   docker build --build-arg TARGET="NEWRELIC" --build-arg FLUENTD_CONF_LOCATION="./fluentd.conf.rt" -f ./docker-build/Dockerfile -t jfrog/fluentd-newrelic-rt .
+   docker build --build-arg TARGET="NEWRELIC" --build-arg FLUENTD_CONF_LOCATION="./fluentd.conf.xray" -f ./docker-build/Dockerfile -t jfrog/fluentd-newrelic-xray .
+   ```  
+   </details><br>
+
+2. Fill the necessary information in the docker.env file:
+
+   Please fill the environment variables values with accordance to your specific integration:
+
+   <details><summary>Splunk environment variables configuration</summary>
+   Download the .env file from [here](log-vendors/Splunk/docker/docker.env). Fill in the docker.env file with correct values:
+   <ul>
+      <li><b>SPLUNK_COM_PROTOCOL</b>: HTTP Scheme, http or https</li>
+      <li><b>SPLUNK_HEC_HOST</b>: Splunk Instance URL</li>
+      <li><b>SPLUNK_HEC_PORT</b>: Splunk HEC configured port</li>
+      <li><b>SPLUNK_HEC_TOKEN</b>: Splunk HEC Token for sending logs to Splunk</li>
+      <li><b>SPLUNK_METRICS_HEC_TOKEN</b>: Splunk HEC Token for sending metrics to Splunk</li>
+      <li><b>SPLUNK_INSECURE_SSL</b>: false for test environments only or if http scheme</li>
+      <li><b>JF_PRODUCT_DATA_INTERNAL</b>: The environment variable JF_PRODUCT_DATA_INTERNAL must be defined to the correct location. For each JFrog service you will find its active log files in the `$JFROG_HOME/<product>/var/log` directory</li>
+      <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+      <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+      <li><b>JFROG_ADMIN_TOKEN*</b>: Artifactory <a href="https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory">Access Token</a> for authentication</li>
+      <li><b>COMMON_JPD</b>: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)</li>
+      <li><b>TARGET_PLATFORM</b>: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]</li>
+   </ul>
+
+   In order to verify that your environment variables are set correctly, run the following commands:
+
+   ```bash
+      env_vars=("SPLUNK_COM_PROTOCOL" "SPLUNK_HEC_HOST" "SPLUNK_HEC_PORT" "SPLUNK_HEC_TOKEN" "SPLUNK_METRICS_HEC_TOKEN" "SPLUNK_INSECURE_SSL" "JF_PRODUCT_DATA_INTERNAL" "JPD_URL" "JPD_ADMIN_USERNAME" "COMMON_JPD" "TARGET_PLATFORM")
+      ./test_envs.sh $env_vars
+   ```
+
+   </details>
+
+   <details><summary>DataDog environment variables configuration</summary>
+   Download the .env file from [here](log-vendors/DataDog/docker/docker.env). Fill in the docker.env file with correct values:
+   <ul>
+      <li><b>DATADOG_API_KEY</b>: API Key from <a href="https://docs.datadoghq.com/account_management/api-app-keys/">here</a></li>
+      <li><b>DATADOG_API_HOST</b>: Your DataDog host based on your <a href="https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site">DataDog Site Parameter from this list</a></li>
+      <li><b>JF_PRODUCT_DATA_INTERNAL</b>: The environment variable JF_PRODUCT_DATA_INTERNAL must be defined to the correct location. For each JFrog service you will find its active log files in the `$JFROG_HOME/<product>/var/log` directory</li>
+      <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+      <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+      <li><b>JFROG_ADMIN_TOKEN*</b>: Artifactory <a href="https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory">Access Token</a> for authentication</li>
+      <li><b>COMMON_JPD</b>: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)</li>
+      <li><b>TARGET_PLATFORM</b>: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]</li>
+   </ul>
+
+   In order to verify that your environment variables are set correctly, run the following commands:
+
+   ```bash
+      env_vars=("DATADOG_API_KEY" "DATADOG_API_HOST" "JF_PRODUCT_DATA_INTERNAL" "JPD_URL" "JPD_ADMIN_USERNAME" "COMMON_JPD" "TARGET_PLATFORM")
+      ./test_envs.sh $env_vars
+   ```
+
+   </details>
+
+   <details><summary>New Relic environment variables configuration</summary>
+   Download the .env file from [here](log-vendors/NewRelic/docker/docker.env). Fill in the docker.env file with correct values:
+   <ul>
+      <li><b>NEWRELIC_LICENSE_KEY</b>: License Key from <a href="https://one.newrelic.com/launcher/api-keys-ui.api-keys-launcher">NewRelic</a></li>
+      <li><b>NEWRELIC_LOGS_URI</b>: This New Relic logs endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://log-api.newrelic.com/log/v1</li>
+      <li><b>NEWRELIC_METRICS_URI</b>: This New Relic metrics endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://metric-api.newrelic.com/metric/</li>
+      <li><b>JF_PRODUCT_DATA_INTERNAL</b>: The environment variable JF_PRODUCT_DATA_INTERNAL must be defined to the correct location. For each JFrog service you will find its active log files in the `$JFROG_HOME/<product>/var/log` directory</li>
+      <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+      <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+      <li><b>JFROG_ADMIN_TOKEN*</b>: Artifactory <a href="https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory">Access Token</a> for authentication</li>
+      <li><b>COMMON_JPD</b>: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)</li>
+      <li><b>TARGET_PLATFORM</b>: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]</li>
+   </ul>
+
+   In order to verify that your environment variables are set correctly, run the following commands:
+
+   ```bash
+     env_vars=("NEWRELIC_LICENSE_KEY" "NEWRELIC_LOGS_URI" "NEWRELIC_METRICS_URI" "JF_PRODUCT_DATA_INTERNAL" "JPD_URL" "JPD_ADMIN_USERNAME" "COMMON_JPD" "TARGET_PLATFORM")
+     ./test_envs.sh $env_vars
+   ```
+
+   </details>
+3. Execute the following command:
+
+   ```bash
+   docker run -it --name jfrog-fluentd-rt -v <path_to_logs>:/var/opt/jfrog/artifactory --env-file docker.env <image_name>
+   ```
+
+   The <path_to_logs> should be an absolute path where the Jfrog Artifactory Logs folder resides, i.e for an Docker based Artifactory Installation,  ex: /var/opt/jfrog/artifactory/var/logs on the docker host.
+
+   Command example:
+
+   ```bash
+      docker run -it --name jfrog-fluentd-rt -v $JFROG_HOME/artifactory/var/:/var/opt/jfrog/artifactory --env-file docker.env jfrog/fluentd-rt
+   ```
 
 ### Kubernetes Deployment with Helm
 
-Recommended installation for Kubernetes is to utilize the helm chart with the associated values.yaml in this repo.
+Recommended installation for Kubernetes is to utilize the [JFrog helm charts](https://github.com/jfrog/charts) with the associated values.yaml in this repo:
 
 
-| Product        | Example Values File             |
-| -------------- | ------------------------------- |
-| Artifactory    | helm/artifactory-values.yaml    |
-| Artifactory HA | helm/artifactory-ha-values.yaml |
-| Xray           | helm/xray-values.yaml           |
+| Product                       | Purpose                |    Example Values File                                  |
+| ----------------------------- | ---------------------- | ------------------------------------------------------- |
+| Artifactory OR Artifactory HA | shared values          | helm/artifactory-shared-values.yaml                     |
+| Artifactory OR Artifactory HA | vendor specific values | log-vendors/\<log-vendor\>/helm/artifactory-values.yaml |
+| Xray                          | shared values          | helm/xray-shared-values.yaml                            |
+| Xray                          | vendor specific values | log-vendors/\<log-vendor\>/helm/xray-values.yaml        |
 
 Add JFrog Helm repository:
 
-```shell
+```bash
 helm repo add jfrog https://charts.jfrog.io
 helm repo update
+```
+
+Throughout the exampled helm installations we'll use `jfrog-int` as an example namespace. That said, you can use a different or existing namespace instead by setting the following environment variable
+
+```bash
+export INST_NAMESPACE=jfrog-int
+```
+
+If you don't have an existing namespace for the deployment, create it and set the kubectl context to use this namespace
+
+```bash
+kubectl create namespace $INST_NAMESPACE
+kubectl config set-context --current --namespace=$INST_NAMESPACE
 ```
 
 Replace placeholders with your ``masterKey`` and ``joinKey``. To generate each of them, use the command
@@ -281,22 +469,30 @@ export JOIN_KEY=$(openssl rand -hex 32)
 export MASTER_KEY=$(openssl rand -hex 32)
 ```
 
+Optional: Create a kubernetes secret with Artifactory/Platform license key
+```bash
+kubectl create secret generic artifactory-license --from-file=<path_to_license_file>
+
+# for example with a file named art.lic in this dir (which contains the Artifactory license)
+kubectl create secret generic artifactory-license --from-file=./art.lic
+```
+if you decided to create this license secret please uncomment the license section in the [artifactory values yaml](helm/artifactory-shared-values.yaml).
+For more information regarding loading an Artifactory license from a secret please visit the [official JFrog user docs](https://jfrog.com/help/r/jfrog-installation-setup-documentation/add-licenses-with-artifactory-ha-helm-installation)
+
+
 #### Artifactory ⎈:
 
 1. Skip this step if you already have Artifactory installed. Else, install Artifactory using the command below
 
    ```bash
    helm upgrade --install artifactory  jfrog/artifactory \
-          --set artifactory.masterKey=$MASTER_KEY \
-          --set artifactory.joinKey=$JOIN_KEY \
-          --set artifactory.license.secret=artifactory-license \
-          --set artifactory.license.dataKey=artifactory.cluster.license \
-          --set artifactory.metrics.enabled=true \
-          --set artifactory.openMetrics.enabled=true
+      --set artifactory.masterKey=$MASTER_KEY \
+      --set artifactory.joinKey=$JOIN_KEY \
+      -n $INST_NAMESPACE
    ```
-2. Create a secret for JFrog's admin token - [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) using any of the following methods
+2. Once Artifactory installation was completed successfully, create a secret for JFrog's admin token - [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) using any of the following methods
 
-   ```shell
+   ```bash
    kubectl create secret generic jfrog-admin-token --from-file=token=<path_to_token_file>
 
    OR
@@ -304,108 +500,274 @@ export MASTER_KEY=$(openssl rand -hex 32)
    kubectl create secret generic jfrog-admin-token --from-literal=token=<JFROG_ADMN_TOKEN>
    ```
 3. For Artifactory installation, download the .env file from:
-   <details><summary>Splunk Helm environment variables configurtion</summary>
-      [here](log-vendors/Splunk/helm/jfrog_helm.env)
-   </details>
 
-   * **SPLUNK_COM_PROTOCOL**: HTTP Scheme, http or https
-   * **SPLUNK_HEC_HOST**: Splunk Instance URL
-   * **SPLUNK_HEC_PORT**: Splunk HEC configured port
-   * **SPLUNK_HEC_TOKEN**: Splunk HEC Token for sending logs to Splunk
-   * **SPLUNK_METRICS_HEC_TOKEN**: Splunk HEC Token for sending metrics to Splunk
-   * **SPLUNK_INSECURE_SSL**: false for test environments only or if http scheme
-   * **JPD_URL**: Artifactory JPD URL of the format `http://<ip_address>`
-   * **JPD_ADMIN_USERNAME**: Artifactory username for authentication
-   * **COMMON_JPD**: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)
-   * **TARGET_PLATFORM**: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]
+   <details><summary>Set environment variables for the Splunk integration</summary>
 
-   Apply the .env files using the helm command below
+   Download the .env file from [here](log-vendors/Splunk/helm/jfrog_helm.env). Fill in the jfrog_helm.env file with correct values:
 
-   ````shell
+   <ul>
+      <li><b>SPLUNK_COM_PROTOCOL</b>: HTTP Scheme, http or https</li>
+      <li><b>SPLUNK_HEC_HOST</b>: Splunk Instance URL</li>
+      <li><b>SPLUNK_HEC_PORT</b>: Splunk HEC configured port</li>
+      <li><b>SPLUNK_HEC_TOKEN</b>: Splunk HEC Token for sending logs to Splunk</li>
+      <li><b>SPLUNK_METRICS_HEC_TOKEN</b>: Splunk HEC Token for sending metrics to Splunk</li>
+      <li><b>SPLUNK_INSECURE_SSL</b>: false for test environments only or if http scheme</li>
+      <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+      <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+      <li><b>COMMON_JPD</b>: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)</li>
+      <li><b>TARGET_PLATFORM</b>: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]</li>
+   </ul>
+   Apply the .env file that you created in the previous step, using the command below
+
+   ```bash
    source jfrog_helm.env
-   ````
+   ```
+
+   In order to verify that your environment variables are set correctly, run the following commands::
+
+   ```bash
+      env_vars=("SPLUNK_COM_PROTOCOL" "SPLUNK_HEC_HOST" "SPLUNK_HEC_PORT" "SPLUNK_HEC_TOKEN" "SPLUNK_METRICS_HEC_TOKEN" "SPLUNK_INSECURE_SSL" "JPD_URL" "JPD_ADMIN_USERNAME" "COMMON_JPD" "TARGET_PLATFORM")
+      ./test_envs.sh $env_vars
+   ```
+
+   </details>
+   <details><summary>Set environment variables for the DataDog integration</summary>
+
+   Download the .env file from [here](log-vendors/DataDog/helm/jfrog_helm.env). Fill in the jfrog_helm.env file with correct values:
+
+   <ul>
+      <li><b>DATADOG_API_KEY</b>: API Key from <a href="https://app.datadoghq.com/organization-settings/api-keys">Datadog</a></li>
+      <li><b>DATADOG_API_HOST</b>: Your DataDog host based on your <a href="https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site">DataDog Site Parameter from this list</a></li>
+      <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+      <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+      <li><b>COMMON_JPD</b>: This flag should be set as true only for non-Kubernetes installations or installations where the JPD base URL is the same to access both Artifactory and Xray (for example, `https://sample_base_url/artifactory` or `https://sample_base_url/xray`)</li>
+      <li><b>TARGET_PLATFORM</b>: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]</li>
+   </ul>
+   Apply the .env file that you created in the previous step, using the command below
+
+   ```bash
+   source jfrog_helm.env
+   ```
+
+   In order to verify that your environment variables are set correctly, run the following commands:
+
+   ```bash
+      env_vars=("DATADOG_API_KEY" "DATADOG_API_HOST" "JPD_URL" "JPD_ADMIN_USERNAME" "COMMON_JPD" "TARGET_PLATFORM")
+      ./test_envs.sh $env_vars
+   ```
+
+   </details>
+   <details><summary>Set environment variables for the New Relic integration</summary>
+
+   Download the .env file from [here](log-vendors/NewRelic/helm/jfrog_helm.env). Fill in the jfrog_helm.env file with correct values:
+
+   <ul>
+      <li><b>NEWRELIC_LICENSE_KEY</b>: License Key from <a href="https://one.newrelic.com/launcher/api-keys-ui.api-keys-launcher">NewRelic</a></li>
+      <li><b>NEWRELIC_LOGS_URI</b>: This New Relic logs endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://log-api.newrelic.com/log/v1 if isn't set</li>
+      <li><b>NEWRELIC_METRICS_URI</b>: This New Relic metrics endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://metric-api.newrelic.com/metric/v1 if isn't set</li>
+      <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+      <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+      <li><b>COMMON_JPD</b>: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)</li>
+      <li><b>TARGET_PLATFORM</b>: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]</li>
+   </ul>
+
+   Apply the .env file that you created in the previous step, using the command below
+
+   ```bash
+   source jfrog_helm.env
+   ```
+
+   In order to verify that your environment variables are set correctly, run the following commands:
+
+   ```bash
+      env_vars=("NEWRELIC_LICENSE_KEY" "NEWRELIC_LOGS_URI" "NEWRELIC_METRICS_URI" "JPD_URL" "JPD_ADMIN_USERNAME" "COMMON_JPD" "TARGET_PLATFORM")
+      ./test_envs.sh $env_vars
+   ```
+
+   </details>
 4. Postgres password is required to upgrade Artifactory. Run the following command to get the current password
 
-   ```shell
-   POSTGRES_PASSWORD=$(kubectl get secret artifactory-postgresql -o jsonpath="{.data.postgresql-password}" | base64 --decode)
+   ```bash
+   POSTGRES_PASSWORD=$(kubectl get secret artifactory-postgresql -n $INST_NAMESPACE -o jsonpath="{.data.postgresql-password}" | base64 --decode)
    ```
-5. Upgrade Artifactory installation using the command below
+5. Upgrade Artifactory installation using the command below:
 
-   ```shell
-   helm upgrade --install artifactory jfrog/artifactory \
-          --set artifactory.masterKey=FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF \
-          --set artifactory.joinKey=EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE \
-          --set artifactory.metrics.enabled=true --set artifactory.openMetrics.enabled=true \
-          --set databaseUpgradeReady=true --set postgresql.postgresqlPassword=$POSTGRES_PASSWORD --set nginx.service.ssloffload=true \
-          --set splunk.host=$SPLUNK_HEC_HOST \
-          --set splunk.port=$SPLUNK_HEC_PORT \
-          --set splunk.logs_token=$SPLUNK_HEC_TOKEN \
-          --set splunk.metrics_token=$SPLUNK_METRICS_HEC_TOKEN \
-          --set splunk.com_protocol=$SPLUNK_COM_PROTOCOL \
-          --set splunk.insecure_ssl=$SPLUNK_INSECURE_SSL \
-          --set jfrog.observability.jpd_url=$JPD_URL \
-          --set jfrog.observability.username=$JPD_ADMIN_USERNAME \
-          --set jfrog.observability.common_jpd=$COMMON_JPD \
-          -f helm/artifactory-values.yaml
+   <details><summary>Upgrade Artifactory with Splunk integration</summary>
+
+   ```bash
+   helm upgrade --install artifactory jfrog/artifactory --set artifactory.jfrogUrl=$JPD_URL \
+      --set artifactory.joinKey=$JOIN_KEY \
+      --set postgresql.postgresqlPassword=$POSTGRES_PASSWORD \
+      --set splunk.host=$SPLUNK_HEC_HOST \
+      --set splunk.port=$SPLUNK_HEC_PORT \
+      --set splunk.logs_token=$SPLUNK_HEC_TOKEN \
+      --set splunk.metrics_token=$SPLUNK_METRICS_HEC_TOKEN \
+      --set splunk.insecure_ssl=$SPLUNK_INSECURE_SSL \
+      --set splunk.com_protocol=$SPLUNK_COM_PROTOCOL \
+      --set jfrog.observability.jpd_url=$JPD_URL \
+      --set jfrog.observability.username=$JPD_ADMIN_USERNAME \
+      --set jfrog.observability.common_jpd=$COMMON_JPD \
+      -f log-vendors/Splunk/helm/artifactory-values.yaml -f helm/artifactory-shared-values.yaml \
+      -n $INST_NAMESPACE
    ```
+
+   </details>
+   <details><summary>Upgrade Artifactory with DataDog integration</summary>
+
+   ```bash
+   helm upgrade --install artifactory jfrog/artifactory --set artifactory.jfrogUrl=$JPD_URL \
+      --set artifactory.joinKey=$JOIN_KEY \
+      --set postgresql.postgresqlPassword=$POSTGRES_PASSWORD \
+      --set datadog.api_key=$DATADOG_API_KEY \
+      --set datadog.api_host=$DATADOG_API_HOST \
+      --set jfrog.observability.jpd_url=$JPD_URL \
+      --set jfrog.observability.username=$JPD_ADMIN_USERNAME \
+      --set jfrog.observability.common_jpd=$COMMON_JPD \
+      -f log-vendors/DataDog/helm/artifactory-values.yaml -f helm/artifactory-shared-values.yaml \
+      -n $INST_NAMESPACE
+   ```
+
+   </details>
+   <details><summary>Upgrade Artifactory with New Relic integration</summary>
+
+   ```bash
+   helm upgrade --install artifactory jfrog/artifactory --set artifactory.jfrogUrl=$JPD_URL \
+      --set artifactory.joinKey=$JOIN_KEY \
+      --set postgresql.postgresqlPassword=$POSTGRES_PASSWORD \
+      --set newrelic.license_key=$NEWRELIC_LICENSE_KEY \
+      --set newrelic.logs_uri=$NEWRELIC_LOGS_URI \
+      --set newrelic.metrics_uri=$NEWRELIC_METRICS_URI \
+      --set jfrog.observability.jpd_url=$JPD_URL \
+      --set jfrog.observability.username=$JPD_ADMIN_USERNAME \
+      --set jfrog.observability.common_jpd=$COMMON_JPD \
+      -f log-vendors/NewRelic/helm/artifactory-values.yaml -f helm/artifactory-shared-values.yaml \
+      -n $INST_NAMESPACE
+   ```
+
+   </details>
 
 #### Artifactory-HA ⎈:
 
-1. For HA installation, please create a license secret on your cluster prior to installation.
+1. Skip this step if you already have Artifactory installed. Else, install Artifactory using the command below
 
-   ```shell
-   kubectl create secret generic artifactory-license --from-file=<path_to_license_file>artifactory.cluster.license 
+   ```bash
+   helm upgrade --install artifactory-ha jfrog/artifactory-ha \
+      --set artifactory.masterKey=$MASTER_KEY \
+      --set artifactory.joinKey=$JOIN_KEY \
+      -n $INST_NAMESPACE
    ```
-2. Skip this step if you already have Artifactory installed. Else, install Artifactory using the command below
+2. Once Artifactory installation was completed successfully, create a secret for JFrog's admin token - [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) using any of the following methods
 
-   ```shell
-   helm upgrade --install artifactory-ha  jfrog/artifactory-ha \
-      --set artifactory.masterKey=FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF \
-      --set artifactory.joinKey=EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE \
-      --set artifactory.license.secret=artifactory-license \
-      --set artifactory.license.dataKey=artifactory.cluster.license \
-      --set artifactory.metrics.enabled=true \
-      --set artifactory.openMetrics.enabled=true
-   ```
-3. Create a secret for JFrog's admin token - [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) using any of the following methods
-
-   ```shell
+   ```bash
    kubectl create secret generic jfrog-admin-token --from-file=token=<path_to_token_file>
+   ```
 
    OR
 
-   kubectl create secret generic jfrog-admin-token --from-literal=token=<JFROG_ADMN_TOKEN>
-   ```
-4. Download the .env file from [here](https://github.com/jfrog/log-analytics-splunk/raw/master/helm/jfrog_helm.env). Fill in the jfrog_helm.env file with correct values.
+   ```bash
+   kubectl create secret generic jfrog-admin-token --from-literal=token=<JFROG_ADMIN_TOKEN>
+   ``` 
+3. Set environment variables for your integration:
 
-   * **SPLUNK_COM_PROTOCOL**: HTTP Scheme, http or https
-   * **SPLUNK_HEC_HOST**: Splunk Instance URL
-   * **SPLUNK_HEC_PORT**: Splunk HEC configured port
-   * **SPLUNK_HEC_TOKEN**: Splunk HEC Token for sending logs to Splunk
-   * **SPLUNK_METRICS_HEC_TOKEN**: Splunk HEC Token for sending metrics to Splunk
-   * **SPLUNK_INSECURE_SSL**: false for test environments only or if http scheme
-   * **JPD_URL**: Artifactory JPD URL of the format `http://<ip_address>`
-   * **JPD_ADMIN_USERNAME**: Artifactory username for authentication
-   * **COMMON_JPD**: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)
+   <details><summary>Set environment variables for the Splunk integration</summary>
 
-   Apply the .env files and then run the helm command below
+   Download the .env file from [here](log-vendors/Splunk/helm/jfrog_helm.env). Fill in the jfrog_helm.env file with correct values:
 
-   ````shell
+   <ul>
+      <li><b>SPLUNK_COM_PROTOCOL</b>: HTTP Scheme, http or https</li>
+      <li><b>SPLUNK_HEC_HOST</b>: Splunk Instance URL</li>
+      <li><b>SPLUNK_HEC_PORT</b>: Splunk HEC configured port</li>
+      <li><b>SPLUNK_HEC_TOKEN</b>: Splunk HEC Token for sending logs to Splunk</li>
+      <li><b>SPLUNK_METRICS_HEC_TOKEN</b>: Splunk HEC Token for sending metrics to Splunk</li>
+      <li><b>SPLUNK_INSECURE_SSL</b>: false for test environments only or if http scheme</li>
+      <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+      <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+      <li><b>COMMON_JPD</b>: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)</li>
+      <li><b>TARGET_PLATFORM</b>: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]</li>
+   </ul>
+   Apply the .env file that you created in the previous step, using the command below
+
+   ```bash
    source jfrog_helm.env
-   ````
+   ```
+
+   In order to verify that your environment variables are set correctly, run the following commands::
+
+   ```bash
+      env_vars=("SPLUNK_COM_PROTOCOL" "SPLUNK_HEC_HOST" "SPLUNK_HEC_PORT" "SPLUNK_HEC_TOKEN" "SPLUNK_METRICS_HEC_TOKEN" "SPLUNK_INSECURE_SSL" "JPD_URL" "JPD_ADMIN_USERNAME" "COMMON_JPD" "TARGET_PLATFORM")
+      ./test_envs.sh $env_vars
+   ```
+   </details>
+   <details><summary>Set environment variables for the DataDog integration</summary>
+
+   Download the .env file from [here](log-vendors/DataDog/helm/jfrog_helm.env). Fill in the jfrog_helm.env file with correct values:
+
+   <ul>
+      <li><b>JF_PRODUCT_DATA_INTERNAL</b>: Helm based installs will already have this defined based upon the underlying Docker images. Not a required field for k8s installation</li>
+      <li><b>DATADOG_API_KEY</b>: API Key from <a href="https://app.datadoghq.com/organization-settings/api-keys">Datadog</a></li>
+      <li><b>DATADOG_API_HOST</b>: Your DataDog host based on your <a href="https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site">DataDog Site Parameter from this list</a></li>
+      <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+      <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+      <li><b>COMMON_JPD</b>: This flag should be set as true only for non-Kubernetes installations or installations where the JPD base URL is the same to access both Artifactory and Xray (for example, `https://sample_base_url/artifactory` or `https://sample_base_url/xray`)</li>
+      <li><b>TARGET_PLATFORM</b>: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]</li>
+   </ul>
+   Apply the .env file that you created in the previous step, using the command below
+
+   ```bash
+   source jfrog_helm.env
+   ```
+
+   In order to verify that your environment variables are set correctly, run the following commands:
+
+   ```bash
+      env_vars=("DATADOG_API_KEY" "DATADOG_API_HOST" "JPD_URL" "JPD_ADMIN_USERNAME" "COMMON_JPD" "TARGET_PLATFORM")
+      ./test_envs.sh $env_vars
+   ```
+   </details>
+   <details><summary>Set environment variables for the New Relic integration</summary>
+
+   Download the .env file from [here](log-vendors/NewRelic/helm/jfrog_helm.env). Fill in the jfrog_helm.env file with correct values:
+
+   <ul>
+      <li><b>NEWRELIC_LICENSE_KEY</b>: License Key from <a href="https://one.newrelic.com/launcher/api-keys-ui.api-keys-launcher">NewRelic</a></li>
+      <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+      <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+      <li><b>COMMON_JPD</b>: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)</li>
+      <li><b>NEWRELIC_LOGS_URI</b>: This New Relic logs endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://log-api.newrelic.com/log/v1 if isn't set</li>
+      <li><b>NEWRELIC_METRICS_URI</b>: This New Relic metrics endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://metric-api.newrelic.com/metric/v1 if isn't set</li>
+      <li><b>TARGET_PLATFORM</b>: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]</li>
+   </ul>
+   Apply the .env file that you created in the previous step, using the command below
+
+   ```bash
+   source jfrog_helm.env
+   ```
+
+   In order to verify that your environment variables are set correctly, run the following commands:
+
+   ```bash
+      env_vars=("NEWRELIC_LICENSE_KEY" "NEWRELIC_LOGS_URI" "NEWRELIC_METRICS_URI" "JPD_URL" "JPD_ADMIN_USERNAME" "COMMON_JPD" "TARGET_PLATFORM")
+      ./test_envs.sh $env_vars
+   ```
+   </details>
+4. Apply the .env files and then run the helm command below
+
+   ```bash
+   source jfrog_helm.env
+   ```
 5. Postgres password is required to upgrade Artifactory. Run the following command to get the current password
 
-   ```shell
-   POSTGRES_PASSWORD=$(kubectl get secret artifactory-ha-postgresql -o jsonpath="{.data.postgresql-password}" | base64 --decode)
+   ```bash
+   POSTGRES_PASSWORD=$(kubectl get secret artifactory-ha-postgresql -n $INST_NAMESPACE -o jsonpath="{.data.postgresql-password}" | base64 --decode)
    ```
-6. Upgrade Artifactory HA installation using the command below
+6. Upgrade Artifactory HA installation using the command below:
 
-   ```text
+   <details><summary>Upgrade Artifactory HA with Splunk integration</summary>
+
+   ```bash
    helm upgrade --install artifactory-ha  jfrog/artifactory-ha \
-       --set artifactory.masterKey=FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF \
-       --set artifactory.joinKey=EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE --set artifactory.replicaCount=0 \
-       --set artifactory.metrics.enabled=true --set artifactory.openMetrics.enabled=true \
-       --set databaseUpgradeReady=true --set postgresql.postgresqlPassword=$POSTGRES_PASSWORD --set nginx.service.ssloffload=true \
+       --set artifactory.joinKey=$JOIN_KEY \
+       --set postgresql.postgresqlPassword=$POSTGRES_PASSWORD \
        --set splunk.host=$SPLUNK_HEC_HOST \
        --set splunk.port=$SPLUNK_HEC_PORT \
        --set splunk.logs_token=$SPLUNK_HEC_TOKEN \
@@ -415,69 +777,210 @@ export MASTER_KEY=$(openssl rand -hex 32)
        --set jfrog.observability.jpd_url=$JPD_URL \
        --set jfrog.observability.username=$JPD_ADMIN_USERNAME \
        --set jfrog.observability.common_jpd=$COMMON_JPD \
-       -f helm/artifactory-ha-values.yaml
+       -f log-vendors/Splunk/helm/artifactory-values.yaml -f helm/artifactory-shared-values.yaml \
+       -n $INST_NAMESPACE
    ```
+
+   </details>
+   <details><summary>Upgrade Artifactory HA with DataDog integration</summary>
+
+   ```bash
+   helm upgrade --install artifactory-ha  jfrog/artifactory-ha \
+      --set artifactory.joinKey=$JOIN_KEY \
+      --set postgresql.postgresqlPassword=$POSTGRES_PASSWORD \
+      --set datadog.api_key=$DATADOG_API_KEY \
+      --set datadog.api_host=$DATADOG_API_HOST \
+      --set jfrog.observability.jpd_url=$JPD_URL \
+      --set jfrog.observability.username=$JPD_ADMIN_USERNAME \
+      --set jfrog.observability.common_jpd=$COMMON_JPD \
+      -f log-vendors/DataDog/helm/artifactory-values.yaml -f helm/artifactory-shared-values.yaml \
+      -n $INST_NAMESPACE
+   ```
+
+   </details>
+   <details><summary>Upgrade Artifactory HA with New Relic integration</summary>
+
+   ```bash
+   helm upgrade --install artifactory-ha  jfrog/artifactory-ha \
+      --set artifactory.joinKey=$JOIN_KEY \
+      --set postgresql.postgresqlPassword=$POSTGRES_PASSWORD \
+      --set jfrog.observability.jpd_url=$JPD_URL \
+      --set jfrog.observability.username=$JPD_ADMIN_USERNAME \
+      --set jfrog.observability.common_jpd=$COMMON_JPD \
+      --set newrelic.license_key=$NEWRELIC_LICENSE_KEY \
+      --set newrelic.logs_uri=$NEWRELIC_LOGS_URI \
+      --set newrelic.metrics_uri=$NEWRELIC_METRICS_URI \
+      -f log-vendors/NewRelic/helm/artifactory-values.yaml -f helm/artifactory-shared-values.yaml \
+      -n $INST_NAMESPACE
+   ```
+   </details>
 
 #### Xray ⎈:
 
-Create a secret for JFrog's admin token - [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) using any of the following methods if it doesn't exist
+1. Create a secret for JFrog's admin token - [Access Token](https://jfrog.com/help/r/how-to-generate-an-access-token-video/artifactory-creating-access-tokens-in-artifactory) using any of the following methods if it doesn't exist
 
-```shell
-kubectl create secret generic jfrog-admin-token --from-file=token=<path_to_token_file>
+   ```bash
+   kubectl create secret generic jfrog-admin-token --from-file=token=<path_to_token_file>
+   ```
 
-OR
+   OR
 
-kubectl create secret generic jfrog-admin-token --from-literal=token=<JFROG_ADMN_TOKEN>
-```
+   ```bash
+   kubectl create secret generic jfrog-admin-token --from-literal=token=<JFROG_ADMIN_TOKEN>
+   ```
+2. For Xray installation, download the .env file  as instructed below and fill in the jfrog_helm.env file with correct values
+   <details><summary>Set environment variables for the Splunk integration</summary>
 
-For Xray installation, download the .env file from [here](https://raw.githubusercontent.com/jfrog/log-analytics-splunk/master/jfrog_helm.env). Fill in the jfrog_helm.env file with correct values.
+   Download the .env file from [here](log-vendors/Splunk/helm/jfrog_helm.env). Fill in the jfrog_helm.env file with correct values:
 
-* **SPLUNK_COM_PROTOCOL**: HTTP Scheme, http or https
-* **SPLUNK_HEC_HOST**: Splunk Instance URL
-* **SPLUNK_HEC_PORT**: Splunk HEC configured port
-* **SPLUNK_HEC_TOKEN**: Splunk HEC Token for sending logs to Splunk
-* **SPLUNK_METRICS_HEC_TOKEN**: Splunk HEC Token for sending metrics to Splunk
-* **SPLUNK_INSECURE_SSL**: false for test environments only or if http scheme
-* **JPD_URL**: Artifactory JPD URL of the format `http://<ip_address>`
-* **JPD_ADMIN_USERNAME**: Artifactory username for authentication
-* **JFROG_ADMIN_TOKEN**: For security reasons, this value will be pulled from the secret jfrog-admin-token created in the step above
-* **COMMON_JPD**: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)
+   <ul>
+      <li><b>SPLUNK_COM_PROTOCOL</b>: HTTP Scheme, http or https</li>
+      <li><b>SPLUNK_HEC_HOST</b>: Splunk Instance URL</li>
+      <li><b>SPLUNK_HEC_PORT</b>: Splunk HEC configured port</li>
+      <li><b>SPLUNK_HEC_TOKEN</b>: Splunk HEC Token for sending logs to Splunk</li>
+      <li><b>SPLUNK_METRICS_HEC_TOKEN</b>: Splunk HEC Token for sending metrics to Splunk</li>
+      <li><b>SPLUNK_INSECURE_SSL</b>: false for test environments only or if http scheme</li>
+      <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+      <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+      <li><b>COMMON_JPD</b>: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)</li>
+      <li><b>TARGET_PLATFORM</b>: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]</li>
+   </ul>
+   Apply the .env file that you created in the previous step, using the command below
 
-Apply the .env files and then run the helm command below
+   ```bash
+   source jfrog_helm.env
+   ```
 
-````shell
-source jfrog_helm.env
-````
+   In order to verify that your environment variables are set correctly, run the following commands::
 
-Use the same `joinKey` as you used in Artifactory installation to allow Xray node to successfully connect to Artifactory.
+   ```bash
+      env_vars=("SPLUNK_COM_PROTOCOL" "SPLUNK_HEC_HOST" "SPLUNK_HEC_PORT" "SPLUNK_HEC_TOKEN" "SPLUNK_METRICS_HEC_TOKEN" "SPLUNK_INSECURE_SSL" "JPD_URL" "JPD_ADMIN_USERNAME" "COMMON_JPD" "TARGET_PLATFORM")
+      ./test_envs.sh $env_vars
+   ```
+   </details>
+   <details><summary>Set environment variables for the DataDog integration</summary>
 
-```shell
-helm upgrade --install xray jfrog/xray --set xray.jfrogUrl=http://my-artifactory-nginx-url \
-       --set xray.masterKey=FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF \
-       --set xray.joinKey=EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE \
-       --set splunk.host=$SPLUNK_HEC_HOST \
-       --set splunk.port=$SPLUNK_HEC_PORT \
-       --set splunk.logs_token=$SPLUNK_HEC_TOKEN \
-       --set splunk.metrics_token=$SPLUNK_METRICS_HEC_TOKEN \
-       --set splunk.com_protocol=$SPLUNK_COM_PROTOCOL \
-       --set splunk.insecure_ssl=$SPLUNK_INSECURE_SSL \
+   Download the .env file from [here](log-vendors/DataDog/helm/jfrog_helm.env). Fill in the jfrog_helm.env file with correct values:
+
+   <ul>
+      <li><b>JF_PRODUCT_DATA_INTERNAL</b>: Helm based installs will already have this defined based upon the underlying Docker images. Not a required field for k8s installation</li>
+      <li><b>DATADOG_API_KEY</b>: API Key from <a href="https://app.datadoghq.com/organization-settings/api-keys">Datadog</a></li>
+      <li><b>DATADOG_API_HOST</b>: Your DataDog host based on your <a href="https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site">DataDog Site Parameter from this list</a></li>
+      <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+      <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+      <li><b>COMMON_JPD</b>: This flag should be set as true only for non-Kubernetes installations or installations where the JPD base URL is the same to access both Artifactory and Xray (for example, `https://sample_base_url/artifactory` or `https://sample_base_url/xray`)</li>
+      <li><b>TARGET_PLATFORM</b>: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]</li>
+   </ul>
+   Apply the .env file that you created in the previous step, using the command below
+
+   ```bash
+   source jfrog_helm.env
+   ```
+
+   In order to verify that your environment variables are set correctly, run the following commands:
+
+   ```bash
+      env_vars=("DATADOG_API_KEY" "DATADOG_API_HOST" "JPD_URL" "JPD_ADMIN_USERNAME" "COMMON_JPD" "TARGET_PLATFORM")
+      ./test_envs.sh $env_vars
+   ```
+   </details>
+   <details><summary>Set environment variables for the New Relic integration</summary>
+
+   Download the .env file from [here](log-vendors/NewRelic/helm/jfrog_helm.env). Fill in the jfrog_helm.env file with correct values:
+
+   <ul>
+      <li><b>NEWRELIC_LICENSE_KEY</b>: License Key from <a href="https://one.newrelic.com/launcher/api-keys-ui.api-keys-launcher">NewRelic</a></li>
+      <li><b>JPD_URL</b>: Artifactory JPD URL of the format `http://<ip_address>`</li>
+      <li><b>JPD_ADMIN_USERNAME</b>: Artifactory username for authentication</li>
+      <li><b>COMMON_JPD</b>: This flag should be set as true only for non-kubernetes installations or installations where JPD base URL is same to access both Artifactory and Xray (ex: https://sample_base_url/artifactory or https://sample_base_url/xray)</li>
+      <li><b>NEWRELIC_LOGS_URI</b>: This New Relic logs endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://log-api.newrelic.com/log/v1 if isn't set</li>
+      <li><b>NEWRELIC_METRICS_URI</b>: This New Relic metrics endpoint needs to be set if your New Relic instance is in the EU region (or if any other custom configuration is needed). It defaults to https://metric-api.newrelic.com/metric/v1 if isn't set</li>
+      <li><b>TARGET_PLATFORM</b>: The target observability platform. Supported platforms: [DATADOG, NEWRELIC, SPLUNK]</li>
+   </ul>
+   Apply the .env file that you created in the previous step, using the command below
+
+   ```bash
+   source jfrog_helm.env
+   ```
+
+   In order to verify that your environment variables are set correctly, run the following commands:
+
+   ```bash
+      env_vars=("NEWRELIC_LICENSE_KEY" "NEWRELIC_LOGS_URI" "NEWRELIC_METRICS_URI" "JPD_URL" "JPD_ADMIN_USERNAME" "COMMON_JPD" "TARGET_PLATFORM")
+      ./test_envs.sh $env_vars
+   ```
+   </details>
+3. Generate a master key for xray
+
+   ```bash
+   export XRAY_MASTER_KEY=$(openssl rand -hex 32)
+   ```
+4. Use the same `joinKey` as you used in Artifactory installation to allow Xray node to successfully connect to Artifactory.
+
+   <details><summary>Install Xray with Splunk integration</summary>
+
+   ```bash
+   helm upgrade --install xray jfrog/xray --set xray.jfrogUrl=$JPD_URL \
+      --set xray.masterKey=$XRAY_MASTER_KEY \
+      --set xray.joinKey=$JOIN_KEY \
+      --set splunk.host=$SPLUNK_HEC_HOST \
+      --set splunk.port=$SPLUNK_HEC_PORT \
+      --set splunk.logs_token=$SPLUNK_HEC_TOKEN \
+      --set splunk.metrics_token=$SPLUNK_METRICS_HEC_TOKEN \
+      --set splunk.com_protocol=$SPLUNK_COM_PROTOCOL \
+      --set splunk.insecure_ssl=$SPLUNK_INSECURE_SSL \
+      --set jfrog.observability.jpd_url=$JPD_URL \
+      --set jfrog.observability.username=$JPD_ADMIN_USERNAME \
+      --set jfrog.observability.common_jpd=$COMMON_JPD \
+      -f log-vendors/Splunk/helm/xray-values.yaml -f helm/xray-shared-values.yaml \
+      -n $INST_NAMESPACE
+   ```
+
+   </details>
+   <details><summary>Install Xray with DataDog integration</summary>
+
+   ```bash
+   helm upgrade --install xray jfrog/xray --set xray.jfrogUrl=$JPD_URL \
+       --set xray.masterKey=$XRAY_MASTER_KEY \
+       --set xray.joinKey=$JOIN_KEY \
+       --set datadog.api_key=$DATADOG_API_KEY \
+       --set datadog.api_host=$DATADOG_API_HOST \
        --set jfrog.observability.jpd_url=$JPD_URL \
        --set jfrog.observability.username=$JPD_ADMIN_USERNAME \
        --set jfrog.observability.common_jpd=$COMMON_JPD \
-       -f helm/xray-values.yaml
-```
+       -f log-vendors/DataDog/helm/xray-values.yaml -f helm/xray-shared-values.yaml \
+       -n $INST_NAMESPACE
+   ```
+
+   </details>
+   <details><summary>Install Xray with New Relic integration</summary>
+
+   ```bash
+   helm upgrade --install xray jfrog/xray --set xray.jfrogUrl=http://my-artifactory-nginx-url \
+      --set xray.masterKey=$XRAY_MASTER_KEY \
+      --set xray.joinKey=$JOIN_KEY \
+      --set datadog.api_key=$DATADOG_API_KEY \
+      --set datadog.api_host=$DATADOG_API_HOST \
+      --set jfrog.observability.jpd_url=$JPD_URL \
+      --set jfrog.observability.username=$JPD_ADMIN_USERNAME \
+      --set jfrog.observability.common_jpd=$COMMON_JPD \
+      -f log-vendors/NewRelic/helm/xray-values.yaml -f helm/xray-shared-values.yaml \
+      -n $INST_NAMESPACE
+   ```
+
+   </details>
 
 ## Dashboards
 
-### Integration Dashboards
+### Integrations Dashboards
 
-Dashboards are unique to your observability provider. For more info please refer to:
+Dashboards are unique to your observability provider. For more information regarding integration specific dashboards please visit:
 
-* For **Splunk** integration please visit here: [dashboards](log-vendors/Splunk#dashboards)
-* For **DataDog** integration please visit here: [dashboards](log-vendors/DataDog/#dashboards)
-* For **New Relic** integration please visit here: [dashboards](log-vendors/NewRelic/#dashboardsp)
-```
+* [**Splunk Dashboards**](log-vendors/Splunk#dashboards)
+* [**DataDog Dashboards**](log-vendors/DataDog/#dashboards)
+* [**New Relic Dashboards**](log-vendors/NewRelic/#dashboards)
 
 ## References
 
 * [Fluentd](https://www.fluentd.org) - Fluentd Logging Aggregator/Agent
+* [JFrog SIEM plugin](https://github.com/jfrog/fluent-plugin-jfrog-siem) - Fleuntd input plugin to source JFrog Xray Violations

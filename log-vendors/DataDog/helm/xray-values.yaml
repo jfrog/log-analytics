@@ -65,9 +65,9 @@ common:
         - name: DATADOG_API_HOST
           value: {{ .Values.datadog.api_host }}
         - name: FLUENTD_CONF
-          value: ../../../etc/fluentd/fluentd.conf
+          value: ../../../../etc/fluentd/fluentd.conf
         - name: TARGET_PLATFORM
-          value: 'DATADOG'
+          value: "DATADOG"
 
 
 datadog:

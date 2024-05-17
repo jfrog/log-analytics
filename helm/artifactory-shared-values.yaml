@@ -1,3 +1,5 @@
+databaseUpgradeReady: true
+
 jfrog:
   observability:
     jpd_url: JPD_URL
@@ -9,10 +11,22 @@ artifactory:
     - name: fluentd-conf-volume
       configMap:
         name: artifactory-configmaps
+  openMetrics:
+    enabled: true
+  metrics:
+    enabled: true 
+  # optional - only if you created a k8s secret named artifactory-license   
+  # license:
+  #   secret: artifactory-license
+  #   dataKey: art.lic
+
+nginx:
+  service:
+    ssloffload: true
 
 fluentd:
   imageName: releases-pts-observability-fluentd.jfrog.io/jfrog-fluentd
-  imageTag: "4.3"
+  imageTag: "4.4"
   sharedConf: |
     fluentd.conf: |
       # METRICS COLLECTION USING JFROG METRICS PLUGIN

@@ -90,3 +90,40 @@ Users will need to configure the HEC to accept data (enabled) and also create a 
 10. If good, Click on the green "Done" button
 11. Save the generated token value
 ````
+
+## Dashboards
+
+### Artifactory dashboard
+
+JFrog Artifactory Dashboard is divided into multiple sections Application, Audit, Requests, Docker, System Metrics, Heap Metrics and Connection Metrics
+
+* **Application** - This section tracks Log Volume(information about different log sources) and Artifactory Errors over time(bursts of application errors that may otherwise go undetected)
+* **Audit** - This section tracks audit logs help you determine who is accessing your Artifactory instance and from where. These can help you track potentially malicious requests or processes (such as CI jobs) using expired credentials.
+* **Requests** - This section tracks HTTP response codes, Top 10 IP addresses for uploads and downloads
+* **Docker** - To monitor Dockerhub pull requests users should have a Dockerhub account either paid or free. Free accounts allow up to 200 pull requests per 6 hour window. Various widgets have been added in the new Docker tab under Artifactory to help monitor your Dockerhub pull requests. An alert is also available to enable if desired that will allow you to send emails or add outbound webhooks through configuration to be notified when you exceed the configurable threshold.
+* **System Metrics** - This section tracks CPU Usage, System Memory and Disk Usage metrics
+* **Heap Metrics** - This section tracks Heap Memory and Garbage Collection
+* **Connection Metrics** - This section tracks Database connections and HTTP Connections
+
+### Xray dashboard
+
+JFrog Xray Dashboard is divided into three sections Logs, Violations and Metrics
+
+* **Logs** - This section provides a summary of access, service and traffic log volumes associated with Xray. Additionally, customers are also able to track various HTTP response codes, HTTP 500 errors, and log errors for greater operational insight
+* **Violations** - This section provides an aggregated summary of all the license violations and security vulnerabilities found by Xray.  Information is segment by watch policies and rules.  Trending information is provided on the type and severity of violations over time, as well as, insights on most frequently occurring CVEs, top impacted artifacts and components.
+* **Metrics** - This section tracks CPU usage, System Memory, Disk Usage, Heap Memory and Database Connections
+
+### CIM Compatibility
+
+Log data from JFrog platform logs is translated to pre-defined Common Information Models (CIM) compatible with Splunk. This compatibility enables new advanced features where users can search and access JFrog log data that is compatible with data models. For example
+
+```text
+| datamodel Web Web search
+| datamodel Change_Analysis All_Changes search
+| datamodel Vulnerabilities Vulnerabilities search
+```
+
+### References
+
+* [Splunk](https://www.splunk.com/) - Splunk Logging Platform
+* [Splunk HEC](https://dev.splunk.com/enterprise/docs/dataapps/httpeventcollector/) - Splunk HEC used to upload data into Splunk

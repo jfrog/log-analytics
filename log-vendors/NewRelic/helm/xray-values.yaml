@@ -1,8 +1,8 @@
-installerInfo: '{ "productId": "OnPremObservability-NewRelic/1.0.1", "features": [ { "featureId": "ArtifactoryVersion/{{ default .Chart.AppVersion .Values.artifactory.image.version }}" }, { "featureId": "{{ if .Values.postgresql.enabled }}postgresql{{ else }}{{ .Values.database.type }}{{ end }}/0.0.0" }, { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}" },  { "featureId": "Channel/OnPremObservability-NewRelic-Helm" } ] }'
+installerInfo: '{ "productId": "OnPremObservability-NewRelic/1.0.1", "features": [ { "featureId": "XrayVersion/{{ default .Chart.AppVersion .Values.xray.image.version }}" }, { "featureId": "{{ if .Values.postgresql.enabled }}postgresql{{ else }}{{ .Values.database.type }}{{ end }}/0.0.0" }, { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}" },  { "featureId": "Channel/OnPremObservability-NewRelic-Helm" } ] }'
 
 fluentd:
   newRelicConf: |
-    # NEW RELIC ARTIFACTORY METRICS OUTPUT
+    # NEWRELIC XRAY METRICS OUTPUT
     <match jfrog.metrics.**>
       @type jfrog_send_metrics
       target_platform "NEWRELIC"
@@ -10,31 +10,34 @@ fluentd:
       url "#{ENV['NEWRELIC_METRICS_URI']}"
     </match>
     
-    ## NEWRELIC ARTIFACTORY LOGS OUTPUT
-    <label @vendor.ready>
-      <match jfrog.**>
-        @type newrelic
-        license_key "#{ENV['NEWRELIC_LICENSE_KEY']}"
-        base_uri "#{ENV['NEWRELIC_LOGS_URI']}"
-        logtype "jfrog_artifactory_logs"
-      </match>
-    </label>
+    # NEWRELIC XRAY LOGS OUTPUT
+    <match jfrog.**>
+      @type newrelic
+      license_key "#{ENV['NEWRELIC_LICENSE_KEY']}"
+      base_uri "#{ENV['NEWRELIC_LOGS_URI']}"
+      logtype "jfrog_xray_logs"
+    </match>
 
-artifactory:
+xray:
   configMaps: |
       {{ .Values.fluentd.sharedConf | indent 4 }}
       {{ .Values.fluentd.newRelicConf | indent 6 }}
 
+common:
   customSidecarContainers: |
-    - name: "artifactory-fluentd-sidecar"
+    - name: "xray-platform-fluentd-sidecar"
       image: "{{ .Values.fluentd.imageName }}:{{ .Values.fluentd.imageTag }}"
       imagePullPolicy: "IfNotPresent"
       volumeMounts:
-        - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
-          name: artifactory-volume
+        - mountPath: "{{ .Values.xray.persistence.mountPath }}"
+          name: data-volume
+        - mountPath: /etc/fluentd
+          name: fluentd-conf-xray-volume  
       env:
         - name: JF_PRODUCT_DATA_INTERNAL
-          value: {{ .Values.artifactory.persistence.mountPath }}
+          value: {{ .Values.xray.persistence.mountPath }}
+        - name: FLUENTD_CONF
+          value: ../../../../etc/fluentd/fluentd.conf
         - name: JPD_URL
           value: {{ .Values.jfrog.observability.jpd_url }}
         - name: JPD_ADMIN_USERNAME
@@ -48,14 +51,12 @@ artifactory:
           value: {{ .Values.jfrog.observability.common_jpd | quote }}
         - name: NEWRELIC_LICENSE_KEY
           value: {{ .Values.newrelic.license_key }}
-        - name: FLUENTD_CONF
-          value: ../../../etc/fluentd/fluentd.conf
         - name: NEWRELIC_LOGS_URI
           value: {{ .Values.newrelic.logs_uri }}
         - name: NEWRELIC_METRICS_URI
           value: {{ .Values.newrelic.metrics_uri }}
         - name: TARGET_PLATFORM
-          value: 'NEWRELIC'
+          value: "NEWRELIC"
 
 newrelic:
   license_key: NEWRELIC_LICENSE_KEY

@@ -40,11 +40,13 @@ artifactory:
 
   customSidecarContainers: |
     - name: "artifactory-fluentd-sidecar"
-      image: "releases-pts-observability-fluentd.jfrog.io/fluentd:4.2"
+      image: "{{ .Values.fluentd.imageName }}:{{ .Values.fluentd.imageTag }}"
       imagePullPolicy: "IfNotPresent"
       volumeMounts:
         - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
           name: artifactory-volume
+        - mountPath: /etc/fluentd
+          name: fluentd-conf-volume
       env:
         - name: JF_PRODUCT_DATA_INTERNAL
           value: {{ .Values.artifactory.persistence.mountPath }}
@@ -64,9 +66,9 @@ artifactory:
         - name: DATADOG_API_HOST
           value: {{ .Values.datadog.api_host }}
         - name: FLUENTD_CONF
-          value: ../../../etc/fluentd/fluentd.conf
+          value: ../../../../etc/fluentd/fluentd.conf
         - name: TARGET_PLATFORM
-          value: 'DATADOG'
+          value: "DATADOG"
 
 datadog:
   api_key: DATADOG_API_KEY

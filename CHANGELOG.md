@@ -2,6 +2,6 @@
 
 All changes to the log analytics integration will be documented in this file.
 
-## [1.0.0] - MAy 12, 2024
+## [2.0.0] - May 20, 2024
 
-* First version - creating a one repositoroy for all SaaS log analytics integrations
+* New major version - creating a single repository for all SaaS log analytics integrations
