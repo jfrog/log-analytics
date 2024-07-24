@@ -1,0 +1,1676 @@
+{
+  "visualizations": {
+    "viz_SIjolIHp": {
+      "type": "splunk.image",
+      "options": {
+        "preserveAspectRatio": true,
+        "src": "splunk-enterprise-kvstore://662b1b2c9b867fd2c30fc644"
+      }
+    },
+    "viz_fFI5UzJa": {
+      "type": "splunk.column",
+      "title": "Artifactory calls by HTTP status",
+      "description": "The number of Artifactory requests, grouped by HTTP response code.",
+      "dataSources": {
+        "primary": "ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "columnGrouping": "overlay",
+        "seriesColorsByField": {
+          "200": "#53a051",
+          "400": "#FF677B",
+          "404": "#CB2196"
+        },
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisMinorTickVisibility": "show",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_aSO1RR9J": {
+      "type": "splunk.column",
+      "title": "Artifactory HTTP 4xx errors",
+      "description": "The number of Artifactory requests with HTTP response code matching 4xx.",
+      "dataSources": {
+        "primary": "ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "columnGrouping": "overlay",
+        "seriesColorsByField": {
+          "200": "#53a051",
+          "400": "#FF677B",
+          "404": "#CB2196"
+        },
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisMinorTickVisibility": "show",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_yAUmPzxT": {
+      "type": "splunk.column",
+      "title": "Artifactory HTTP 5xx errors",
+      "description": "The number of Artifactory requests with HTTP response code matching 5xx.",
+      "dataSources": {
+        "primary": "ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "columnGrouping": "overlay",
+        "seriesColorsByField": {
+          "200": "#53a051",
+          "400": "#FF677B",
+          "404": "#CB2196"
+        },
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisMinorTickVisibility": "show",
+        "dataValuesDisplay": "all"
+      }
+    },
+    "viz_yvJvmMml": {
+      "type": "splunk.bar",
+      "title": "Top requests by IP address (top 10)",
+      "description": "Top list of IP addresses with the number of requests, associated with these IP addresses.",
+      "dataSources": {
+        "primary": "ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "y": "> primary | frameBySeriesNames('count')",
+        "legendTruncation": "ellipsisOff",
+        "xAxisTitleVisibility": "hide",
+        "y2AxisTitleText": "",
+        "y2AxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "legendDisplay": "off",
+        "dataValuesDisplay": "all",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_cvAHSyV6": {
+      "type": "splunk.bar",
+      "title": "User request activity",
+      "description": "The number of requests created by particular users.",
+      "dataSources": {
+        "primary": "ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "y": "> primary | frameBySeriesNames('count')",
+        "legendTruncation": "ellipsisOff",
+        "xAxisTitleVisibility": "hide",
+        "y2AxisTitleText": "",
+        "y2AxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "legendDisplay": "off",
+        "dataValuesDisplay": "all",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_Lyzs5ylS": {
+      "type": "splunk.bar",
+      "title": "Log volume, number of records",
+      "description": "Total number of logs streamed to Splunk.",
+      "dataSources": {
+        "primary": "ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "y": "> primary | frameBySeriesNames('count')",
+        "legendTruncation": "ellipsisOff",
+        "xAxisTitleVisibility": "hide",
+        "y2AxisTitleText": "",
+        "y2AxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "legendDisplay": "off",
+        "dataValuesDisplay": "all",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_Mfti9FyH": {
+      "type": "splunk.bar",
+      "title": "Accessed resources by path",
+      "description": "Top 10 resource paths, accessed by users.",
+      "dataSources": {
+        "primary": "ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "y": "> primary | frameBySeriesNames('request_url','count')",
+        "x": "> primary | seriesByName('request_url')",
+        "y2": "> primary | frameBySeriesNames('count')",
+        "overlayFields": [],
+        "yAxisTitleVisibility": "hide",
+        "legendDisplay": "off",
+        "xAxisTitleVisibility": "hide",
+        "stackMode": "stacked",
+        "showSplitSeries": true,
+        "dataValuesDisplay": "all",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_3dhrAPAn": {
+      "type": "splunk.bar",
+      "title": "Accessed docker repos (top 10)",
+      "description": "The graph of accessed Docker repositories as a timeseries.",
+      "dataSources": {
+        "primary": "ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "y": "> primary | frameBySeriesNames('request_url','count')",
+        "x": "> primary | seriesByName('repo')",
+        "y2": "> primary | frameBySeriesNames('count')",
+        "overlayFields": [],
+        "yAxisTitleVisibility": "hide",
+        "legendDisplay": "off",
+        "stackMode": "stacked",
+        "showSplitSeries": true,
+        "xAxisTitleVisibility": "hide",
+        "dataValuesDisplay": "all",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_5HiIpwd9": {
+      "type": "splunk.bar",
+      "title": "Accessed docker images (top 10)",
+      "description": "The graph of accessed Docker images.",
+      "dataSources": {
+        "primary": "ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "y": "> primary | frameBySeriesNames('count','return_status')",
+        "x": "> primary | seriesByName('image')",
+        "y2": "> primary | frameBySeriesNames('count')",
+        "overlayFields": [],
+        "yAxisTitleVisibility": "hide",
+        "legendDisplay": "off",
+        "dataValuesDisplay": "all",
+        "xAxisTitleVisibility": "hide",
+        "stackMode": "stacked",
+        "showSplitSeries": true,
+        "showIndependentYRanges": true,
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_SZy5lUqz": {
+      "type": "splunk.column",
+      "title": "Accessed docker repos (timechart)",
+      "description": "The graph of accessed Docker repositories as a timeseries.",
+      "dataSources": {
+        "primary": "ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "seriesColorsByField": {
+          "200": "#53a051",
+          "400": "#FF677B",
+          "404": "#CB2196"
+        },
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisMinorTickVisibility": "show",
+        "overlayFields": [],
+        "columnGrouping": "overlay",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_ztp8Uuzt": {
+      "type": "splunk.column",
+      "title": "Accessed docker images (timechart)",
+      "description": "The graph of accessed Docker images as a timechart.",
+      "dataSources": {
+        "primary": "ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "seriesColorsByField": {
+          "200": "#53a051",
+          "400": "#FF677B",
+          "404": "#CB2196"
+        },
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisMinorTickVisibility": "show",
+        "overlayFields": [],
+        "columnGrouping": "overlay",
+        "y2": "> primary | frameBySeriesNames('')",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_yL58qqhN": {
+      "type": "splunk.column",
+      "title": "Artifactory audit events by users",
+      "description": "Total number of access security audit events by users.",
+      "dataSources": {
+        "primary": "ds_wvWhy75J_ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "seriesColorsByField": {
+          "200": "#53a051",
+          "400": "#FF677B",
+          "404": "#CB2196"
+        },
+        "yAxisMinorTickVisibility": "show",
+        "overlayFields": [],
+        "columnGrouping": "overlay",
+        "y2": "> primary | frameBySeriesNames('')",
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "legendDisplay": "off",
+        "xAxisLabelVisibility": "show",
+        "legendMode": "seriesCompare",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_vGWVl5LA": {
+      "type": "splunk.column",
+      "title": "Operations on tokens",
+      "description": "List of all operations (CRUD), performed on tokens.",
+      "dataSources": {
+        "primary": "ds_q33WdyOQ_ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "seriesColorsByField": {
+          "200": "#53a051",
+          "400": "#FF677B",
+          "404": "#CB2196"
+        },
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisMinorTickVisibility": "show",
+        "overlayFields": [],
+        "columnGrouping": "overlay",
+        "y2": "> primary | frameBySeriesNames('')",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_DWdlI3O5": {
+      "type": "splunk.column",
+      "title": "Operations on permissions",
+      "description": "List of all operations (CRUD), performed on permissions.",
+      "dataSources": {
+        "primary": "ds_MGjwhcxg_ds_q33WdyOQ_ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "seriesColorsByField": {
+          "200": "#53a051",
+          "400": "#FF677B",
+          "404": "#CB2196"
+        },
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisMinorTickVisibility": "show",
+        "overlayFields": [],
+        "columnGrouping": "overlay",
+        "y2": "> primary | frameBySeriesNames('')",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_r1pAnYvp": {
+      "type": "splunk.column",
+      "title": "Operations on users",
+      "description": "List of all operations (CRUD), performed on users.",
+      "dataSources": {
+        "primary": "ds_ZD6IMB4t_ds_MGjwhcxg_ds_q33WdyOQ_ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "seriesColorsByField": {
+          "200": "#53a051",
+          "400": "#FF677B",
+          "404": "#CB2196"
+        },
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisMinorTickVisibility": "show",
+        "overlayFields": [],
+        "columnGrouping": "overlay",
+        "y2": "> primary | frameBySeriesNames('')",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_xuuFQ7vr": {
+      "type": "splunk.column",
+      "title": "Operations on groups",
+      "description": "List of all operations (CRUD), performed on groups.",
+      "dataSources": {
+        "primary": "ds_EjMVgfWu_ds_ZD6IMB4t_ds_MGjwhcxg_ds_q33WdyOQ_ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "seriesColorsByField": {
+          "200": "#53a051",
+          "400": "#FF677B",
+          "404": "#CB2196"
+        },
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisMinorTickVisibility": "show",
+        "overlayFields": [],
+        "columnGrouping": "overlay",
+        "y2": "> primary | frameBySeriesNames('')"
+      }
+    },
+    "viz_wg9NheUG": {
+      "type": "splunk.bar",
+      "title": "Action types",
+      "description": "Access log actions by types.",
+      "dataSources": {
+        "primary": "ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "y": "> primary | frameBySeriesNames('count','return_status')",
+        "x": "> primary | seriesByName('action_response')",
+        "y2": "> primary | frameBySeriesNames('count')",
+        "overlayFields": [],
+        "legendDisplay": "off",
+        "dataValuesDisplay": "all",
+        "stackMode": "stacked",
+        "showSplitSeries": true,
+        "showIndependentYRanges": true,
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "show",
+        "yAxisTitleVisibility": "hide",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_hsW4J2A6": {
+      "type": "splunk.bar",
+      "title": "Action types (no NA user)",
+      "description": "Access log actions by types, excluding NA user.",
+      "dataSources": {
+        "primary": "ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "y": "> primary | frameBySeriesNames('count','return_status')",
+        "x": "> primary | seriesByName('action_response')",
+        "y2": "> primary | frameBySeriesNames('count')",
+        "overlayFields": [],
+        "legendDisplay": "off",
+        "dataValuesDisplay": "all",
+        "stackMode": "stacked",
+        "showSplitSeries": true,
+        "showIndependentYRanges": true,
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "show",
+        "yAxisTitleVisibility": "hide",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_cyIPA2qj": {
+      "type": "splunk.bar",
+      "title": "Accepted deploys by username",
+      "description": "Top list of deployed artifacts by username.",
+      "dataSources": {
+        "primary": "ds_Eh4GR2U9_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "y": "> primary | frameBySeriesNames('count','return_status')",
+        "x": "> primary | seriesByName('user_name')",
+        "y2": "> primary | frameBySeriesNames('count')",
+        "overlayFields": [],
+        "legendDisplay": "off",
+        "dataValuesDisplay": "all",
+        "stackMode": "stacked",
+        "showSplitSeries": true,
+        "showIndependentYRanges": true,
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "show",
+        "yAxisTitleVisibility": "hide",
+        "seriesColors": [
+          "#00CDAF",
+          "#009CEB",
+          "#7B56DB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_yhWX75VK": {
+      "type": "splunk.pie",
+      "title": "Denied actions by IP",
+      "description": "All types of denied actions by IP address",
+      "dataSources": {
+        "primary": "ds_sqQ6EotP_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {},
+      "context": {}
+    },
+    "viz_8A93bHuv": {
+      "type": "splunk.pie",
+      "title": "Denied actions by IP, excluding NA users",
+      "description": "All types of denied actions by IP address, excluding NA users.",
+      "dataSources": {
+        "primary": "ds_QlnDd1yr_ds_sqQ6EotP_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false
+    },
+    "viz_EVNvNSV1": {
+      "type": "splunk.pie",
+      "title": "Denied logins by username",
+      "description": "Denied logins by username, including NA users.",
+      "dataSources": {
+        "primary": "ds_u2A0T23t_ds_QlnDd1yr_ds_sqQ6EotP_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false
+    },
+    "viz_cyT44fSq": {
+      "type": "splunk.pie",
+      "title": "Denied logins by username, excluding NA users",
+      "description": "Denied logins by username, excluding NA users.",
+      "dataSources": {
+        "primary": "ds_YEIvtj8G_ds_u2A0T23t_ds_QlnDd1yr_ds_sqQ6EotP_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false
+    },
+    "viz_o93aMWTC": {
+      "type": "splunk.pie",
+      "title": "Denied downloads by IP",
+      "description": "Denied downloads by IP address",
+      "dataSources": {
+        "primary": "ds_npQGHojH_ds_YEIvtj8G_ds_u2A0T23t_ds_QlnDd1yr_ds_sqQ6EotP_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false
+    },
+    "viz_0CxUWjUX": {
+      "type": "splunk.pie",
+      "title": "Denied logins by IP, excluding NA users",
+      "description": "Denied logins by IP address, excluding NA users.",
+      "dataSources": {
+        "primary": "ds_kDpSNYbd_ds_YEIvtj8G_ds_u2A0T23t_ds_QlnDd1yr_ds_sqQ6EotP_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false
+    },
+    "viz_F7HzqUQV": {
+      "type": "splunk.bar",
+      "title": "Accepted deploys by IP (top 10)",
+      "description": "Accepted deploys by IP address.",
+      "dataSources": {
+        "primary": "ds_RMbaCijp_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "y": "> primary | frameBySeriesNames('count','return_status')",
+        "x": "> primary | seriesByName('ip_address')",
+        "y2": "> primary | frameBySeriesNames('count')",
+        "overlayFields": [],
+        "legendDisplay": "off",
+        "dataValuesDisplay": "all",
+        "stackMode": "stacked",
+        "showSplitSeries": true,
+        "showIndependentYRanges": true,
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "show",
+        "yAxisTitleVisibility": "hide",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    },
+    "viz_XaFF5l44": {
+      "type": "splunk.bar",
+      "title": "Accepted downloads by IP (top 10)",
+      "description": "Accepted downloads by IP address.",
+      "dataSources": {
+        "primary": "ds_qAeZzDc9_ds_RMbaCijp_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB"
+      },
+      "showProgressBar": false,
+      "showLastUpdated": false,
+      "options": {
+        "y": "> primary | frameBySeriesNames('count','return_status')",
+        "x": "> primary | seriesByName('ip_address')",
+        "y2": "> primary | frameBySeriesNames('count')",
+        "overlayFields": [],
+        "legendDisplay": "off",
+        "dataValuesDisplay": "all",
+        "stackMode": "stacked",
+        "showSplitSeries": true,
+        "showIndependentYRanges": true,
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "show",
+        "yAxisTitleVisibility": "hide",
+        "seriesColors": [
+          "#00CDAF",
+          "#7B56DB",
+          "#009CEB",
+          "#DD9900",
+          "#FF677B",
+          "#CB2196",
+          "#813193",
+          "#0051B5",
+          "#008C80",
+          "#99B100",
+          "#FFA476",
+          "#FF6ACE",
+          "#AE8CFF",
+          "#00689D",
+          "#00490A",
+          "#465D00",
+          "#9D6300",
+          "#F6540B",
+          "#FF969E",
+          "#E47BFE"
+        ]
+      }
+    }
+  },
+  "dataSources": {
+    "ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.request | timechart count by return_status",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Status_count"
+    },
+    "ds_KEo5DhEP": {
+      "type": "ds.chain",
+      "options": {
+        "enableSmartSources": true,
+        "query": "host=\"jfrog-cloud\" AND return_status=200"
+      },
+      "name": "Search_1"
+    },
+    "ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.request return_status=4* | timechart count by return_status",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Status_count 4xx"
+    },
+    "ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.request return_status=5* | timechart count by return_status",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Status_count 5xx"
+    },
+    "ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.request remote_address!=\"127.0.0.1\" | top remote_address \n|  head limit=10",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Top requests by IP"
+    },
+    "ds_nur3NjnU_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" log_type=\"artifactory-request\" user_name!=\"non_authenticated_user\" user_name!=\"token:*@*\" | top user_name by return_status",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Top requests by username"
+    },
+    "ds_fbMdTltD_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" log_type=\"artifactory-request\" | timechart count by return_status",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Status_count copy 1"
+    },
+    "ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.request user_name!=\"non_authenticated_user\" user_name!=\"token:*@*\" | top user_name",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "User activity"
+    },
+    "ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" | top service",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Top requests by IP copy 2"
+    },
+    "ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" request_url NOT (/api*system* OR /api/*/metrics* OR /api/system* OR /api/auth/* OR /api/storageinfo* OR /api/replications OR /api/jobs/replications OR /api/xray* OR /api/repositories* OR /api/retention/link OR /ui/treebrowser OR /ui/* OR /api/docker/public-images/v2/token) |  top request_url \n|  head limit=10  \n\n",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Accessed resources by path"
+    },
+    "ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" repo!=\"\" | top repo \n|  head limit=10\n\n",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Accessed resources by path copy 1"
+    },
+    "ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" repo!=\"\" | top image\n",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Accessed images"
+    },
+    "ds_5Jq02Agk_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" repo!=\"\" | timechart count by repo\n",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Accessed images copy 1"
+    },
+    "ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" repo!=\"\" | timechart count by repo",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Status_count 4xx copy 1"
+    },
+    "ds_fiaDbOH2_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" repo!=\"\" | top image\n|  head limit=10\n\n",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Accessed resources by path copy 2"
+    },
+    "ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" repo!=\"NULL\" repo!=\"\" image!=\"NULL\" | timechart count by image",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Status_count 4xx copy 2"
+    },
+    "ds_wvWhy75J_ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.access.security.audit user_name!=UNKNOWN | stats count by user_name",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Audit events"
+    },
+    "ds_q33WdyOQ_ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.access.security.audit event=TKN |  timechart count by event_type",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Operations on tokens"
+    },
+    "ds_MGjwhcxg_ds_q33WdyOQ_ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.access.security.audit event=PRM |  timechart count by event_type",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Operations on permissions"
+    },
+    "ds_ZD6IMB4t_ds_MGjwhcxg_ds_q33WdyOQ_ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.access.security.audit event=USR |  timechart count by event_type",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Operations on users"
+    },
+    "ds_EjMVgfWu_ds_ZD6IMB4t_ds_MGjwhcxg_ds_q33WdyOQ_ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.access.security.audit event=GRP |  timechart count by event_type",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Operations on groups"
+    },
+    "ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.access | top action_response",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Actions by types"
+    },
+    "ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.access user_name!=NA| top action_response",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Actions by types no NA"
+    },
+    "ds_Eh4GR2U9_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.access action_response=\"ACCEPTED DEPLOY\" ip_address!=127.0.0.1 | top user_name",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Accepted deploys by username"
+    },
+    "ds_GKDHM5Ul_ds_wvWhy75J_ds_qhJz7m1l_ds_sjP6wjPT_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.access.security.audit user_name!=UNKNOWN | stats count by user_name",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Audit events copy 1"
+    },
+    "ds_sqQ6EotP_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.access action_response=DENIED* | top ip_address",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Denied actions by IP"
+    },
+    "ds_QlnDd1yr_ds_sqQ6EotP_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.access action_response=DENIED* user_name!=NA | top ip_address ",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Denied actions by IP no NA"
+    },
+    "ds_u2A0T23t_ds_QlnDd1yr_ds_sqQ6EotP_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.access action_response=\"DENIED LOGIN\" | top user_name ",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Denied logins"
+    },
+    "ds_YEIvtj8G_ds_u2A0T23t_ds_QlnDd1yr_ds_sqQ6EotP_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.access action_response=\"DENIED LOGIN\" user_name!=NA | top user_name ",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Denied logins no NA"
+    },
+    "ds_npQGHojH_ds_YEIvtj8G_ds_u2A0T23t_ds_QlnDd1yr_ds_sqQ6EotP_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.access action_response=\"DENIED DOWNLOAD\" | top ip_address limit=10",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Denied downloads"
+    },
+    "ds_kDpSNYbd_ds_YEIvtj8G_ds_u2A0T23t_ds_QlnDd1yr_ds_sqQ6EotP_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.access action_response=\"DENIED LOGIN\" user_name!=NA | top ip_address ",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Denied logins no NA by IP"
+    },
+    "ds_RMbaCijp_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.access action_response=\"ACCEPTED DEPLOY\" ip_address!=127.0.0.1 \n|  top ip_address limit=10",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Accepted deploys by IP"
+    },
+    "ds_qAeZzDc9_ds_RMbaCijp_ds_I7gekQch_ds_jdjab6kW_ds_Hlse267X_ds_fCrbpObL_ds_uks6PZyH_ds_hXA0pL6j_ds_zNdv3ixK_ds_5RcylBW7_ds_BtpeHZf3_ds_clH09XiP_ds_8HQfJjVB": {
+      "type": "ds.search",
+      "options": {
+        "query": "host=\"jfrog-cloud\" service=jfrog.saas.rt.artifactory.access action_response=\"ACCEPTED DOWNLOAD\" ip_address!=127.0.0.1 \n|  top ip_address limit=10",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        },
+        "enableSmartSources": true
+      },
+      "name": "Accepted downloads by IP"
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "latest": "$global_time.latest$",
+            "earliest": "$global_time.earliest$"
+          }
+        }
+      }
+    }
+  },
+  "inputs": {
+    "input_global_trp": {
+      "type": "input.timerange",
+      "options": {
+        "token": "global_time",
+        "defaultValue": "-24h@h,now"
+      },
+      "title": "Global Time Range"
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 6000,
+      "backgroundColor": "#ffffff"
+    },
+    "structure": [
+      {
+        "item": "viz_SIjolIHp",
+        "type": "block",
+        "position": {
+          "x": 10,
+          "y": 10,
+          "w": 1420,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_fFI5UzJa",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 240,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_aSO1RR9J",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 240,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_yAUmPzxT",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 610,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_yvJvmMml",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 610,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_cvAHSyV6",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 980,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_Lyzs5ylS",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 980,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_Mfti9FyH",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1350,
+          "w": 1410,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_3dhrAPAn",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1720,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_5HiIpwd9",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 2090,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_SZy5lUqz",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 1720,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_ztp8Uuzt",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 2090,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_yL58qqhN",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 2460,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_vGWVl5LA",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 2460,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_DWdlI3O5",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 2830,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_r1pAnYvp",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 2830,
+          "w": 700,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_xuuFQ7vr",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 3200,
+          "w": 700,
+          "h": 370
+        }
+      },
+      {
+        "item": "viz_wg9NheUG",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 3200,
+          "w": 700,
+          "h": 370
+        }
+      },
+      {
+        "item": "viz_hsW4J2A6",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 3580,
+          "w": 700,
+          "h": 370
+        }
+      },
+      {
+        "item": "viz_cyIPA2qj",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 3580,
+          "w": 700,
+          "h": 370
+        }
+      },
+      {
+        "item": "viz_yhWX75VK",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 3960,
+          "w": 700,
+          "h": 370
+        }
+      },
+      {
+        "item": "viz_8A93bHuv",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 3960,
+          "w": 700,
+          "h": 370
+        }
+      },
+      {
+        "item": "viz_EVNvNSV1",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 4340,
+          "w": 700,
+          "h": 370
+        }
+      },
+      {
+        "item": "viz_cyT44fSq",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 4340,
+          "w": 700,
+          "h": 370
+        }
+      },
+      {
+        "item": "viz_o93aMWTC",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 4720,
+          "w": 700,
+          "h": 370
+        }
+      },
+      {
+        "item": "viz_0CxUWjUX",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 4720,
+          "w": 700,
+          "h": 370
+        }
+      },
+      {
+        "item": "viz_F7HzqUQV",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 5100,
+          "w": 700,
+          "h": 370
+        }
+      },
+      {
+        "item": "viz_XaFF5l44",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 5100,
+          "w": 700,
+          "h": 370
+        }
+      }
+    ],
+    "globalInputs": [
+      "input_global_trp"
+    ]
+  },
+  "description": "This dashboard provides a high-level summary of the usage of the JFrog Artifactory Cloud instance. This includes an overview of access requests, audit events and access logs as well as a summary of various operations performed on JFrog Artifactory.",
+  "title": "JFrog Platform Cloud Log Analytics"
+}
